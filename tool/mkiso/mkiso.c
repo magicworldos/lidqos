@@ -1,5 +1,5 @@
-#ifndef _MKISO_CPP_
-#define _MKISO_CPP_
+#ifndef _MKISO_C_
+#define _MKISO_C_
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -136,11 +136,11 @@ int main(int argc, char *args[])
 		iso_b.pad3[i] = 0;
 	}
 
-	FILE *p = fopen(args[1], "+wb");
+	FILE *p = fopen(args[1], "wb");
 	fwrite((char*) &iso_m, sizeof(char), sizeof(iso_m), p);
 	fclose(p);
 
-	FILE *p2 = fopen(args[2], "+wb");
+	FILE *p2 = fopen(args[2], "wb");
 	fwrite((char*) &iso_b, sizeof(char), sizeof(iso_b), p2);
 	fclose(p2);
 
