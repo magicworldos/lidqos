@@ -31,9 +31,9 @@ GC_K_PARAMS			= $(GC_PARAMS)
 GC_S_PARAMS			= $(GC_PARAMS)
 
 #ld连接参数，
-LD_BOOT_PARAMS 		= -m elf_i386 -Ttext 0x0 -Tdata 0x2000 
+LD_BOOT_PARAMS 		= -m elf_i386 -Ttext 0x0
 #ld连接内核参数
-LD_KERNEL_PARAMS	= -m elf_i386 -Ttext 0x2000 -Tdata 0x0 
+LD_KERNEL_PARAMS	= -m elf_i386 -Ttext 0x0
 #ld连接shell参数
 LD_PSHELL_PARAMS	= -m elf_i386 -Ttext 0x0
 
@@ -81,7 +81,7 @@ $(MKIMG):
 
 #启动程序
 $(BOOT):			$(BOOT)_bin		$(BOOT)_S
-	$(DD) $(DD_PARAMS) count=10 conv=notrunc if=$(BUILD_PATH)/$(BOOT)/$(BOOT).bin of=$(BUILD_PATH)/$(MKIMG)/$(PROJECT).img
+	$(DD) $(DD_PARAMS) count=16 conv=notrunc if=$(BUILD_PATH)/$(BOOT)/$(BOOT).bin of=$(BUILD_PATH)/$(MKIMG)/$(PROJECT).img
 
 #启动程序的二进制文件
 $(BOOT)_bin:		$(BOOT)_elfs
@@ -94,17 +94,17 @@ $(BOOT)_S:	$(BOOT)_elfs
 
 #启动程序的elf可执行文件	
 $(BOOT)_elfs:	$(BOOT)_objs
-	$(LD) $(LD_BOOT_PARAMS) -o $(BUILD_PATH)/$(BOOT)/$(BOOT) -e _start $(BUILD_PATH)/$(BOOT)/$(BOOT).o	\
+	$(LD) $(LD_BOOT_PARAMS) -e _start $(BUILD_PATH)/$(BOOT)/$(BOOT).o -o $(BUILD_PATH)/$(BOOT)/$(BOOT)
 
 #启动程序的obj文件
 $(BOOT)_objs:
-	$(CC) $(GC_B_PARAMS) $(BOOT)/$(BOOT).S		-o $(BUILD_PATH)/$(BOOT)/$(BOOT).o
+	$(CC) $(GC_B_PARAMS) $(BOOT)/$(BOOT).S -o $(BUILD_PATH)/$(BOOT)/$(BOOT).o
 	
 ##################################################################################################################
 
 #系统内核
 $(KERNEL):			$(KERNEL)_bin	$(KERNEL)_S
-	$(DD) $(DD_PARAMS) seek=10 count=8 conv=notrunc if=$(BUILD_PATH)/$(KERNEL)/$(KERNEL).bin of=$(BUILD_PATH)/$(MKIMG)/$(PROJECT).img
+	$(DD) $(DD_PARAMS) seek=16 count=1 conv=notrunc if=$(BUILD_PATH)/$(KERNEL)/$(KERNEL).bin of=$(BUILD_PATH)/$(MKIMG)/$(PROJECT).img
 
 #内核程序的二进制文件
 $(KERNEL)_bin:		$(KERNEL)_elfs
