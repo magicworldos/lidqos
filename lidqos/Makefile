@@ -7,12 +7,7 @@ MKDIR				= mkdir
 BOOT				= boot
 KERNEL				= kernel
 MKIMG				= mkimg
-PSHELL				= pshell
-ECC					= ecc
-TOOL				= ../tool
-FS					= fs
 PSHELL				= shell
-ECC					= ecc
 
 #命令
 #编译c程序
