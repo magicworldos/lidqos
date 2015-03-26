@@ -14,7 +14,7 @@
 //开始
 _start:
 
-	//读到es:%bx为 0x7e00处
+	//读到es:bx为0x7e00处
 	movw	$0x7e0,	%ax
 	movw	%ax, %es
 	xorw	%bx, %bx
@@ -100,6 +100,7 @@ _copy_kernel:
 	//循环拷贝kernel程序到0x0
 	rep 	movsb %ds:(%si), %es:(%di)
 
+//永不停歇的循环
 _loop:
 	jmp		_loop
 
