@@ -157,7 +157,7 @@ _to_the_protect_mode:
 	//将%ecx寄存器置成内核程序大小
 	movl	$_KERNEL_SIZE,	%ecx
 
-_copy_kernel2:
+_copy_kernel:
 	movw	%ds:(%esi), %ax
 	movw	%ax, %es:(%edi)
 
@@ -167,9 +167,9 @@ _copy_kernel2:
 	sub		$0x2, %ecx
 
 	cmp		$0x0, %ecx
-	jne		_copy_kernel2
-	jmp		_copy_kernel2_end
-_copy_kernel2_end: nop
+	jne		_copy_kernel
+	jmp		_copy_kernel_end
+_copy_kernel_end: nop
 
 	//处理所有寄存器，为跳转到保护模式做准备
 	movw	$_GDT_IND_KERNEL_DATA,	%ax

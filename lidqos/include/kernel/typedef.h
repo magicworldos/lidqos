@@ -18,7 +18,7 @@ typedef unsigned long long u64;
 #define NULL 		((void*)(0))
 #endif
 
-//GDT全局描述符
+//GDT全局描述符表
 typedef struct gdt_s
 {
 	union

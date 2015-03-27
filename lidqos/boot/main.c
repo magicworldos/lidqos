@@ -8,10 +8,10 @@
 #include <boot/code16.h>
 #include <boot/main.h>
 
-//全局描述符个数
+//全局描述符表个数
 #define GDT_MAX_SIZE (3)
 
-//全局描述符
+//全局描述符表
 s_gdt gdts[GDT_MAX_SIZE];
 
 //全局描述符
@@ -19,15 +19,14 @@ s_gdtp gdtp;
 
 int main(int argc, char **args)
 {
-
-	//设置全局描述符
-	set_gdt();
-
 	//关中断
 	cli();
 
 	//打开A20，启用CPU的32根内存寻址线，可进行4GB内存寻址
 	enable_a20();
+
+	//设置全局描述符
+	set_gdt();
 
 	//跳转到保护模式，不再返回，直接启动内核程序
 	to_protect_mode();
@@ -99,13 +98,13 @@ void set_gdt()
 }
 
 /*
- * enable_a20 : 打开A20，启用CPU的32根内存寻址线，可进行4GB内存寻址
+ * enable_a20 : 打开A20
  * return : void
  */
 void enable_a20()
 {
 	u8 port_a;
-	//从0x92商品读入数据
+	//从0x92端口读入数据
 	port_a = inb_p(0x92);
 	//打开A20
 	port_a |= 0x02;
