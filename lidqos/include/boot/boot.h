@@ -17,6 +17,7 @@
 
 //定义内核程序所在位置0x9c00 (_SEG_BOOT + _SEG_BOOT_SIZE)
 #define _SEG_KERNEL 0x9c0
+#define _SEG_KERNEL_PH 0x9c00
 
 //定义启动main函数段地址为0x90000
 #define _SEG_MAIN 0x9000
@@ -25,15 +26,11 @@
 #define _SEG_KERNEL_OFFSET 0x2000
 #define _SEG_KERNEL_DATA_OFFSET 0x400000
 
-//内核大小0x240个扇区*0x200
+//内核大小256个扇区*2048
 #define _KERNEL_SIZE 0x80000
 
 //定义内核地址为0的全局描述符的选择子
 #define _GDT_IND_KERNEL 0x8
 #define _GDT_IND_KERNEL_DATA 0x10
-
-//定义内核被boot载入时地址为0x9c00的全局描述符的选择子
-#define _GDT_IND_KERNEL_LOAD 0x20
-#define _GDT_IND_KERNEL_LOAD_DATA 0x28
 
 #endif

@@ -33,7 +33,7 @@ GC_K_PARAMS			= $(GC_PARAMS)
 GC_S_PARAMS			= $(GC_PARAMS)
 
 #ld连接参数，
-LD_BOOT_PARAMS 		= -m elf_i386 -Ttext 0x0 -Tdata 0x2000 
+LD_BOOT_PARAMS 		= -m elf_i386 -Ttext 0x0 -Tdata 0x1000 
 #ld连接内核参数
 LD_KERNEL_PARAMS	= -m elf_i386 -Ttext 0x2000 -Tdata 0x0 
 #ld连接shell参数
