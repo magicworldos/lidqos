@@ -14,14 +14,14 @@ char *str = "Hello World!";
 //内核启动程序入口
 int start_kernel(int argc, char **args)
 {
-	//显示str的内容到显示器上
-	for (int i = 0; str[i] != '\0'; i++)
-	{
-		//显示一个字符到光标所在位置，光标移动一个位置
-		putchar(str[i]);
-	}
+	//显示Hello World!
+	printf("%s\n", str);
 
-	printf("", 'A', 'B', 'C', 'D', 'E');
+	u32 no = 0x12051204;
+	int age = 33;
+	char ch = 'B';
+	char *msg = "Lidq school number is %x.\nThis year he is %d years old.\nHe got an %c on his test points.\n";
+	printf(msg, no, age, ch);
 
 	//永无休止的循环
 	for (;;)

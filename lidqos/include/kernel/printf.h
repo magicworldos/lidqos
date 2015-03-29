@@ -20,6 +20,8 @@ void putascii(u16 x, u16 y, char ch);
 
 void putchar(char ch);
 
+int puts(char *str);
+
 int printf(char *fmt, ...);
 
 #endif
