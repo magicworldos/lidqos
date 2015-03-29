@@ -21,6 +21,8 @@ int start_kernel(int argc, char **args)
 		putchar(str[i]);
 	}
 
+	printf("", 'A', 'B', 'C', 'D', 'E');
+
 	//永无休止的循环
 	for (;;)
 	{

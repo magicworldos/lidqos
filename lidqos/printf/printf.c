@@ -119,6 +119,15 @@ void putchar(char ch)
 
 int printf(char *fmt, ...)
 {
+	va_list args;
+	va_init(args, fmt);
+
+	for (int i = 0; i < 5; i++)
+	{
+		char f = va_arg(args, char);
+		putchar(f);
+	}
+
 	return 0;
 }
 

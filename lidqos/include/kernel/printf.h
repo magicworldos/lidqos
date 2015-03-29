@@ -10,6 +10,7 @@
 
 #include <kernel/typedef.h>
 #include <kernel/io.h>
+#include <kernel/arg.h>
 
 void set_cursor(u16 x, u16 y);
 
