@@ -148,11 +148,13 @@ $(KERNEL)_S:		$(KERNEL)_elfs
 
 #内核程序的elf可执行文件
 $(KERNEL)_elfs:		$(KERNEL)_objs
-	$(LD) $(LD_KERNEL_PARAMS) -o $(BUILD_PATH)/$(KERNEL)/$(KERNEL) -e start_kernel $(BUILD_PATH)/$(KERNEL)/$(KERNEL).o
+	$(LD) $(LD_KERNEL_PARAMS) -o $(BUILD_PATH)/$(KERNEL)/$(KERNEL) -e start_kernel $(BUILD_PATH)/$(KERNEL)/$(KERNEL).o	\
+		$(BUILD_PATH)/$(KERNEL)/printf.o
 
 #内核程序的obj文件
 $(KERNEL)_objs:
 	$(CC) $(GC_K_PARAMS) $(KERNEL)/$(KERNEL).c 			-o $(BUILD_PATH)/$(KERNEL)/$(KERNEL).o
+	$(CC) $(GC_K_PARAMS) printf/printf.c 				-o $(BUILD_PATH)/$(KERNEL)/printf.o
 	
 ##################################################################################################################
 
