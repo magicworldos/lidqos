@@ -18,6 +18,12 @@
  */
 void set_cursor(u16 x, u16 y)
 {
+	//横坐标超出80换行
+	if (x > 80)
+	{
+		x = 0;
+		y++;
+	}
 	//计算光标的线性位置
 	u16 cursor_pos = y * 80 + x;
 	//告诉地址寄存器要接下来要使用14号寄存器
@@ -48,8 +54,67 @@ u16 get_cursor()
 	return (cursor_pos_h << 8) | cursor_pos_l;
 }
 
+/***
+ * 根据一个字符的ascii显示到指定位置
+ * u16 x: 横坐标
+ * u16 y: 纵坐标
+ * char ch: 要显示的字符
+ */
+void putascii(u16 x, u16 y, char ch)
+{
+	//定义显存地址
+	char *video_addr = (char *) 0xb8000;
+
+	//写入显存
+	u32 where = (y * 80 + x) * 2;
+	//显示字符的实际物理地址
+	u8 *p = (u8 *) (video_addr) + where;
+	//字符的ascii码
+	*p = ch;
+	//颜色
+	*(p + 1) = 0x07;
+}
+
+/***
+ * 显示一个字符到当前光标位置
+ * char ch: 要显示的字符
+ */
 void putchar(char ch)
 {
+	//取得当前光标线性位置
+	u16 cursor_pos = get_cursor();
+	//计算横纵坐标
+	u16 x = cursor_pos % 80;
+	u16 y = cursor_pos / 80;
+
+	//如果是换行符\n
+	if (ch == 0xa)
+	{
+		//换行
+		x = 0;
+		y++;
+		set_cursor(x, y);
+	}
+	//如果是制表符\t
+	else if (ch == 0x9)
+	{
+		//显示空格
+		ch = 0x20;
+		//显示8个空格
+		for (int i = 0; i < 8; i++)
+		{
+			putascii(x, y, ch);
+			x++;
+			set_cursor(x, y);
+		}
+	}
+	//显示普通字符
+	else
+	{
+		putascii(x, y, ch);
+		x++;
+		set_cursor(x, y);
+	}
 }
 
 int printf(char *fmt, ...)
@@ -58,3 +123,4 @@ int printf(char *fmt, ...)
 }
 
 #endif
+
