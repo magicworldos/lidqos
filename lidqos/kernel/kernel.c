@@ -6,7 +6,6 @@
  */
 
 #include <kernel/kernel.h>
-#include <kernel/printf.h>
 
 //全局字符串指针变量
 char *str = "Hello World!";
@@ -14,14 +13,34 @@ char *str = "Hello World!";
 //内核启动程序入口
 int start_kernel(int argc, char **args)
 {
-	//显示Hello World!
-	printf("%s\n", str);
+	//安装内存申请模块
+	install_alloc();
 
-	u32 no = 0x12051204;
-	int age = 33;
-	char ch = 'B';
-	char *msg = "Lidq school number is %x.\nThis year he is %d years old.\nHe got an %c on his test points.\n";
-	printf(msg, no, age, ch);
+	char *p = alloc_page(1);
+	printf("%x\n", p);
+
+	char *p1 = alloc_mm(4);
+	printf("%x\n", p1);
+
+	char *p2 = alloc_mm(4);
+	printf("%x\n", p2);
+
+	free_mm(p2, 4);
+	free_mm(p1, 4);
+	free_page(p, 1);
+
+	p = alloc_page(1);
+	printf("%x\n", p);
+
+	p1 = alloc_mm(4);
+	printf("%x\n", p1);
+
+	p2 = alloc_mm(4);
+	printf("%x\n", p2);
+
+	free_mm(p2, 4);
+	free_mm(p1, 4);
+	free_page(p, 1);
 
 	//永无休止的循环
 	for (;;)
