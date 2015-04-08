@@ -10,16 +10,6 @@
 
 #include <kernel/typedef.h>
 
-//内存页大小4096B
-#define MM_PAGE_SIZE		(4 * 1024)
-//内存总页数
-#define MAP_SIZE			(1024 * 1024)
-//内核程序大小256页 256*4096 = 1MB
-#define KERNEL_SIZE			(0x100)
-//MMAP所在内存地址为0x400000 ~ 0x4fffff
-//从0x300000以下为0x300 = 768个内存页
-#define MMAP_USED_SIZE		(0x500)
-
 //位图状态标识
 //未使用
 #define MM_FREE				(0)
@@ -27,6 +17,17 @@
 #define MM_USED				(1)
 //动态分配
 #define MM_DYNAMIC			(2)
+
+//内存页大小4096B
+#define MM_PAGE_SIZE		(4 * 1024)
+//内存总页数
+#define MAP_SIZE			(1024 * 1024)
+//内核程序大小256页 256*4096 = 1MB
+#define KERNEL_SIZE			(0x100)
+//MMAP所在内存地址为0x400000 ~ 0x4fffff
+//从0x500000以下为0x500个内存页
+#define MMAP_USED_SIZE		(0x500)
+
 
 /*
  * install_alloc : 安装申请内存位图
