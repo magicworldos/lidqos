@@ -54,4 +54,39 @@ typedef struct gdt_ptr
 	u16 gdt_addr2;
 } s_gdtp;
 
+//IDT全局描述符
+typedef struct idt_s
+{
+	union
+	{
+		struct
+		{
+			u64 lidt;
+		};
+
+		struct
+		{
+			u32 idt, idt2;
+		};
+
+		struct
+		{
+			u16 offset;
+			u16 selector;
+			u8 bbb_no_use;
+			u8 p_dpl_bbbbb;
+			u16 offset2;
+		};
+	};
+
+} s_idt;
+
+//IDT全局描述符
+typedef struct idt_ptr
+{
+	u16 idt_lenth;
+	u16 idt_addr;
+	u16 idt_addr2;
+} s_idtp;
+
 #endif

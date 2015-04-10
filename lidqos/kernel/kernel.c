@@ -7,9 +7,6 @@
 
 #include <kernel/kernel.h>
 
-//全局字符串指针变量
-char *str = "Hello World!";
-
 //内核启动程序入口
 int start_kernel(int argc, char **args)
 {
