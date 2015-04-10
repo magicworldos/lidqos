@@ -11,6 +11,7 @@
 #include <kernel/typedef.h>
 #include <kernel/printf.h>
 #include <kernel/alloc.h>
+#include <kernel/mm.h>
 
 int start_kernel(int argc, char **args);
 

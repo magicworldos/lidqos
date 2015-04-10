@@ -24,6 +24,15 @@ void set_cursor(u16 x, u16 y)
 		x = 0;
 		y++;
 	}
+
+	//纵坐标超出25滚屏
+	if (y >= 25)
+	{
+		x = 0;
+		y = 25 - 1;
+		scroll_up(1);
+	}
+
 	//计算光标的线性位置
 	u16 cursor_pos = y * 80 + x;
 	//告诉地址寄存器要接下来要使用14号寄存器
@@ -52,6 +61,23 @@ u16 get_cursor()
 	u8 cursor_pos_l = inb_p(0x03d5);
 	//返回光标位置
 	return (cursor_pos_h << 8) | cursor_pos_l;
+}
+
+/*
+ * scroll_up : 向上滚屏
+ *  - int int row : 行数
+ * return : void
+ */
+void scroll_up(int row)
+{
+	u16 *p = (u16 *) 0xb8000;
+	for (int i = 0; i < 80; ++i)
+	{
+		for (int j = 0; j < 25; ++j)
+		{
+			*(p + j * 80 + i) = *(p + (j + 1) * 80 + i);
+		}
+	}
 }
 
 /***

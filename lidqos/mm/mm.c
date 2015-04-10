@@ -20,6 +20,35 @@ s_idt idts[IDT_MAX_SIZE];
 s_idtp idtp;
 
 /*
+ * install_pic : 安装8259A中断控制器
+ * return : void
+ */
+void install_pic()
+{
+	//设置主8259A和从8259A
+	outb_p(0x11, 0x20);
+	outb_p(0x11, 0xa0);
+
+	//设置IRQ0-IRQ7的中断向量为0x20-0x27
+	outb_p(0x20, 0x21);
+	//设置IRQ8-IRQ15的中断向量为0x28-0x2f
+
+	outb_p(0x28, 0xa1);
+	//使从片PIC2连接到主片上
+	outb_p(0x04, 0x21);
+	outb_p(0x02, 0xa1);
+
+	//打开8086模式
+	outb_p(0x01, 0x21);
+	outb_p(0x01, 0xa1);
+
+	//关闭IRQ0-IRQ7的0x20-0x27中断
+	outb_p(0xff, 0x21);
+	//关闭IRQ8-IRQ15的0x28-0x2f中断
+	outb_p(0xff, 0xa1);
+}
+
+/*
  * addr_to_idt : 将32位物理地址转为IDT描述符
  *  - u16 selector : 选择子
  *  - u32 addr : 中断程序所在的物理地址
@@ -87,35 +116,6 @@ void install_idt()
 
 	//载入IDT中断描述符
 	load_idt(idtp);
-}
-
-/*
- * install_pic : 安装8259A中断控制器
- * return : void
- */
-void install_pic()
-{
-	//设置主8259A和从8259A
-	outb_p(0x11, 0x20);
-	outb_p(0x11, 0xa0);
-
-	//设置IRQ0-IRQ7的中断向量为0x20-0x27
-	outb_p(0x20, 0x21);
-	//设置IRQ8-IRQ15的中断向量为0x28-0x2f
-
-	outb_p(0x28, 0xa1);
-	//使从片PIC2连接到主片上
-	outb_p(0x04, 0x21);
-	outb_p(0x02, 0xa1);
-
-	//打开8086模式
-	outb_p(0x01, 0x21);
-	outb_p(0x01, 0xa1);
-
-	//关闭IRQ0-IRQ7的0x20-0x27中断
-	outb_p(0xff, 0x21);
-	//关闭IRQ8-IRQ15的0x28-0x2f中断
-	outb_p(0xff, 0xa1);
 }
 
 #endif

@@ -38,6 +38,14 @@ _int_default:
 
 //除零错
 _int_0x00:
+	cli
+	push	%ebp
+	mov		%esp, %ebp
+
+	call	int_div_error
+
+	leave
+	sti
 	iret
 
 _int_0x01:

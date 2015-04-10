@@ -13,31 +13,17 @@ int start_kernel(int argc, char **args)
 	//安装内存申请模块
 	install_alloc();
 
-	char *p = alloc_page(1);
-	printf("%x\n", p);
+	//安装8259A
+	install_pic();
 
-	char *p1 = alloc_mm(4);
-	printf("%x\n", p1);
+	//安装ISR中断服务程序
+	install_idt();
 
-	char *p2 = alloc_mm(4);
-	printf("%x\n", p2);
+	//开中断
+	sti();
 
-	free_mm(p2, 4);
-	free_mm(p1, 4);
-	free_page(p, 1);
-
-	p = alloc_page(1);
-	printf("%x\n", p);
-
-	p1 = alloc_mm(4);
-	printf("%x\n", p1);
-
-	p2 = alloc_mm(4);
-	printf("%x\n", p2);
-
-	free_mm(p2, 4);
-	free_mm(p1, 4);
-	free_page(p, 1);
+	int a = 1, b = 0, c;
+	c = a / b;
 
 	//永无休止的循环
 	for (;;)

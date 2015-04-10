@@ -12,9 +12,9 @@
 
 #include <kernel/sys_call.h>
 
-void int_div_error(u32 ip)
+void int_div_error()
 {
-	printf(0, "div error.\n");
+	printf("div error.\n");
 }
 
 #endif

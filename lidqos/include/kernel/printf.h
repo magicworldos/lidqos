@@ -16,6 +16,8 @@ void set_cursor(u16 x, u16 y);
 
 u16 get_cursor();
 
+void scroll_up(int row);
+
 void putascii(u16 x, u16 y, char ch);
 
 void putchar(char ch);
