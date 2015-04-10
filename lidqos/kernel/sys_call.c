@@ -12,9 +12,14 @@
 
 #include <kernel/sys_call.h>
 
+/*
+ * int_div_error : 除零错
+ * return : void
+ */
 void int_div_error()
 {
-	printf("div error.\n");
+	printf("Div error.\n");
+	hlt();
 }
 
 #endif

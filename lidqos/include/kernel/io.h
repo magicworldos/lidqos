@@ -22,6 +22,12 @@
 #define sti()	\
 	({__asm__ volatile("sti");})
 
+/*
+ * hlt
+ */
+#define hlt()	\
+	({__asm__ volatile("hlt");})
+
 
 /***
  * 载入gdt

@@ -9,12 +9,9 @@
 #define _SYS_CALL_H_
 
 #include <kernel/typedef.h>
+#include <kernel/io.h>
 #include <kernel/printf.h>
 
-/*
- * int_div_error : 除零错
- * return : void
- */
 void int_div_error();
 
 #endif

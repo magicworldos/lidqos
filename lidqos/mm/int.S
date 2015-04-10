@@ -42,6 +42,9 @@ _int_0x00:
 	push	%ebp
 	mov		%esp, %ebp
 
+	mov		0x4(%esp), %eax
+	sub		$0x28, %esp
+    movl	%eax, (%esp)
 	call	int_div_error
 
 	leave
