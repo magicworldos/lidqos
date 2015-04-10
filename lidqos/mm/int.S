@@ -38,15 +38,14 @@ _int_default:
 
 //除零错
 _int_0x00:
+	//关中断
 	cli
+	//C函数中参数和变量所用的栈
+	//暂时不用，但以后会慢慢用到
 	push	%ebp
 	mov		%esp, %ebp
-
-	mov		0x4(%esp), %eax
-	sub		$0x28, %esp
-    movl	%eax, (%esp)
+	//调用C函数来处理这个异常
 	call	int_div_error
-
 	leave
 	sti
 	iret

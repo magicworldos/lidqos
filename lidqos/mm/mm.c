@@ -57,25 +57,15 @@ void install_pic()
  */
 void addr_to_idt(u16 selector, u32 addr, s_idt *idt)
 {
+	//设置ISR地址的0-15位
 	idt->offset = addr;
+	//设置ISR选择子
 	idt->selector = selector;
+	//保留
 	idt->bbb_no_use = 0x00;
+	//P与DPL
 	idt->p_dpl_bbbbb = 0x8e;
-	idt->offset2 = addr >> 16;
-}
-
-/*
- * addr_to_idt_syscall : 将32位物理地址转为IDT描述符
- *  - u16 selector: 选择子
- *  - u32 addr: 系统中断程序所在的物理地址
- *  - s_idt *idt: 中断描述符
- */
-void addr_to_idt_syscall(u16 selector, u32 addr, s_idt *idt)
-{
-	idt->offset = addr;
-	idt->selector = selector;
-	idt->bbb_no_use = 0x00;
-	idt->p_dpl_bbbbb = 0xef;
+	//设置ISR地址的16-31位
 	idt->offset2 = addr >> 16;
 }
 

@@ -19,7 +19,7 @@ int start_kernel(int argc, char **args)
 	//安装ISR中断服务程序
 	install_idt();
 
-	//开中断
+	//开中断，在进入保护模式前已经关闭了中断这时需要将其打开
 	sti();
 
 	int a = 1, b = 0, c;
