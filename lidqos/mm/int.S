@@ -151,6 +151,14 @@ _int_0x1f:
 
 //时钟中断
 _int_0x20:
+	cli
+	pushal
+	pushfl
+	//调用时钟中断处理函数
+	call int_timer
+	popfl
+	popal
+	sti
 	iret
 
 //键盘中断

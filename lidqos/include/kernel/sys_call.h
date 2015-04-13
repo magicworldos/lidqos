@@ -14,4 +14,6 @@
 
 void int_div_error();
 
+void int_timer();
+
 #endif

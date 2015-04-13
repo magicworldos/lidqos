@@ -27,6 +27,9 @@
 //系统中断开始于
 #define ISR_SYSCALL_START		(ISR_COUNT + ISR_EMPTY)
 
+//时钟频率100hz
+#define TIMER_FREQUENCY				(100)
+
 /*
  * _int_default : 默认中断程序
  * return : void
@@ -59,5 +62,12 @@ void install_idt();
  * return : void
  */
 void install_pic();
+
+
+/*
+ * install_timer : 安装时钟中断
+ * return : void
+ */
+void install_timer();
 
 #endif

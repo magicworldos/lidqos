@@ -108,4 +108,22 @@ void install_idt()
 	load_idt(idtp);
 }
 
+/*
+ * install_timer : 安装时钟中断
+ * return : void
+ */
+void install_timer()
+{
+	//计算divisor
+	u32 divisor = 1193180 / TIMER_FREQUENCY;
+	//写入8253的控制寄存器
+	outb_p(0x36, 0x43);
+	//写入频率低8位到计数器0
+	outb_p(divisor & 0xff, 0x40);
+	//写入频率高8位到计数器0
+	outb_p(divisor >> 8, 0x40);
+	//打开PIC的时钟中断IRQ0
+	outb_p(inb_p(0x21) & 0xfe, 0x21);
+}
+
 #endif

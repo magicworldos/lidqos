@@ -22,4 +22,23 @@ void int_div_error()
 	hlt();
 }
 
+/*
+ * int_timer : 时钟中断
+ * return : void
+ */
+void int_timer()
+{
+	//一直循环
+	for (int i = 0;; ++i)
+	{
+		//一直在第1行的行首处显示
+		set_cursor(0, 1);
+		//显示i的值
+		printf("%d", i);
+	}
+
+	//通知PIC可以接受新中断
+	outb_p(0x20, 0x20);
+}
+
 #endif
