@@ -126,16 +126,4 @@ void install_timer()
 	outb_p(inb_p(0x21) & 0xfe, 0x21);
 }
 
-/*
- * install_kb : 安装键盘中断
- * return : void
- */
-void install_kb()
-{
-	//打开IRQ1的键盘中断
-	outb_p(inb_p(0x21) & 0xfd, 0x21);
-	//清除键盘状态可以接受新按键
-	outb_p(0x7f, 0x61);
-}
-
 #endif
