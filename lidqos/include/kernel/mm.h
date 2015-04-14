@@ -63,17 +63,10 @@ void install_idt();
  */
 void install_pic();
 
-
 /*
  * install_timer : 安装时钟中断
  * return : void
  */
 void install_timer();
-
-/*
- * install_kb : 安装键盘中断
- * return : void
- */
-void install_kb();
 
 #endif

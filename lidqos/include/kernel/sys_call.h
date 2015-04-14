@@ -10,13 +10,10 @@
 
 #include <kernel/typedef.h>
 #include <kernel/io.h>
-#include <kernel/key.h>
 #include <kernel/printf.h>
 
 void int_div_error();
 
 void int_timer();
-
-void int_keyboard();
 
 #endif
