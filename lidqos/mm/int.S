@@ -161,7 +161,16 @@ _int_0x20:
 	sti
 	iret
 
+//键盘中断
 _int_0x21:
+	cli
+	pushal
+	pushfl
+	//调用键盘中断处理函数
+	call int_keyboard
+	popfl
+	popal
+	sti
 	iret
 
 _int_0x22:

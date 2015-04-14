@@ -153,7 +153,8 @@ $(KERNEL)_elfs:		$(KERNEL)_objs
 		$(BUILD_PATH)/$(KERNEL)/printf.o		\
 		$(BUILD_PATH)/$(KERNEL)/alloc.o 		\
 		$(BUILD_PATH)/$(KERNEL)/mm.o			\
-		$(BUILD_PATH)/$(KERNEL)/int.o
+		$(BUILD_PATH)/$(KERNEL)/int.o			\
+		$(BUILD_PATH)/$(KERNEL)/key.o
 
 #内核程序的obj文件
 $(KERNEL)_objs:
@@ -163,6 +164,7 @@ $(KERNEL)_objs:
 	$(CC) $(GC_K_PARAMS) mm/alloc.c 					-o $(BUILD_PATH)/$(KERNEL)/alloc.o
 	$(CC) $(GC_K_PARAMS) mm/mm.c 						-o $(BUILD_PATH)/$(KERNEL)/mm.o
 	$(CC) $(GC_K_PARAMS) mm/int.S 						-o $(BUILD_PATH)/$(KERNEL)/int.o
+	$(CC) $(GC_K_PARAMS) mm/key.c 						-o $(BUILD_PATH)/$(KERNEL)/key.o
 	
 ##################################################################################################################
 
