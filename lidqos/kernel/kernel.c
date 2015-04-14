@@ -24,6 +24,9 @@ int start_kernel(int argc, char **args)
 	//安装时钟中断
 	install_timer();
 
+	//安装键盘中断
+	install_kb();
+
 	//开中断，在进入保护模式前已经关闭了中断这时需要将其打开
 	sti();
 

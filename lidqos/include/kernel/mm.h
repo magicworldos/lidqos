@@ -69,4 +69,10 @@ void install_pic();
  */
 void install_timer();
 
+/*
+ * install_kb : 安装键盘中断
+ * return : void
+ */
+void install_kb();
+
 #endif
