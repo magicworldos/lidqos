@@ -153,6 +153,7 @@ $(KERNEL)_elfs:		$(KERNEL)_objs
 		$(BUILD_PATH)/$(KERNEL)/printf.o		\
 		$(BUILD_PATH)/$(KERNEL)/alloc.o 		\
 		$(BUILD_PATH)/$(KERNEL)/mm.o			\
+		$(BUILD_PATH)/$(KERNEL)/key.o			\
 		$(BUILD_PATH)/$(KERNEL)/int.o
 
 #内核程序的obj文件
