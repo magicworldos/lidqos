@@ -19,7 +19,7 @@ typedef unsigned long long u64;
 #endif
 
 //GDT全局描述符表
-typedef struct gdt_s
+typedef struct
 {
 	union
 	{
@@ -47,7 +47,7 @@ typedef struct gdt_s
 } s_gdt;
 
 //GDT全局描述符
-typedef struct gdt_ptr
+typedef struct
 {
 	u16 gdt_lenth;
 	u16 gdt_addr;
@@ -55,7 +55,7 @@ typedef struct gdt_ptr
 } s_gdtp;
 
 //IDT全局描述符
-typedef struct idt_s
+typedef struct
 {
 	union
 	{
@@ -82,11 +82,37 @@ typedef struct idt_s
 } s_idt;
 
 //IDT全局描述符
-typedef struct idt_ptr
+typedef struct
 {
 	u16 idt_lenth;
 	u16 idt_addr;
 	u16 idt_addr2;
 } s_idtp;
+
+//tss数据结构
+typedef struct
+{
+	u32 back_link;
+	u32 esp0, ss0;
+	u32 esp1, ss1;
+	u32 esp2, ss2;
+	u32 cr3;
+	u32 eip;
+	u32 eflags;
+	u32 eax, ecx, edx, ebx;
+	u32 esp, ebp;
+	u32 esi, edi;
+	u32 es, cs, ss, ds, fs, gs;
+	u32 ldt;
+	u32 trace_bitmap;
+} s_tss;
+
+//tss多任务数据结构
+typedef struct s_pcb
+{
+	s_tss tss;
+	u64 ldt[2];
+	struct s_pcb* next;
+} s_pcb;
 
 #endif

@@ -9,7 +9,7 @@
 #include <boot/main.h>
 
 //全局描述符表个数
-#define GDT_MAX_SIZE (3)
+#define GDT_MAX_SIZE (0x10)
 
 //全局描述符表
 s_gdt gdts[GDT_MAX_SIZE];

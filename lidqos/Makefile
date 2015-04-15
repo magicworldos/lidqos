@@ -150,6 +150,7 @@ $(KERNEL)_S:		$(KERNEL)_elfs
 $(KERNEL)_elfs:		$(KERNEL)_objs
 	$(LD) $(LD_KERNEL_PARAMS) -o $(BUILD_PATH)/$(KERNEL)/$(KERNEL) -e start_kernel $(BUILD_PATH)/$(KERNEL)/$(KERNEL).o	\
 		$(BUILD_PATH)/$(KERNEL)/sys_call.o		\
+		$(BUILD_PATH)/$(KERNEL)/process.o		\
 		$(BUILD_PATH)/$(KERNEL)/printf.o		\
 		$(BUILD_PATH)/$(KERNEL)/alloc.o 		\
 		$(BUILD_PATH)/$(KERNEL)/mm.o			\
@@ -160,6 +161,7 @@ $(KERNEL)_elfs:		$(KERNEL)_objs
 $(KERNEL)_objs:
 	$(CC) $(GC_K_PARAMS) $(KERNEL)/$(KERNEL).c 			-o $(BUILD_PATH)/$(KERNEL)/$(KERNEL).o
 	$(CC) $(GC_K_PARAMS) $(KERNEL)/sys_call.c 			-o $(BUILD_PATH)/$(KERNEL)/sys_call.o
+	$(CC) $(GC_K_PARAMS) $(KERNEL)/process.c 			-o $(BUILD_PATH)/$(KERNEL)/process.o
 	$(CC) $(GC_K_PARAMS) printf/printf.c 				-o $(BUILD_PATH)/$(KERNEL)/printf.o
 	$(CC) $(GC_K_PARAMS) mm/alloc.c 					-o $(BUILD_PATH)/$(KERNEL)/alloc.o
 	$(CC) $(GC_K_PARAMS) mm/mm.c 						-o $(BUILD_PATH)/$(KERNEL)/mm.o

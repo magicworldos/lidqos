@@ -11,6 +11,7 @@
 #include <kernel/typedef.h>
 #include <kernel/io.h>
 #include <kernel/key.h>
+#include <kernel/process.h>
 #include <kernel/printf.h>
 
 void int_div_error();

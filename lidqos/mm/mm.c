@@ -14,10 +14,98 @@
 #include <kernel/mm.h>
 #include <kernel/printf.h>
 
+//GDT全局描述符
+s_gdt gdts[GDT_MAX_SIZE];
+//GDT全局描述符
+s_gdtp gdtp;
 //IDT全局描述符
 s_idt idts[IDT_MAX_SIZE];
 //IDT全局描述符
 s_idtp idtp;
+
+/*
+ * install_gdt : 安装GDT全局描述符
+ * return : void
+ */
+void install_gdt()
+{
+	//+0x0
+	gdts[0].gdt = 0x0;
+	gdts[0].gdt2 = 0x0;
+
+	//+0x8
+	//设置kernel的全局描述符
+	u32 kernel_addr = 0x0;
+	addr_to_gdt(kernel_addr, &gdts[1], GDT_TYPE_CS);
+
+	//+0x10
+	//设置kernel data的全局描述符
+	u32 kernel_data = 0x0;
+	addr_to_gdt(kernel_addr, &gdts[2], GDT_TYPE_DS);
+
+	//设置gdt描述符
+	gdtp.gdt_lenth = sizeof(s_gdt) * GDT_MAX_SIZE - 1;
+	gdtp.gdt_addr2 = (0x0 + (u32) gdts) >> 16;
+	gdtp.gdt_addr = (u32) (0x0 + gdts) & 0xffff;
+
+	//载入GDT全局描述符
+	load_gdt(gdtp);
+}
+
+/*
+ * addr_to_gdt : 将32位物理地址转为gdt描述符
+ *  - u32 addr: 物理地址
+ *  - s_gdt *gdt: GDT描述符
+ *  -u8 cs_ds: 0为cs 1为ds
+ *  return : void
+ */
+void addr_to_gdt(u32 addr, s_gdt *gdt, u8 cs_ds_tss_ldt)
+{
+	//代码段
+	if (cs_ds_tss_ldt == GDT_TYPE_CS)
+	{
+		gdt->limit = 0xffff;
+		gdt->baseaddr = addr & 0xffff;
+		gdt->baseaddr2 = (addr >> 16) & 0xff;
+
+		gdt->p_dpl_type_a = 0x9a;
+
+		gdt->uxdg_limit2 = 0xcf;
+		gdt->baseaddr3 = (addr >> 24) & 0xff;
+	}
+	//数据段
+	else if (cs_ds_tss_ldt == GDT_TYPE_DS)
+	{
+		gdt->limit = 0xffff;
+		gdt->baseaddr = addr & 0xffff;
+		gdt->baseaddr2 = (addr >> 16) & 0xff;
+
+		gdt->p_dpl_type_a = 0x92;
+
+		gdt->uxdg_limit2 = 0xcf;
+		gdt->baseaddr3 = (addr >> 24) & 0xff;
+	}
+	//tss任务段
+	else if (cs_ds_tss_ldt == GDT_TYPE_TSS)
+	{
+		gdt->gdt = 0x00000068;
+		gdt->gdt2 = 0x00808900;
+
+		gdt->gdt |= ((addr & 0xffff) << 16);
+		gdt->gdt2 |= ((addr & 0x00ff0000) >> 16);
+		gdt->gdt2 |= (addr & 0xff000000);
+	}
+	//ldt局部描述符段
+	else if (cs_ds_tss_ldt == GDT_TYPE_LDT)
+	{
+		gdt->gdt = 0x0000000f;
+		gdt->gdt2 = 0x00808200;
+
+		gdt->gdt |= ((addr & 0xffff) << 16);
+		gdt->gdt2 |= ((addr & 0x00ff0000) >> 16);
+		gdt->gdt2 |= (addr & 0xff000000);
+	}
+}
 
 /*
  * install_pic : 安装8259A中断控制器

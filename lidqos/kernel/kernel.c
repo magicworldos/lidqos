@@ -18,6 +18,9 @@ int start_kernel(int argc, char **args)
 	//安装8259A
 	install_pic();
 
+	//安装GDT全局描述符
+	install_gdt();
+
 	//安装ISR中断服务程序
 	install_idt();
 
@@ -26,6 +29,9 @@ int start_kernel(int argc, char **args)
 
 	//安装键盘中断
 	install_kb();
+
+	//安装多任务
+	install_process();
 
 	//开中断，在进入保护模式前已经关闭了中断这时需要将其打开
 	sti();

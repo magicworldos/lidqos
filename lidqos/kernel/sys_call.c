@@ -16,8 +16,6 @@
 extern u8 keys[0x53][2];
 //shift键按下状态
 u8 kb_key_shift = 0;
-//时钟中断时显示字符起始ascii
-int i = 32;
 
 /*
  * int_div_error : 除零错
@@ -35,15 +33,11 @@ void int_div_error()
  */
 void int_timer()
 {
-	char *p = (char *) 0xb8000;
-	p += ((23 * 80 + 77)) * 2;
-	*p = i;
-	if (++i >= 127)
-	{
-		i = 32;
-	}
 	//通知PIC可以接受新中断
 	outb_p(0x20, 0x20);
+
+	//任务调度算法
+	schedule();
 }
 
 /*

@@ -45,6 +45,27 @@
 		__asm__ volatile("lidt  %0"::"m"(idtp));	\
 	})
 
+/*
+ * struct gdt_s
+ */
+#define load_tss(tss_index)	\
+	({	\
+		__asm__ volatile("ltrw	%%ax"::"a"(tss_index));	\
+	})
+
+/*
+ * struct idt_s
+ */
+#define load_ldt(ldt_index)	\
+	({	\
+		__asm__ volatile("lldt	%%ax"::"a"(ldt_index));	\
+	})
+
+#define call_tss()	\
+	({	\
+		__asm__ volatile("call $0x18, $0");	\
+	})
+
 /***
  * 向端口写一个字节
  */
