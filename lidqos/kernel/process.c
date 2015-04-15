@@ -18,13 +18,6 @@ s_pcb *pcb_B = NULL;
 
 int timer = 0;
 
-void load_tss_ldt()
-{
-	//载入tss和ldt
-	load_tss(GDT_INDEX_TSS);
-	load_ldt(GDT_INDEX_LDT);
-}
-
 void run_A()
 {
 	char *p = (char *) 0xb8000;
@@ -61,14 +54,6 @@ void run_B()
  */
 void install_process()
 {
-	s_pcb *pcb = alloc_mm(sizeof(s_pcb));
-	pcb->tss.eip = 0;
-	pcb->tss.esp = 0;
-	pcb->tss.esp0 = 0;
-	//设置多任务的gdt描述符
-	addr_to_gdt((u32) &(pcb->tss), &gdts[3], GDT_TYPE_TSS);
-	addr_to_gdt((u32) (pcb->ldt), &gdts[4], GDT_TYPE_LDT);
-
 	pcb_A = alloc_mm(sizeof(s_pcb));
 	init_process(pcb_A);
 	pcb_A->tss.eip = (u32) &run_A;

@@ -13,8 +13,6 @@
 #include <kernel/mm.h>
 #include <kernel/io.h>
 
-void load_tss_ldt();
-
 void run_A();
 
 void run_B();
