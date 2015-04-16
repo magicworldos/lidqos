@@ -41,7 +41,6 @@ _int_0x00:
 	//关中断
 	cli
 	//C函数中参数和变量所用的栈
-	//暂时不用，但以后会慢慢用到
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
@@ -67,6 +66,15 @@ _int_0x05:
 
 //无效操作码
 _int_0x06:
+	//关中断
+	cli
+	//C函数中参数和变量所用的栈
+	push	%ebp
+	mov		%esp, %ebp
+	//调用C函数来处理这个异常
+	call	int_invalid_opcode
+	leave
+	sti
 	iret
 
 //没有浮点运算器
@@ -74,22 +82,56 @@ _int_0x07:
 	iret
 
 _int_0x08:
+	cli
+	push	%ebp
+	mov		%esp, %ebp
+	call int_8
+	leave
+	sti
+	iret
 	iret
 
 _int_0x09:
 	iret
 
 _int_0x0a:
+	cli
+	push	%ebp
+	mov		%esp, %ebp
+	call int_A
+	leave
+	sti
+	iret
 	iret
 
 _int_0x0b:
+	cli
+	push	%ebp
+	mov		%esp, %ebp
+	call int_B
+	leave
+	sti
+	iret
 	iret
 
 _int_0x0c:
+	cli
+	push	%ebp
+	mov		%esp, %ebp
+	call int_C
+	leave
+	sti
+	iret
 	iret
 
 //一般保护错误
 _int_0x0d:
+	cli
+	push	%ebp
+	mov		%esp, %ebp
+	call int_protection_error
+	leave
+	sti
 	iret
 
 _int_0x0e:
@@ -219,7 +261,9 @@ _int_0x80:
 	cli
 	push	%ebp
 	mov 	%esp, %ebp
-
+	//sub		$0x4, %esp
+    //movl	%eax, (%esp)
+	call	int_0x80
 	leave
 	sti
 	iret

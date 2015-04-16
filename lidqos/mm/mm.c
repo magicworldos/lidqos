@@ -29,19 +29,22 @@ s_idtp idtp;
  */
 void install_gdt()
 {
-	//+0x0
+	// 0x0
 	gdts[0].gdt = 0x0;
 	gdts[0].gdt2 = 0x0;
+	// 0x8
+	gdts[1].gdt = 0x0;
+	gdts[1].gdt2 = 0x0;
 
-	//+0x8
+	// 0x10
 	//设置kernel的全局描述符
 	u32 kernel_addr = 0x0;
-	addr_to_gdt(kernel_addr, &gdts[1], GDT_TYPE_CS);
+	addr_to_gdt_or_ldt(kernel_addr, &gdts[2], GDT_TYPE_CS);
 
-	//+0x10
+	// 0x18
 	//设置kernel data的全局描述符
 	u32 kernel_data = 0x0;
-	addr_to_gdt(kernel_addr, &gdts[2], GDT_TYPE_DS);
+	addr_to_gdt_or_ldt(kernel_addr, &gdts[3], GDT_TYPE_DS);
 
 	//设置gdt描述符
 	gdtp.gdt_lenth = sizeof(s_gdt) * GDT_MAX_SIZE - 1;
@@ -50,6 +53,13 @@ void install_gdt()
 
 	//载入GDT全局描述符
 	load_gdt(gdtp);
+
+	//设置数据寄存器的GDT选择子
+	set_ds(GDT_INDEX_KERNEL_DS);
+	set_es(GDT_INDEX_KERNEL_DS);
+	set_ss(GDT_INDEX_KERNEL_DS);
+	set_fs(GDT_INDEX_KERNEL_DS);
+	set_gs(GDT_INDEX_KERNEL_DS);
 }
 
 /*
@@ -59,10 +69,10 @@ void install_gdt()
  *  -u8 cs_ds: 0为cs 1为ds
  *  return : void
  */
-void addr_to_gdt(u32 addr, s_gdt *gdt, u8 cs_ds_tss_ldt)
+void addr_to_gdt_or_ldt(u32 addr, s_gdt *gdt, u8 cs_ds_lcs_lds_tss_ldt)
 {
 	//代码段
-	if (cs_ds_tss_ldt == GDT_TYPE_CS)
+	if (cs_ds_lcs_lds_tss_ldt == GDT_TYPE_CS)
 	{
 		gdt->limit = 0xffff;
 		gdt->baseaddr = addr & 0xffff;
@@ -74,7 +84,7 @@ void addr_to_gdt(u32 addr, s_gdt *gdt, u8 cs_ds_tss_ldt)
 		gdt->baseaddr3 = (addr >> 24) & 0xff;
 	}
 	//数据段
-	else if (cs_ds_tss_ldt == GDT_TYPE_DS)
+	else if (cs_ds_lcs_lds_tss_ldt == GDT_TYPE_DS)
 	{
 		gdt->limit = 0xffff;
 		gdt->baseaddr = addr & 0xffff;
@@ -86,7 +96,7 @@ void addr_to_gdt(u32 addr, s_gdt *gdt, u8 cs_ds_tss_ldt)
 		gdt->baseaddr3 = (addr >> 24) & 0xff;
 	}
 	//tss任务段
-	else if (cs_ds_tss_ldt == GDT_TYPE_TSS)
+	else if (cs_ds_lcs_lds_tss_ldt == GDT_TYPE_TSS)
 	{
 		gdt->gdt = 0x00000068;
 		gdt->gdt2 = 0x00808900;
@@ -96,7 +106,7 @@ void addr_to_gdt(u32 addr, s_gdt *gdt, u8 cs_ds_tss_ldt)
 		gdt->gdt2 |= (addr & 0xff000000);
 	}
 	//ldt局部描述符段
-	else if (cs_ds_tss_ldt == GDT_TYPE_LDT)
+	else if (cs_ds_lcs_lds_tss_ldt == GDT_TYPE_LDT)
 	{
 		gdt->gdt = 0x0000000f;
 		gdt->gdt2 = 0x00808200;
@@ -104,6 +114,30 @@ void addr_to_gdt(u32 addr, s_gdt *gdt, u8 cs_ds_tss_ldt)
 		gdt->gdt |= ((addr & 0xffff) << 16);
 		gdt->gdt2 |= ((addr & 0x00ff0000) >> 16);
 		gdt->gdt2 |= (addr & 0xff000000);
+	}
+	//代码段
+	else if (cs_ds_lcs_lds_tss_ldt == LDT_TYPE_CS)
+	{
+		gdt->limit = 0xffff;
+		gdt->baseaddr = addr & 0xffff;
+		gdt->baseaddr2 = (addr >> 16) & 0xff;
+
+		gdt->p_dpl_type_a = 0xfa;
+
+		gdt->uxdg_limit2 = 0xcf;
+		gdt->baseaddr3 = (addr >> 24) & 0xff;
+	}
+	//数据段
+	else if (cs_ds_lcs_lds_tss_ldt == LDT_TYPE_DS)
+	{
+		gdt->limit = 0xffff;
+		gdt->baseaddr = addr & 0xffff;
+		gdt->baseaddr2 = (addr >> 16) & 0xff;
+
+		gdt->p_dpl_type_a = 0xf2;
+
+		gdt->uxdg_limit2 = 0xcf;
+		gdt->baseaddr3 = (addr >> 24) & 0xff;
 	}
 }
 
@@ -170,21 +204,21 @@ void install_idt()
 	addr = (u32) &_int_default;
 	for (int i = 0; i < IDT_MAX_SIZE; i++)
 	{
-		addr_to_idt(DT_INDEX_KERNEL_CS, addr, &idts[i]);
+		addr_to_idt(GDT_INDEX_KERNEL_CS, addr, &idts[i]);
 	}
 
 	//设置0x0 ~ 0x2f的中断程序
 	for (int i = 0; i < ISR_COUNT; i++)
 	{
 		addr = (u32) _isr[i];
-		addr_to_idt(DT_INDEX_KERNEL_CS, addr, &idts[i]);
+		addr_to_idt(GDT_INDEX_KERNEL_CS, addr, &idts[i]);
 	}
 
 	//从0x80开始为系统中断
 	for (int i = ISR_SYSCALL_START; i < ISR_SYSCALL_START + ISR_SYSCALL_COUNT; i++)
 	{
 		addr = (u32) _isr[i - ISR_EMPTY];
-		addr_to_idt(DT_INDEX_KERNEL_CS, addr, &idts[i]);
+		addr_to_idt(GDT_INDEX_KERNEL_CS, addr, &idts[i]);
 	}
 
 	//设置IDT中断描述符
@@ -224,6 +258,23 @@ void install_kb()
 	outb_p(inb_p(0x21) & 0xfd, 0x21);
 	//清除键盘状态可以接受新按键
 	outb_p(0x7f, 0x61);
+}
+
+/*
+ * mmcopy : 复制内存区域
+ *  - void *from : 源地址
+ *  - void *to : 目的地址
+ *  - u32 n : 复制大小
+ * return : void
+ */
+void mmcopy(void *from, void *to, u32 n)
+{
+	u8 *t = (u8 *) to;
+	u8 *f = (u8 *) from;
+	for (u32 i = 0; i < n; i++)
+	{
+		*(t + i) = *(f + i);
+	}
 }
 
 #endif

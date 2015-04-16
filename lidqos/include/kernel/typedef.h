@@ -111,7 +111,11 @@ typedef struct
 typedef struct s_pcb
 {
 	s_tss tss;
-	u64 ldt[2];
+	u64 ldt[4];
+	void *run_addr;
+	void *ds_addr;
+	void *stack;
+	void *stack0;
 	struct s_pcb* next;
 } s_pcb;
 

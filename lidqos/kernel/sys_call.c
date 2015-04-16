@@ -17,6 +17,8 @@ extern u8 keys[0x53][2];
 //shift键按下状态
 u8 kb_key_shift = 0;
 
+int temp = 0;
+
 /*
  * int_div_error : 除零错
  * return : void
@@ -24,6 +26,52 @@ u8 kb_key_shift = 0;
 void int_div_error()
 {
 	printf("Div error.\n");
+	hlt();
+}
+
+/*
+ * int_invalid_opcode : 无效操作码
+ *  - u32 ip : 当前运行程序的IP寄存器地址
+ * return : void
+ */
+void int_invalid_opcode()
+{
+	printf("Invalid opcode.\n");
+	hlt();
+}
+
+/*
+ * int_protection_error : 一般保护错误
+ *  - u32 ip : 当前运行程序的IP寄存器地址
+ * return : void
+ */
+void int_protection_error()
+{
+	printf("Protection error.\n");
+	hlt();
+}
+
+void int_8()
+{
+	printf("int_8.\n");
+	hlt();
+}
+
+void int_A()
+{
+	printf("int_A.\n");
+	hlt();
+}
+
+void int_B()
+{
+	printf("int_B.\n");
+	hlt();
+}
+
+void int_C()
+{
+	printf("int_C.\n");
 	hlt();
 }
 
@@ -71,6 +119,13 @@ void int_keyboard()
 	outb_p(scan_code & 0x7f, 0x61);
 	//通知PIC1可以接受新中断
 	outb_p(0x20, 0x20);
+}
+
+void int_0x80()
+{
+	//printf("%x\n", temp++);
+	putchar('B');
+	hlt();
 }
 
 #endif

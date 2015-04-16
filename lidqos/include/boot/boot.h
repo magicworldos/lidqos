@@ -30,7 +30,7 @@
 #define _KERNEL_SIZE 0x80000
 
 //定义内核地址为0的全局描述符的选择子
-#define _GDT_IND_KERNEL 0x8
-#define _GDT_IND_KERNEL_DATA 0x10
+#define _GDT_IND_KERNEL 0x10
+#define _GDT_IND_KERNEL_DATA 0x18
 
 #endif

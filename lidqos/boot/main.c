@@ -79,14 +79,17 @@ void set_gdt()
 	//默认空描述符0x0
 	gdts[0].gdt = 0x0;
 	gdts[0].gdt2 = 0x0;
+	//0x8
+	gdts[1].gdt = 0x0;
+	gdts[1].gdt2 = 0x0;
 
-	//设置kernel的全局描述符0x8
+	//设置kernel的全局描述符0x10
 	addr = 0x0;
-	addr_to_gdt(addr, &gdts[1], 0);
+	addr_to_gdt(addr, &gdts[2], 0);
 
-	//设置kernel data的全局描述符0x10
+	//设置kernel data的全局描述符0x18
 	addr = 0x0;
-	addr_to_gdt(addr, &gdts[2], 1);
+	addr_to_gdt(addr, &gdts[3], 1);
 
 	//设置gdt描述符
 	//gdt总数-1

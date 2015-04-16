@@ -16,14 +16,15 @@
 #define IDT_MAX_SIZE (0xff)
 
 //内核代码选择子
-#define DT_INDEX_KERNEL_CS		(0x8)
+#define GDT_INDEX_KERNEL_CS		(0x10)
 //内核数据选择子
-#define GDT_INDEX_KERNEL_DS		(0x10)
+#define GDT_INDEX_KERNEL_DS		(0x18)
 
 //ldt代码段选择子
 #define USER_CODE_SEL			0x07
 //ldt数据段选择子
 #define USER_DATA_SEL			0x0f
+#define USER_DATA_SEL2			0x1f
 
 //默认ldt代码段
 #define DEFAULT_LDT_CODE        0x00cffa000000ffffULL
@@ -50,11 +51,15 @@
 #define GDT_TYPE_TSS			(2)
 //GDT类型LDT段
 #define GDT_TYPE_LDT			(3)
+//LDT类型代码段
+#define LDT_TYPE_CS				(4)
+//LDT类型数据段
+#define LDT_TYPE_DS				(5)
 
 //tts的全局选择子
-#define GDT_INDEX_TSS			0x18
+#define GDT_INDEX_TSS			0x20
 //ldt的全局选择子
-#define	GDT_INDEX_LDT			0x20
+#define	GDT_INDEX_LDT			0x28
 
 /*
  * install_gdt : 安装GDT全局描述符
@@ -69,7 +74,7 @@ void install_gdt();
  *  -u8 cs_ds: 0为cs 1为ds
  *  return : void
  */
-void addr_to_gdt(u32 addr, s_gdt *gdt, u8 cs_ds);
+void addr_to_gdt_or_ldt(u32 addr, s_gdt *gdt, u8 cs_ds);
 
 /*
  * _int_default : 默认中断程序
@@ -115,5 +120,7 @@ void install_timer();
  * return : void
  */
 void install_kb();
+
+void mmcopy(void *from, void *to, u32 n);
 
 #endif

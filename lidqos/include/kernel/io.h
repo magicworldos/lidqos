@@ -63,8 +63,33 @@
 
 #define call_tss()	\
 	({	\
-		__asm__ volatile("call $0x18, $0");	\
+		__asm__ volatile("call $0x20, $0");	\
 	})
+
+static inline void set_ds(u16 gdt_ind)
+{
+	__asm__ volatile("movw	%%ax, %%ds" :: "a"(gdt_ind));
+}
+
+static inline void set_es(u16 gdt_ind)
+{
+	__asm__ volatile("movw	%%ax, %%es" :: "a"(gdt_ind));
+}
+
+static inline void set_ss(u16 gdt_ind)
+{
+	__asm__ volatile("movw	%%ax, %%ss" :: "a"(gdt_ind));
+}
+
+static inline void set_fs(u16 gdt_ind)
+{
+	__asm__ volatile("movw	%%ax, %%fs" :: "a"(gdt_ind));
+}
+
+static inline void set_gs(u16 gdt_ind)
+{
+	__asm__ volatile("movw	%%ax, %%gs" :: "a"(gdt_ind));
+}
 
 /***
  * 向端口写一个字节

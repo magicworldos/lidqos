@@ -16,8 +16,14 @@
 
 void int_div_error();
 
+void int_invalid_opcode();
+
+void int_protection_error();
+
 void int_timer();
 
 void int_keyboard();
+
+void int_0x80();
 
 #endif
