@@ -118,25 +118,25 @@ void addr_to_gdt_or_ldt(u32 addr, s_gdt *gdt, u8 cs_ds_lcs_lds_tss_ldt)
 	//代码段
 	else if (cs_ds_lcs_lds_tss_ldt == LDT_TYPE_CS)
 	{
-		gdt->limit = 0xffff;
+		gdt->limit = 0x0800;
 		gdt->baseaddr = addr & 0xffff;
 		gdt->baseaddr2 = (addr >> 16) & 0xff;
 
 		gdt->p_dpl_type_a = 0xfa;
 
-		gdt->uxdg_limit2 = 0xcf;
+		gdt->uxdg_limit2 = 0x40;
 		gdt->baseaddr3 = (addr >> 24) & 0xff;
 	}
 	//数据段
 	else if (cs_ds_lcs_lds_tss_ldt == LDT_TYPE_DS)
 	{
-		gdt->limit = 0xffff;
+		gdt->limit = 0x0800;
 		gdt->baseaddr = addr & 0xffff;
 		gdt->baseaddr2 = (addr >> 16) & 0xff;
 
 		gdt->p_dpl_type_a = 0xf2;
 
-		gdt->uxdg_limit2 = 0xcf;
+		gdt->uxdg_limit2 = 0xc0;
 		gdt->baseaddr3 = (addr >> 24) & 0xff;
 	}
 }
@@ -192,6 +192,21 @@ void addr_to_idt(u16 selector, u32 addr, s_idt *idt)
 }
 
 /*
+ * addr_to_idt_syscall : 将32位物理地址转为IDT描述符
+ *  - u16 selector: 选择子
+ *  - u32 addr: 系统中断程序所在的物理地址
+ *  - s_idt *idt: 中断描述符
+ */
+void addr_to_idt_syscall(u16 selector, u32 addr, s_idt *idt)
+{
+	idt->offset = addr;
+	idt->selector = selector;
+	idt->bbb_no_use = 0x00;
+	idt->p_dpl_bbbbb = 0xef;
+	idt->offset2 = addr >> 16;
+}
+
+/*
  * install_idt : 安装IDT全局描述符
  * return : void
  */
@@ -218,7 +233,7 @@ void install_idt()
 	for (int i = ISR_SYSCALL_START; i < ISR_SYSCALL_START + ISR_SYSCALL_COUNT; i++)
 	{
 		addr = (u32) _isr[i - ISR_EMPTY];
-		addr_to_idt(GDT_INDEX_KERNEL_CS, addr, &idts[i]);
+		addr_to_idt_syscall(GDT_INDEX_KERNEL_CS, addr, &idts[i]);
 	}
 
 	//设置IDT中断描述符

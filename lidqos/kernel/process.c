@@ -17,7 +17,12 @@ s_pcb *pcb_A = NULL;
 s_pcb *pcb_B = NULL;
 
 int timer = 0;
-
+void run()
+{
+	while (1)
+	{
+	}
+}
 void run_A()
 {
 //	int i = 0;
@@ -31,8 +36,8 @@ void run_A()
 //			"movw %ax, %ds			\n\r"
 //	);
 //	}
+//	__asm__ volatile("hlt");
 
-//__asm__ volatile("int $0x80");
 	while (1)
 	{
 		__asm__ volatile("int $0x80");
@@ -52,16 +57,20 @@ void run_A()
 
 void run_B()
 {
-	char *p = (char *) 0xb8000;
-	p += ((23 * 80 + 76)) * 2;
-	int i = 64;
+//	char *p = (char *) 0xb8000;
+//	p += ((23 * 80 + 76)) * 2;
+//	int i = 64;
+//	while (1)
+//	{
+//		*p = i;
+//		if (++i >= 127)
+//		{
+//			i = 33;
+//		}
+//	}
 	while (1)
 	{
-		*p = i;
-		if (++i >= 127)
-		{
-			i = 33;
-		}
+		__asm__ volatile("int $0x81");
 	}
 }
 
@@ -77,17 +86,17 @@ void install_process()
 	pcb_A->ds_addr = alloc_mm(0x800);
 	pcb_A->stack = alloc_mm(0x800);
 	pcb_A->stack0 = alloc_mm(0x800);
-	pcb_A->tss.eip = (u32) pcb_A->run_addr;
-	pcb_A->tss.esp = (u32) pcb_A->stack + 0x800;
+	pcb_A->tss.eip = 0x0;
+	pcb_A->tss.esp = 0x800;
 	pcb_A->tss.esp0 = (u32) pcb_A->stack0 + 0x800;
-//	addr_to_gdt_or_ldt((u32) pcb_A->run_addr, (s_gdt*) &(pcb_A->ldt[0]), LDT_TYPE_CS);
-//	addr_to_gdt_or_ldt((u32) pcb_A->stack, (s_gdt*) &(pcb_A->ldt[1]), LDT_TYPE_DS);
-//	addr_to_gdt_or_ldt((u32) 0, (s_gdt*) &(pcb_A->ldt[2]), LDT_TYPE_DS);
-//	addr_to_gdt_or_ldt((u32) 0, (s_gdt*) &(pcb_A->ldt[3]), LDT_TYPE_DS);
-	pcb_A->ldt[0] = DEFAULT_LDT_CODE;
-	pcb_A->ldt[1] = DEFAULT_LDT_DATA;
-	pcb_A->ldt[2] = DEFAULT_LDT_DATA;
-	pcb_A->ldt[3] = DEFAULT_LDT_DATA;
+	addr_to_gdt_or_ldt((u32) pcb_A->run_addr, (s_gdt*) &(pcb_A->ldt[0]), LDT_TYPE_CS);
+	addr_to_gdt_or_ldt((u32) pcb_A->stack, (s_gdt*) &(pcb_A->ldt[1]), LDT_TYPE_DS);
+	addr_to_gdt_or_ldt((u32) 0, (s_gdt*) &(pcb_A->ldt[2]), LDT_TYPE_DS);
+	addr_to_gdt_or_ldt((u32) 0, (s_gdt*) &(pcb_A->ldt[3]), LDT_TYPE_DS);
+//	pcb_A->ldt[0] = DEFAULT_LDT_CODE;
+//	pcb_A->ldt[1] = DEFAULT_LDT_DATA;
+//	pcb_A->ldt[2] = DEFAULT_LDT_DATA;
+//	pcb_A->ldt[3] = DEFAULT_LDT_DATA;
 	mmcopy(&run_A, pcb_A->run_addr, 0x800);
 
 	pcb_B = alloc_mm(sizeof(s_pcb));
@@ -96,13 +105,17 @@ void install_process()
 	pcb_B->ds_addr = alloc_mm(0x800);
 	pcb_B->stack = alloc_mm(0x800);
 	pcb_B->stack0 = alloc_mm(0x800);
-	pcb_B->tss.eip = (u32) pcb_B->run_addr;
-	pcb_B->tss.esp = (u32) pcb_B->stack + 0x800;
+	pcb_B->tss.eip = 0x0;
+	pcb_B->tss.esp = 0x800;
 	pcb_B->tss.esp0 = (u32) pcb_B->stack0 + 0x800;
-	pcb_B->ldt[0] = DEFAULT_LDT_CODE;
-	pcb_B->ldt[1] = DEFAULT_LDT_DATA;
-	pcb_B->ldt[2] = DEFAULT_LDT_DATA;
-	pcb_B->ldt[3] = DEFAULT_LDT_DATA;
+	addr_to_gdt_or_ldt((u32) pcb_B->run_addr, (s_gdt*) &(pcb_B->ldt[0]), LDT_TYPE_CS);
+	addr_to_gdt_or_ldt((u32) pcb_B->stack, (s_gdt*) &(pcb_B->ldt[1]), LDT_TYPE_DS);
+	addr_to_gdt_or_ldt((u32) 0, (s_gdt*) &(pcb_B->ldt[2]), LDT_TYPE_DS);
+	addr_to_gdt_or_ldt((u32) 0, (s_gdt*) &(pcb_B->ldt[3]), LDT_TYPE_DS);
+//	pcb_B->ldt[0] = DEFAULT_LDT_CODE;
+//	pcb_B->ldt[1] = DEFAULT_LDT_DATA;
+//	pcb_B->ldt[2] = DEFAULT_LDT_DATA;
+//	pcb_B->ldt[3] = DEFAULT_LDT_DATA;
 	mmcopy(&run_B, pcb_B->run_addr, 0x800);
 
 	s_pcb *pcb = alloc_mm(sizeof(s_pcb));
@@ -178,7 +191,12 @@ void schedule()
 	addr_to_gdt_or_ldt((u32) &(pcb->ldt[0]), &gdts[5], GDT_TYPE_LDT);
 	//load_ldt(GDT_INDEX_LDT);
 
-	call_tss();
+//	call_tss();
+//	__asm__(
+//			"movw $0x17, %ax		\n\r"
+//			"movw %ax, %ds			\n\r"
+//	);
+	__asm__ volatile("ljmp $0x20, $0");
 }
 
 #endif

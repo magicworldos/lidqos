@@ -123,9 +123,12 @@ void int_keyboard()
 
 void int_0x80()
 {
-	//printf("%x\n", temp++);
-	putchar('B');
-	hlt();
+	printf("%x\n", temp++);
+}
+
+void int_0x81()
+{
+	printf("aaaaaaa\n");
 }
 
 #endif

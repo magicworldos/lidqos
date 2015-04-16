@@ -272,7 +272,9 @@ _int_0x81:
 	cli
 	push	%ebp
 	mov 	%esp, %ebp
-
+	//sub		$0x4, %esp
+    //movl	%eax, (%esp)
+	call	int_0x81
 	leave
 	sti
 	iret

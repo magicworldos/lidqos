@@ -98,6 +98,14 @@ extern void (*_isr[ISR_COUNT])(void);
 void addr_to_idt(u16 selector, u32 addr, s_idt *idt);
 
 /*
+ * addr_to_idt_syscall : 将32位物理地址转为IDT描述符
+ *  - u16 selector: 选择子
+ *  - u32 addr: 系统中断程序所在的物理地址
+ *  - s_idt *idt: 中断描述符
+ */
+void addr_to_idt_syscall(u16 selector, u32 addr, s_idt *idt);
+
+/*
  * install_idt : 安装IDT全局描述符
  * return : void
  */
