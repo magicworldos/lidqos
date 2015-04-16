@@ -122,7 +122,6 @@ _int_0x0c:
 	leave
 	sti
 	iret
-	iret
 
 //一般保护错误
 _int_0x0d:
@@ -193,26 +192,26 @@ _int_0x1f:
 
 //时钟中断
 _int_0x20:
-	cli
 	pushal
 	pushfl
+	cli
 	//调用时钟中断处理函数
 	call int_timer
+	sti
 	popfl
 	popal
-	sti
 	iret
 
 //键盘中断
 _int_0x21:
-	cli
 	pushal
 	pushfl
+	cli
 	//调用键盘中断处理函数
 	call int_keyboard
+	sti
 	popfl
 	popal
-	sti
 	iret
 
 _int_0x22:
@@ -258,25 +257,35 @@ _int_0x2f:
 	iret
 
 _int_0x80:
+	pushal
 	cli
+	movw $0x18, %ax
+	movw %ax, %ds
 	push	%ebp
 	mov 	%esp, %ebp
 	//sub		$0x4, %esp
     //movl	%eax, (%esp)
 	call	int_0x80
+
 	leave
 	sti
+	popal
 	iret
 
 _int_0x81:
+	pushal
 	cli
+	movw $0x18, %ax
+	movw %ax, %ds
 	push	%ebp
 	mov 	%esp, %ebp
 	//sub		$0x4, %esp
     //movl	%eax, (%esp)
 	call	int_0x81
+
 	leave
 	sti
+	popal
 	iret
 
 _int_0x82:

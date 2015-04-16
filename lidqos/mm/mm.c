@@ -118,25 +118,25 @@ void addr_to_gdt_or_ldt(u32 addr, s_gdt *gdt, u8 cs_ds_lcs_lds_tss_ldt)
 	//代码段
 	else if (cs_ds_lcs_lds_tss_ldt == LDT_TYPE_CS)
 	{
-		gdt->limit = 0x0800;
+		gdt->limit = 0xffff;
 		gdt->baseaddr = addr & 0xffff;
 		gdt->baseaddr2 = (addr >> 16) & 0xff;
 
 		gdt->p_dpl_type_a = 0xfa;
 
-		gdt->uxdg_limit2 = 0x40;
+		gdt->uxdg_limit2 = 0xcf;
 		gdt->baseaddr3 = (addr >> 24) & 0xff;
 	}
 	//数据段
 	else if (cs_ds_lcs_lds_tss_ldt == LDT_TYPE_DS)
 	{
-		gdt->limit = 0x0800;
+		gdt->limit = 0xffff;
 		gdt->baseaddr = addr & 0xffff;
 		gdt->baseaddr2 = (addr >> 16) & 0xff;
 
 		gdt->p_dpl_type_a = 0xf2;
 
-		gdt->uxdg_limit2 = 0xc0;
+		gdt->uxdg_limit2 = 0xcf;
 		gdt->baseaddr3 = (addr >> 24) & 0xff;
 	}
 }

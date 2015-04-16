@@ -123,12 +123,12 @@ void int_keyboard()
 
 void int_0x80()
 {
-	printf("%x\n", temp++);
+	printf("A_%x\n", temp++);
 }
 
 void int_0x81()
 {
-	printf("aaaaaaa\n");
+	printf("_B%x\n", temp++);
 }
 
 #endif
