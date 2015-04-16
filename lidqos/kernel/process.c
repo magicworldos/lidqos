@@ -85,12 +85,6 @@ void install_process()
 	pcb_A->tss.esp0 = (u32) pcb_A->stack0 + 0x800;
 	addr_to_gdt_or_ldt((u32) pcb_A->run_addr, (s_gdt*) &(pcb_A->ldt[0]), LDT_TYPE_CS);
 	addr_to_gdt_or_ldt((u32) pcb_A->stack, (s_gdt*) &(pcb_A->ldt[1]), LDT_TYPE_DS);
-	addr_to_gdt_or_ldt((u32) 0, (s_gdt*) &(pcb_A->ldt[2]), LDT_TYPE_DS);
-	addr_to_gdt_or_ldt((u32) pcb_A->ds_addr, (s_gdt*) &(pcb_A->ldt[3]), LDT_TYPE_DS);
-//	pcb_A->ldt[0] = DEFAULT_LDT_CODE;
-//	pcb_A->ldt[1] = DEFAULT_LDT_DATA;
-//	pcb_A->ldt[2] = DEFAULT_LDT_DATA;
-//	pcb_A->ldt[3] = DEFAULT_LDT_DATA;
 	mmcopy(&run_A, pcb_A->run_addr, 0x800);
 
 	pcb_B = alloc_mm(sizeof(s_pcb));
@@ -104,12 +98,6 @@ void install_process()
 	pcb_B->tss.esp0 = (u32) pcb_B->stack0 + 0x800;
 	addr_to_gdt_or_ldt((u32) pcb_B->run_addr, (s_gdt*) &(pcb_B->ldt[0]), LDT_TYPE_CS);
 	addr_to_gdt_or_ldt((u32) pcb_B->stack, (s_gdt*) &(pcb_B->ldt[1]), LDT_TYPE_DS);
-	addr_to_gdt_or_ldt((u32) 0, (s_gdt*) &(pcb_B->ldt[2]), LDT_TYPE_DS);
-	addr_to_gdt_or_ldt((u32) pcb_B->run_addr, (s_gdt*) &(pcb_B->ldt[3]), LDT_TYPE_DS);
-//	pcb_B->ldt[0] = DEFAULT_LDT_CODE;
-//	pcb_B->ldt[1] = DEFAULT_LDT_DATA;
-//	pcb_B->ldt[2] = DEFAULT_LDT_DATA;
-//	pcb_B->ldt[3] = DEFAULT_LDT_DATA;
 	mmcopy(&run_B, pcb_B->run_addr, 0x800);
 
 	s_pcb *pcb = alloc_mm(sizeof(s_pcb));
@@ -157,7 +145,7 @@ void init_process(s_pcb *pcb)
 	pcb->tss.es = USER_DATA_SEL;
 	pcb->tss.cs = USER_CODE_SEL;
 	pcb->tss.ss = USER_DATA_SEL;
-	pcb->tss.ds = USER_DATA_SEL2;
+	pcb->tss.ds = USER_DATA_SEL;
 	pcb->tss.fs = USER_DATA_SEL;
 	pcb->tss.gs = USER_DATA_SEL;
 	pcb->tss.ldt = GDT_INDEX_LDT;

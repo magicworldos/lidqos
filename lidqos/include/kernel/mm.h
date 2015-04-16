@@ -24,7 +24,6 @@
 #define USER_CODE_SEL			0x07
 //ldt数据段选择子
 #define USER_DATA_SEL			0x0f
-#define USER_DATA_SEL2			0x1f
 
 //默认ldt代码段
 #define DEFAULT_LDT_CODE        0x00cffa000000ffffULL
