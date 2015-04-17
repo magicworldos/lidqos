@@ -31,10 +31,6 @@ void run_A()
 			i = 33;
 		}
 	}
-//	while (1)
-//	{
-//		__asm__ volatile("int $0x80");
-//	}
 }
 
 void run_B()
@@ -50,10 +46,6 @@ void run_B()
 			i = 33;
 		}
 	}
-//	while (1)
-//	{
-//		__asm__ volatile("int $0x81");
-//	}
 }
 
 /*
@@ -81,12 +73,9 @@ void install_process()
 	pcb->tss.eip = 0;
 	pcb->tss.esp = 0;
 	pcb->tss.esp0 = 0;
-//	addr_to_gdt(LDT_TYPE_CS, 0, (s_gdt*) &(pcb->ldt[0]), GDT_G_KB, 0x0);
-//	addr_to_gdt(LDT_TYPE_DS, 0, (s_gdt*) &(pcb->ldt[1]), GDT_G_KB, 0x0);
 
-//设置多任务的gdt描述符
-	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb->tss, &gdts[4], GDT_G_KB, 0x168);
-	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb->ldt, &gdts[5], GDT_G_KB, 0x128);
+	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb->tss, &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
+	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb->ldt, &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
 
 	//载入tss和ldt
 	load_tss(GDT_INDEX_TSS);
@@ -125,8 +114,9 @@ void init_process(s_pcb *pcb)
 	pcb->tss.ldt = GDT_INDEX_LDT;
 	pcb->tss.trace_bitmap = 0;
 
-	pcb->ldt[0] = 0x00cffa000000ffffULL;
-	pcb->ldt[1] = 0x00cff2000000ffffULL;
+	//设置多任务的gdt描述符
+	addr_to_gdt(LDT_TYPE_CS, 0, &(pcb->ldt[0]), GDT_G_KB, 0xfffff);
+	addr_to_gdt(LDT_TYPE_DS, 0, &(pcb->ldt[1]), GDT_G_KB, 0xfffff);
 }
 
 void schedule()
@@ -143,9 +133,8 @@ void schedule()
 	}
 
 	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb->tss, &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
-	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb->ldt, &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 8);
+	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb->ldt, &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
 
-	//set_ds(0xf);
 	call_tss();
 }
 
