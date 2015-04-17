@@ -25,11 +25,6 @@
 //ldt数据段选择子
 #define USER_DATA_SEL			0x0f
 
-//默认ldt代码段
-#define DEFAULT_LDT_CODE        0x00cffa000000ffffULL
-//默认ldt数据段
-#define DEFAULT_LDT_DATA        0x00cff2000000ffffULL
-
 //中断程序数
 #define ISR_COUNT				(0x30)
 //跳过空的中断娄

@@ -79,14 +79,13 @@ void install_process()
 	pcb->tss.eip = 0;
 	pcb->tss.esp = 0;
 	pcb->tss.esp0 = 0;
-	pcb->ldt[0].lgdt = DEFAULT_LDT_CODE;
-	pcb->ldt[1].lgdt = DEFAULT_LDT_DATA;
-	pcb->ldt[2].lgdt = DEFAULT_LDT_DATA;
-	pcb->ldt[3].lgdt = DEFAULT_LDT_DATA;
+	addr_to_gdt(LDT_TYPE_CS, 0, &(pcb->ldt[0]), GDT_G_BYTE, 0);
+	addr_to_gdt(LDT_TYPE_DS, 0, &(pcb->ldt[1]), GDT_G_BYTE, 0);
 
 	//设置多任务的gdt描述符
-	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb->tss, &gdts[4], GDT_G_BYTE, 0x68);
-	addr_to_gdt(GDT_TYPE_LDT, (u32) &(pcb->ldt[0]), &gdts[5], GDT_G_BYTE, 0x10);
+	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb->tss, &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
+	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb->ldt, &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 8);
+
 	//载入tss和ldt
 	load_tss(GDT_INDEX_TSS);
 	load_ldt(GDT_INDEX_LDT);
@@ -138,8 +137,8 @@ void schedule()
 		pcb = pcb_B;
 	}
 
-	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb->tss, &gdts[4], GDT_G_BYTE, 0x68);
-	addr_to_gdt(GDT_TYPE_LDT, (u32) &(pcb->ldt[0]), &gdts[5], GDT_G_BYTE, 0x80);
+	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb->tss, &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
+	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb->ldt, &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 8);
 
 	call_tss();
 }
