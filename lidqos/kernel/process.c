@@ -20,26 +20,40 @@ int timer = 0;
 
 void run_A()
 {
+	char *p = (char *) 0xb8000;
+	p += ((23 * 80 + 74)) * 2;
+	int i = 33;
 	while (1)
 	{
-		__asm__ volatile("int $0x80");
-
-//		__asm__ volatile(
-//				"movw $0xf, %ax;"
-//				"movw %ax, %ds;"
-//				"movl $0x800, %eax;"
-//				"movl %eax, %esi;"
-//				"movb $0x8, %ds:(%esi);"
-//		);
+		*p = i;
+		if (++i >= 127)
+		{
+			i = 33;
+		}
 	}
+//	while (1)
+//	{
+//		__asm__ volatile("int $0x80");
+//	}
 }
 
 void run_B()
 {
+	char *p = (char *) 0xb8000;
+	p += ((23 * 80 + 76)) * 2;
+	int i = 64;
 	while (1)
 	{
-		__asm__ volatile("int $0x81");
+		*p = i;
+		if (++i >= 127)
+		{
+			i = 33;
+		}
 	}
+//	while (1)
+//	{
+//		__asm__ volatile("int $0x81");
+//	}
 }
 
 /*
@@ -52,39 +66,27 @@ void install_process()
 
 	pcb_A = alloc_mm(sizeof(s_pcb));
 	init_process(pcb_A);
-	pcb_A->run_addr = alloc_mm(size);
-	pcb_A->stack = alloc_mm(size);
-	pcb_A->stack0 = alloc_mm(size);
-	pcb_A->tss.eip = 0x0;
-	pcb_A->tss.esp = size;
-	pcb_A->tss.esp0 = (u32) pcb_A->stack0 + size;
-	addr_to_gdt(LDT_TYPE_CS, (u32) pcb_A->run_addr, &(pcb_A->ldt[0]), GDT_G_BYTE, size);
-	addr_to_gdt(LDT_TYPE_DS, (u32) pcb_A->stack, &(pcb_A->ldt[1]), GDT_G_BYTE, size);
-	mmcopy(&run_A, pcb_A->run_addr, size);
+	pcb_A->tss.eip = (u32) &run_A;
+	pcb_A->tss.esp = (u32) alloc_mm(size) + size;
+	pcb_A->tss.esp0 = (u32) alloc_mm(size) + size;
 
 	pcb_B = alloc_mm(sizeof(s_pcb));
 	init_process(pcb_B);
-	pcb_B->run_addr = alloc_mm(size);
-	pcb_B->stack = alloc_mm(size);
-	pcb_B->stack0 = alloc_mm(size);
-	pcb_B->tss.eip = 0x0;
-	pcb_B->tss.esp = size;
-	pcb_B->tss.esp0 = (u32) pcb_B->stack0 + size;
-	addr_to_gdt(LDT_TYPE_CS, (u32) pcb_B->run_addr, &(pcb_B->ldt[0]), GDT_G_BYTE, size);
-	addr_to_gdt(LDT_TYPE_DS, (u32) pcb_B->stack, &(pcb_B->ldt[1]), GDT_G_BYTE, size);
-	mmcopy(&run_B, pcb_B->run_addr, size);
+	pcb_B->tss.eip = (u32) &run_B;
+	pcb_B->tss.esp = (u32) alloc_mm(size) + size;
+	pcb_B->tss.esp0 = (u32) alloc_mm(size) + size;
 
 	s_pcb *pcb = alloc_mm(sizeof(s_pcb));
 	init_process(pcb);
 	pcb->tss.eip = 0;
 	pcb->tss.esp = 0;
 	pcb->tss.esp0 = 0;
-	addr_to_gdt(LDT_TYPE_CS, 0, &(pcb->ldt[0]), GDT_G_BYTE, 0);
-	addr_to_gdt(LDT_TYPE_DS, 0, &(pcb->ldt[1]), GDT_G_BYTE, 0);
+//	addr_to_gdt(LDT_TYPE_CS, 0, (s_gdt*) &(pcb->ldt[0]), GDT_G_KB, 0x0);
+//	addr_to_gdt(LDT_TYPE_DS, 0, (s_gdt*) &(pcb->ldt[1]), GDT_G_KB, 0x0);
 
-	//设置多任务的gdt描述符
-	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb->tss, &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
-	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb->ldt, &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 8);
+//设置多任务的gdt描述符
+	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb->tss, &gdts[4], GDT_G_KB, 0x168);
+	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb->ldt, &gdts[5], GDT_G_KB, 0x128);
 
 	//载入tss和ldt
 	load_tss(GDT_INDEX_TSS);
@@ -122,6 +124,9 @@ void init_process(s_pcb *pcb)
 	pcb->tss.gs = USER_DATA_SEL;
 	pcb->tss.ldt = GDT_INDEX_LDT;
 	pcb->tss.trace_bitmap = 0;
+
+	pcb->ldt[0] = 0x00cffa000000ffffULL;
+	pcb->ldt[1] = 0x00cff2000000ffffULL;
 }
 
 void schedule()
@@ -140,6 +145,7 @@ void schedule()
 	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb->tss, &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
 	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb->ldt, &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 8);
 
+	//set_ds(0xf);
 	call_tss();
 }
 

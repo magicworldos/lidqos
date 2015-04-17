@@ -41,14 +41,14 @@
 #define GDT_TYPE_CS				(0)
 //GDT类型数据段
 #define GDT_TYPE_DS				(1)
-//GDT类型任务段
-#define GDT_TYPE_TSS			(2)
-//GDT类型LDT段
-#define GDT_TYPE_LDT			(3)
 //LDT类型代码段
-#define LDT_TYPE_CS				(4)
+#define LDT_TYPE_CS				(2)
 //LDT类型数据段
-#define LDT_TYPE_DS				(5)
+#define LDT_TYPE_DS				(3)
+//GDT类型任务段
+#define GDT_TYPE_TSS			(4)
+//GDT类型LDT段
+#define GDT_TYPE_LDT			(5)
 
 //GDT长度单位byte
 #define GDT_G_BYTE				(0)

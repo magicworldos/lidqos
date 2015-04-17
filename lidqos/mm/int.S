@@ -40,10 +40,11 @@ _int_default:
 _int_0x00:
 	pushal
 	pushfl
+	pushw %ds
 	//关中断
 	cli
-	movw $0x18, %ax
-	movw %ax, %ds
+	//movw $0x18, %ax
+	//movw %ax, %ds
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
@@ -51,6 +52,7 @@ _int_0x00:
 	call	int_div_error
 	leave
 	sti
+	popw %ds
 	popfl
 	popal
 	iret
@@ -74,10 +76,11 @@ _int_0x05:
 _int_0x06:
 	pushal
 	pushfl
+	pushw %ds
 	//关中断
 	cli
-	movw $0x18, %ax
-	movw %ax, %ds
+	//movw $0x18, %ax
+	//movw %ax, %ds
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
@@ -85,6 +88,7 @@ _int_0x06:
 	call	int_invalid_opcode
 	leave
 	sti
+	popw %ds
 	popfl
 	popal
 	iret
@@ -96,14 +100,16 @@ _int_0x07:
 _int_0x08:
 	pushal
 	pushfl
+	pushw %ds
 	cli
-	movw $0x18, %ax
-	movw %ax, %ds
+	//movw $0x18, %ax
+	//movw %ax, %ds
 	push	%ebp
 	mov		%esp, %ebp
 	call int_8
 	leave
 	sti
+	popw %ds
 	popfl
 	popal
 	iret
@@ -114,14 +120,16 @@ _int_0x09:
 _int_0x0a:
 	pushal
 	pushfl
+	pushw %ds
 	cli
-	movw $0x18, %ax
-	movw %ax, %ds
+	//movw $0x18, %ax
+	//movw %ax, %ds
 	push	%ebp
 	mov		%esp, %ebp
 	call int_A
 	leave
 	sti
+	popw %ds
 	popfl
 	popal
 	iret
@@ -129,14 +137,16 @@ _int_0x0a:
 _int_0x0b:
 	pushal
 	pushfl
+	pushw %ds
 	cli
-	movw $0x18, %ax
-	movw %ax, %ds
+	//movw $0x18, %ax
+	//movw %ax, %ds
 	push	%ebp
 	mov		%esp, %ebp
 	call int_B
 	leave
 	sti
+	popw %ds
 	popfl
 	popal
 	iret
@@ -144,14 +154,16 @@ _int_0x0b:
 _int_0x0c:
 	pushal
 	pushfl
+	pushw %ds
 	cli
-	movw $0x18, %ax
-	movw %ax, %ds
+	//movw $0x18, %ax
+	//movw %ax, %ds
 	push	%ebp
 	mov		%esp, %ebp
 	call int_C
 	leave
 	sti
+	popw %ds
 	popfl
 	popal
 	iret
@@ -160,14 +172,16 @@ _int_0x0c:
 _int_0x0d:
 	pushal
 	pushfl
+	pushw %ds
 	cli
-	movw $0x18, %ax
-	movw %ax, %ds
+	//movw $0x18, %ax
+	//movw %ax, %ds
 	push	%ebp
 	mov		%esp, %ebp
 	call int_protection_error
 	leave
 	sti
+	popw %ds
 	popfl
 	popal
 	iret
@@ -233,12 +247,14 @@ _int_0x1f:
 _int_0x20:
 	pushal
 	pushfl
+	pushw %ds
 	cli
-	movw $0x18, %ax
-	movw %ax, %ds
+	//movw $0x18, %ax
+	//movw %ax, %ds
 	//调用时钟中断处理函数
 	call int_timer
 	sti
+	popw %ds
 	popfl
 	popal
 	iret
@@ -247,12 +263,14 @@ _int_0x20:
 _int_0x21:
 	pushal
 	pushfl
+	pushw %ds
 	cli
-	movw $0x18, %ax
-	movw %ax, %ds
+	//movw $0x18, %ax
+	//movw %ax, %ds
 	//调用键盘中断处理函数
 	call int_keyboard
 	sti
+	popw %ds
 	popfl
 	popal
 	iret

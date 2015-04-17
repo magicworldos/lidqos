@@ -100,7 +100,7 @@ void addr_to_gdt(u8 gdt_type, u32 addr, s_gdt *gdt, u8 limit_type, u32 limit)
 		gdt->baseaddr3 = (addr >> 24) & 0xff;
 	}
 	//LDT代码段
-	if (gdt_type == LDT_TYPE_CS)
+	else if (gdt_type == LDT_TYPE_CS)
 	{
 		gdt->limit = limit & 0xffff;
 		gdt->baseaddr = addr & 0xffff;
