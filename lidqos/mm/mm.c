@@ -130,21 +130,31 @@ void addr_to_gdt(u8 gdt_type, u32 addr, s_gdt *gdt, u8 limit_type, u32 limit)
 	//tss任务段
 	else if (gdt_type == GDT_TYPE_TSS)
 	{
-		gdt->gdt = 0x00000068;
-		gdt->gdt2 = 0x00808900;
-		gdt->gdt |= ((addr & 0xffff) << 16);
-		gdt->gdt2 |= ((addr & 0x00ff0000) >> 16);
-		gdt->gdt2 |= (addr & 0xff000000);
+		gdt->limit = limit & 0xffff;
+		gdt->baseaddr = addr & 0xffff;
+		gdt->baseaddr2 = (addr >> 16) & 0xff;
+		gdt->p_dpl_type_a = 0x89;
+		gdt->uxdg_limit2 = ((limit >> 16) & 0xf);
+		if (limit_type == GDT_G_KB)
+		{
+			gdt->uxdg_limit2 |= 0x80;
+		}
+		gdt->baseaddr3 = (addr >> 24) & 0xff;
+
 	}
 	//ldt局部描述符段
 	else if (gdt_type == GDT_TYPE_LDT)
 	{
-		gdt->gdt = 0x0000000f;
-		gdt->gdt2 = 0x00808200;
-
-		gdt->gdt |= ((addr & 0xffff) << 16);
-		gdt->gdt2 |= ((addr & 0x00ff0000) >> 16);
-		gdt->gdt2 |= (addr & 0xff000000);
+		gdt->limit = limit & 0xffff;
+		gdt->baseaddr = addr & 0xffff;
+		gdt->baseaddr2 = (addr >> 16) & 0xff;
+		gdt->p_dpl_type_a = 0x82;
+		gdt->uxdg_limit2 = ((limit >> 16) & 0xf);
+		if (limit_type == GDT_G_KB)
+		{
+			gdt->uxdg_limit2 |= 0x80;
+		}
+		gdt->baseaddr3 = (addr >> 24) & 0xff;
 	}
 }
 

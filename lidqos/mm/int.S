@@ -38,8 +38,12 @@ _int_default:
 
 //除零错
 _int_0x00:
+	pushal
+	pushfl
 	//关中断
 	cli
+	movw $0x18, %ax
+	movw %ax, %ds
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
@@ -47,6 +51,8 @@ _int_0x00:
 	call	int_div_error
 	leave
 	sti
+	popfl
+	popal
 	iret
 
 _int_0x01:
@@ -66,8 +72,12 @@ _int_0x05:
 
 //无效操作码
 _int_0x06:
+	pushal
+	pushfl
 	//关中断
 	cli
+	movw $0x18, %ax
+	movw %ax, %ds
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
@@ -75,6 +85,8 @@ _int_0x06:
 	call	int_invalid_opcode
 	leave
 	sti
+	popfl
+	popal
 	iret
 
 //没有浮点运算器
@@ -82,55 +94,82 @@ _int_0x07:
 	iret
 
 _int_0x08:
+	pushal
+	pushfl
 	cli
+	movw $0x18, %ax
+	movw %ax, %ds
 	push	%ebp
 	mov		%esp, %ebp
 	call int_8
 	leave
 	sti
-	iret
+	popfl
+	popal
 	iret
 
 _int_0x09:
 	iret
 
 _int_0x0a:
+	pushal
+	pushfl
 	cli
+	movw $0x18, %ax
+	movw %ax, %ds
 	push	%ebp
 	mov		%esp, %ebp
 	call int_A
 	leave
 	sti
-	iret
+	popfl
+	popal
 	iret
 
 _int_0x0b:
+	pushal
+	pushfl
 	cli
+	movw $0x18, %ax
+	movw %ax, %ds
 	push	%ebp
 	mov		%esp, %ebp
 	call int_B
 	leave
 	sti
-	iret
+	popfl
+	popal
 	iret
 
 _int_0x0c:
+	pushal
+	pushfl
 	cli
+	movw $0x18, %ax
+	movw %ax, %ds
 	push	%ebp
 	mov		%esp, %ebp
 	call int_C
 	leave
 	sti
+	popfl
+	popal
 	iret
 
 //一般保护错误
 _int_0x0d:
+	pushal
+	pushfl
 	cli
+	movw $0x18, %ax
+	movw %ax, %ds
 	push	%ebp
 	mov		%esp, %ebp
 	call int_protection_error
 	leave
 	sti
+	popfl
+	popal
 	iret
 
 _int_0x0e:
@@ -195,6 +234,8 @@ _int_0x20:
 	pushal
 	pushfl
 	cli
+	movw $0x18, %ax
+	movw %ax, %ds
 	//调用时钟中断处理函数
 	call int_timer
 	sti
@@ -207,6 +248,8 @@ _int_0x21:
 	pushal
 	pushfl
 	cli
+	movw $0x18, %ax
+	movw %ax, %ds
 	//调用键盘中断处理函数
 	call int_keyboard
 	sti
