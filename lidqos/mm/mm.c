@@ -39,12 +39,12 @@ void install_gdt()
 	// 0x10
 	//设置kernel的全局描述符
 	u32 kernel_addr = 0x0;
-	addr_to_gdt_or_ldt(kernel_addr, &gdts[2], GDT_TYPE_CS);
+	addr_to_gdt(GDT_TYPE_CS, kernel_addr, &gdts[2], GDT_G_KB, 0xfffff);
 
 	// 0x18
 	//设置kernel data的全局描述符
 	u32 kernel_data = 0x0;
-	addr_to_gdt_or_ldt(kernel_addr, &gdts[3], GDT_TYPE_DS);
+	addr_to_gdt(GDT_TYPE_DS, kernel_addr, &gdts[3], GDT_G_KB, 0xfffff);
 
 	//设置gdt描述符
 	gdtp.gdt_lenth = sizeof(s_gdt) * GDT_MAX_SIZE - 1;
@@ -69,44 +69,75 @@ void install_gdt()
  *  -u8 cs_ds: 0为cs 1为ds
  *  return : void
  */
-void addr_to_gdt_or_ldt(u32 addr, s_gdt *gdt, u8 cs_ds_lcs_lds_tss_ldt)
+void addr_to_gdt(u8 gdt_type, u32 addr, s_gdt *gdt, u8 limit_type, u32 limit)
 {
-	//代码段
-	if (cs_ds_lcs_lds_tss_ldt == GDT_TYPE_CS)
+	//GDT代码段
+	if (gdt_type == GDT_TYPE_CS)
 	{
-		gdt->limit = 0xffff;
+		gdt->limit = limit & 0xffff;
 		gdt->baseaddr = addr & 0xffff;
 		gdt->baseaddr2 = (addr >> 16) & 0xff;
-
 		gdt->p_dpl_type_a = 0x9a;
-
-		gdt->uxdg_limit2 = 0xcf;
+		gdt->uxdg_limit2 = 0x40 | ((limit >> 16) & 0xf);
+		if (limit_type == GDT_G_KB)
+		{
+			gdt->uxdg_limit2 |= 0x80;
+		}
 		gdt->baseaddr3 = (addr >> 24) & 0xff;
 	}
-	//数据段
-	else if (cs_ds_lcs_lds_tss_ldt == GDT_TYPE_DS)
+	//GDT数据段
+	else if (gdt_type == GDT_TYPE_DS)
 	{
-		gdt->limit = 0xffff;
+		gdt->limit = limit & 0xffff;
 		gdt->baseaddr = addr & 0xffff;
 		gdt->baseaddr2 = (addr >> 16) & 0xff;
-
 		gdt->p_dpl_type_a = 0x92;
-
-		gdt->uxdg_limit2 = 0xcf;
+		gdt->uxdg_limit2 = 0x40 | ((limit >> 16) & 0xf);
+		if (limit_type == GDT_G_KB)
+		{
+			gdt->uxdg_limit2 |= 0x80;
+		}
+		gdt->baseaddr3 = (addr >> 24) & 0xff;
+	}
+	//LDT代码段
+	if (gdt_type == LDT_TYPE_CS)
+	{
+		gdt->limit = limit & 0xffff;
+		gdt->baseaddr = addr & 0xffff;
+		gdt->baseaddr2 = (addr >> 16) & 0xff;
+		gdt->p_dpl_type_a = 0xfa;
+		gdt->uxdg_limit2 = 0x40 | ((limit >> 16) & 0xf);
+		if (limit_type == GDT_G_KB)
+		{
+			gdt->uxdg_limit2 |= 0x80;
+		}
+		gdt->baseaddr3 = (addr >> 24) & 0xff;
+	}
+	//LDT数据段
+	else if (gdt_type == LDT_TYPE_DS)
+	{
+		gdt->limit = limit & 0xffff;
+		gdt->baseaddr = addr & 0xffff;
+		gdt->baseaddr2 = (addr >> 16) & 0xff;
+		gdt->p_dpl_type_a = 0xf2;
+		gdt->uxdg_limit2 = 0x40 | ((limit >> 16) & 0xf);
+		if (limit_type == GDT_G_KB)
+		{
+			gdt->uxdg_limit2 |= 0x80;
+		}
 		gdt->baseaddr3 = (addr >> 24) & 0xff;
 	}
 	//tss任务段
-	else if (cs_ds_lcs_lds_tss_ldt == GDT_TYPE_TSS)
+	else if (gdt_type == GDT_TYPE_TSS)
 	{
 		gdt->gdt = 0x00000068;
 		gdt->gdt2 = 0x00808900;
-
 		gdt->gdt |= ((addr & 0xffff) << 16);
 		gdt->gdt2 |= ((addr & 0x00ff0000) >> 16);
 		gdt->gdt2 |= (addr & 0xff000000);
 	}
 	//ldt局部描述符段
-	else if (cs_ds_lcs_lds_tss_ldt == GDT_TYPE_LDT)
+	else if (gdt_type == GDT_TYPE_LDT)
 	{
 		gdt->gdt = 0x0000000f;
 		gdt->gdt2 = 0x00808200;
@@ -114,30 +145,6 @@ void addr_to_gdt_or_ldt(u32 addr, s_gdt *gdt, u8 cs_ds_lcs_lds_tss_ldt)
 		gdt->gdt |= ((addr & 0xffff) << 16);
 		gdt->gdt2 |= ((addr & 0x00ff0000) >> 16);
 		gdt->gdt2 |= (addr & 0xff000000);
-	}
-	//代码段
-	else if (cs_ds_lcs_lds_tss_ldt == LDT_TYPE_CS)
-	{
-		gdt->limit = 0xffff;
-		gdt->baseaddr = addr & 0xffff;
-		gdt->baseaddr2 = (addr >> 16) & 0xff;
-
-		gdt->p_dpl_type_a = 0xfa;
-
-		gdt->uxdg_limit2 = 0xcf;
-		gdt->baseaddr3 = (addr >> 24) & 0xff;
-	}
-	//数据段
-	else if (cs_ds_lcs_lds_tss_ldt == LDT_TYPE_DS)
-	{
-		gdt->limit = 0xffff;
-		gdt->baseaddr = addr & 0xffff;
-		gdt->baseaddr2 = (addr >> 16) & 0xff;
-
-		gdt->p_dpl_type_a = 0xf2;
-
-		gdt->uxdg_limit2 = 0xcf;
-		gdt->baseaddr3 = (addr >> 24) & 0xff;
 	}
 }
 

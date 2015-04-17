@@ -55,6 +55,11 @@
 //LDT类型数据段
 #define LDT_TYPE_DS				(5)
 
+//GDT长度单位byte
+#define GDT_G_BYTE				(0)
+//GDT长度单位kb
+#define GDT_G_KB				(1)
+
 //tts的全局选择子
 #define GDT_INDEX_TSS			0x20
 //ldt的全局选择子
@@ -73,7 +78,7 @@ void install_gdt();
  *  -u8 cs_ds: 0为cs 1为ds
  *  return : void
  */
-void addr_to_gdt_or_ldt(u32 addr, s_gdt *gdt, u8 cs_ds);
+void addr_to_gdt(u8 gdt_type, u32 addr, s_gdt *gdt, u8 limit_type, u32 limit);
 
 /*
  * _int_default : 默认中断程序
