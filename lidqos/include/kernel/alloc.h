@@ -24,9 +24,10 @@
 #define MAP_SIZE			(1024 * 1024)
 //内核程序大小256页 256*4096 = 1MB
 #define KERNEL_SIZE			(0x100)
-//MMAP所在内存地址为0x400000 ~ 0x4fffff
-//从0x500000以下为0x500个内存页
-#define MMAP_USED_SIZE		(0x500)
+//MMAP所在内存地址为0x100000 ~ 0x1fffff
+//Kernel所在页表项及页表地址0x300000 ~ 0x302000
+//从0x400000以下为0x400个内存页
+#define MMAP_USED_SIZE		(0x400)
 
 
 /*

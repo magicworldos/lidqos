@@ -11,6 +11,7 @@
 #include <kernel/typedef.h>
 #include <kernel/printf.h>
 #include <kernel/alloc.h>
+#include <kernel/page.h>
 #include <kernel/mm.h>
 #include <kernel/process.h>
 

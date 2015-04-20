@@ -207,4 +207,11 @@ void int_keyboard()
 	outb_p(0x20, 0x20);
 }
 
+void int_0x80()
+{
+//	char *p = (char *) 0xb8000;
+//	*p = 'A';
+	putchar('A');
+}
+
 #endif

@@ -21,8 +21,8 @@ u8 *mmap = NULL;
  */
 void install_alloc()
 {
-	//位图所在的固定内存区域为0x400000 ~ 0x4fffff
-	mmap = (u8 *) 0x400000;
+	//位图所在的固定内存区域为0x200000 ~ 0x2fffff
+	mmap = (u8 *) 0x200000;
 
 	for (int i = 0; i < MAP_SIZE; i++)
 	{
@@ -86,6 +86,21 @@ void* alloc_page(int count)
 	{
 		mmap[start_with + i] = MM_USED;
 	}
+
+	u32 addr = (u32) ret;
+	//页目录索引 / 4M
+	u32 page_dir_index = addr / 0x400000;
+	//页表索引 / 4K
+	u32 page_table_index = (addr % 0x400000) / 0x1000;
+	//页内偏移
+	u32 page_inside = (addr % 0x400000) % 0x1000;
+	//开启分页后的地址计算
+	u32 result = 0;
+	result |= (page_dir_index & 0x3FF) << 22;
+	result |= (page_table_index & 0x3FF) << 12;
+	result |= (page_inside & 0x3FF);
+	ret = (void *) result;
+
 	//返回查找到内存地址
 	return ret;
 }
@@ -117,7 +132,7 @@ void* alloc_mm(int size)
 	if (size > (MM_PAGE_SIZE - 128))
 	{
 		//计算有多少个内存页
-		 u32 count = (size / MM_PAGE_SIZE);
+		u32 count = (size / MM_PAGE_SIZE);
 		//如果有余数，说明要多分配一个页面
 		if (size % MM_PAGE_SIZE != 0)
 		{
@@ -241,8 +256,25 @@ void* alloc_mm(int size)
 						{
 							//将此内存页设定为动态分配
 							mmap[i] = MM_DYNAMIC;
+
+							u32 ret = (is * MM_PAGE_SIZE + (js * 8 * 4) + (ks * 4));
+
+							u32 addr = (u32) ret;
+							//页目录索引 / 4M
+							u32 page_dir_index = addr / 0x400000;
+							//页表索引 / 4K
+							u32 page_table_index = (addr % 0x400000) / 0x1000;
+							//页内偏移
+							u32 page_inside = (addr % 0x400000) % 0x1000;
+							//开启分页后的地址计算
+							u32 result = 0;
+							result |= (page_dir_index & 0x3FF) << 22;
+							result |= (page_table_index & 0x3FF) << 12;
+							result |= (page_inside & 0x3FF);
+							ret = result;
+
 							//返回申请内存地址
-							return (void*) (is * MM_PAGE_SIZE + (js * 8 * 4) + (ks * 4));
+							return (void*) ret;
 						}
 					}
 				}

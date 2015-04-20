@@ -429,6 +429,12 @@ _int_0x2f:
 	iret
 
 _int_0x80:
+	cli
+	push	%ebp
+	mov		%esp, %ebp
+	call	int_0x80
+	leave
+	sti
 	iret
 
 _int_0x81:
