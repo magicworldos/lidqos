@@ -41,7 +41,8 @@ void install_page()
 	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
 
 	__asm__ volatile(
-			"movl	$0x80000000, %eax;"
+			"movl	%cr0, %eax;"
+			"orl	$0x80000000, %eax;"
 			"movl    %eax, %cr0;"
 	);
 }

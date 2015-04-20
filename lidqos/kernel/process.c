@@ -110,7 +110,8 @@ void init_process(s_pcb *pcb)
 	pcb->tss.ss1 = 0;
 	pcb->tss.esp2 = 0;
 	pcb->tss.ss2 = 0;
-	pcb->tss.cr3 = 0;
+	//(0x300000)
+	pcb->tss.cr3 = (0x300000);
 	pcb->tss.eflags = 0x3202;
 	pcb->tss.eax = 0;
 	pcb->tss.ecx = 0;

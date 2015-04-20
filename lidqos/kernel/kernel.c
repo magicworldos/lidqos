@@ -52,6 +52,7 @@ int start_kernel(int argc, char **args)
 //	}
 	for (;;)
 	{
+	//	__asm__ volatile("int $0x80");
 	}
 	return 0;
 }
