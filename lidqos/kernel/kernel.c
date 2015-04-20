@@ -31,24 +31,27 @@ int start_kernel(int argc, char **args)
 	install_kb();
 
 	//安装内在分页
-//	install_page();
+	install_page();
 
-//安装多任务
-//install_process();
+	//安装多任务
+	install_process();
 
-//开中断，在进入保护模式前已经关闭了中断这时需要将其打开
+	//开中断，在进入保护模式前已经关闭了中断这时需要将其打开
 	sti();
 
-	char *p = (char *) 0xb8000;
-	p += ((24 * 80 + 79)) * 2;
-	int i = 33;
-	while (1)
+//	char *p = (char *) 0xb8000;
+//	p += ((24 * 80 + 79)) * 2;
+//	int i = 33;
+//	while (1)
+//	{
+//		*p = i;
+//		if (++i >= 127)
+//		{
+//			i = 33;
+//		}
+//	}
+	for (;;)
 	{
-		*p = i;
-		if (++i >= 127)
-		{
-			i = 33;
-		}
 	}
 	return 0;
 }

@@ -62,20 +62,27 @@ void run_B()
 void install_process()
 {
 	int size = 0x800;
-
+//	printf("aaaaaaaaaaa\n");
 	pcb_A = alloc_mm(sizeof(s_pcb));
+//	printf("%x\n", pcb_A);
 	init_process(pcb_A);
 	pcb_A->tss.eip = (u32) &run_A;
 	pcb_A->tss.esp = (u32) alloc_mm(size) + size;
 	pcb_A->tss.esp0 = (u32) alloc_mm(size) + size;
+	//printf("%x\n", pcb_A->tss.esp);
+	//printf("%x\n", pcb_A->tss.esp0);
 
 	pcb_B = alloc_mm(sizeof(s_pcb));
+	//printf("%x\n", pcb_B);
 	init_process(pcb_B);
 	pcb_B->tss.eip = (u32) &run_B;
 	pcb_B->tss.esp = (u32) alloc_mm(size) + size;
 	pcb_B->tss.esp0 = (u32) alloc_mm(size) + size;
+	//printf("%x\n", pcb_B->tss.esp);
+	//printf("%x\n", pcb_B->tss.esp0);
 
 	s_pcb *pcb = alloc_mm(sizeof(s_pcb));
+	//printf("%x\n", pcb);
 	init_process(pcb);
 	pcb->tss.eip = 0;
 	pcb->tss.esp = 0;

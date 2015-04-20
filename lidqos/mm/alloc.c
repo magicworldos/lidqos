@@ -258,14 +258,17 @@ void* alloc_mm(int size)
 							mmap[i] = MM_DYNAMIC;
 
 							u32 ret = (is * MM_PAGE_SIZE + (js * 8 * 4) + (ks * 4));
-
+							//printf("addr %x\n", ret);
 							u32 addr = (u32) ret;
 							//页目录索引 / 4M
 							u32 page_dir_index = addr / 0x400000;
+							//printf("p_dir %x\n", page_dir_index);
 							//页表索引 / 4K
 							u32 page_table_index = (addr % 0x400000) / 0x1000;
+							//printf("p_tab %x\n", page_table_index);
 							//页内偏移
 							u32 page_inside = (addr % 0x400000) % 0x1000;
+							//printf("p_addr %x\n", page_inside);
 							//开启分页后的地址计算
 							u32 result = 0;
 							result |= (page_dir_index & 0x3FF) << 22;
