@@ -12,6 +12,7 @@
 
 #include <kernel/sys_call.h>
 
+extern s_pcb *pcb_current;
 //可显字符
 extern u8 keys[0x53][2];
 //shift键按下状态
@@ -151,6 +152,10 @@ void int_protection_error()
 void int_page_error()
 {
 	printf("int_page_error.\n");
+
+	u32 addr = cr2();
+	printf("pid: %d, %x\n", pcb_current->pid, addr);
+
 	hlt();
 }
 

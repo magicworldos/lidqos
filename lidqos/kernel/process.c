@@ -15,7 +15,7 @@ extern s_gdt gdts[GDT_MAX_SIZE];
 
 s_pcb *pcb_A = NULL;
 s_pcb *pcb_B = NULL;
-
+s_pcb *pcb_current = NULL;
 int timer = 0;
 
 void run_A()
@@ -31,10 +31,6 @@ void run_A()
 			i = 33;
 		}
 	}
-//	while (1)
-//	{
-//		__asm__ volatile("int $0x80");
-//	}
 }
 
 void run_B()
@@ -50,6 +46,8 @@ void run_B()
 //			i = 33;
 //		}
 //	}
+	char *p = (char *) 0x812345;
+	*p = 'A';
 	while (1)
 	{
 	}
@@ -66,6 +64,7 @@ void install_process()
 	pcb_A = alloc_mm(sizeof(s_pcb));
 //	printf("%x\n", pcb_A);
 	init_process(pcb_A);
+	pcb_A->pid = 1;
 	pcb_A->tss.eip = (u32) &run_A;
 	pcb_A->tss.esp = (u32) alloc_mm(size) + size;
 	pcb_A->tss.esp0 = (u32) alloc_mm(size) + size;
@@ -75,6 +74,7 @@ void install_process()
 	pcb_B = alloc_mm(sizeof(s_pcb));
 	//printf("%x\n", pcb_B);
 	init_process(pcb_B);
+	pcb_B->pid = 2;
 	pcb_B->tss.eip = (u32) &run_B;
 	pcb_B->tss.esp = (u32) alloc_mm(size) + size;
 	pcb_B->tss.esp0 = (u32) alloc_mm(size) + size;
@@ -136,19 +136,17 @@ void init_process(s_pcb *pcb)
 
 void schedule()
 {
-	s_pcb *pcb = NULL;
-
 	if (timer++ % 2 == 0)
 	{
-		pcb = pcb_A;
+		pcb_current = pcb_A;
 	}
 	else
 	{
-		pcb = pcb_B;
+		pcb_current = pcb_B;
 	}
 
-	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb->tss, &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
-	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb->ldt, &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
+	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb_current->tss, &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
+	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb_current->ldt, &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
 
 	call_tss();
 }

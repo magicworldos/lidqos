@@ -115,6 +115,7 @@ typedef struct s_pcb
 	void *run_addr;
 	void *stack;
 	void *stack0;
+	int pid;
 	struct s_pcb* next;
 } s_pcb;
 

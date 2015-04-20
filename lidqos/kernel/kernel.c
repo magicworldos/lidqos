@@ -15,6 +15,9 @@ int start_kernel(int argc, char **args)
 	//安装内存申请模块
 	install_alloc();
 
+	//安装内在分页
+	install_page();
+
 	//安装GDT全局描述符
 	install_gdt();
 
@@ -30,29 +33,15 @@ int start_kernel(int argc, char **args)
 	//安装键盘中断
 	install_kb();
 
-	//安装内在分页
-	install_page();
-
 	//安装多任务
 	install_process();
 
 	//开中断，在进入保护模式前已经关闭了中断这时需要将其打开
 	sti();
 
-//	char *p = (char *) 0xb8000;
-//	p += ((24 * 80 + 79)) * 2;
-//	int i = 33;
-//	while (1)
-//	{
-//		*p = i;
-//		if (++i >= 127)
-//		{
-//			i = 33;
-//		}
-//	}
 	for (;;)
 	{
-	//	__asm__ volatile("int $0x80");
+		//	__asm__ volatile("int $0x80");
 	}
 	return 0;
 }
