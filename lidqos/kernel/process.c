@@ -59,30 +59,23 @@ void run_B()
  */
 void install_process()
 {
-	int size = 0x800;
-//	printf("aaaaaaaaaaa\n");
-	pcb_A = alloc_mm(sizeof(s_pcb));
-//	printf("%x\n", pcb_A);
+	int pages = 0x4;
+	int pagesize = 0x1000 * 0x4;
+	pcb_A = alloc_page(pages);
 	init_process(pcb_A);
 	pcb_A->pid = 1;
 	pcb_A->tss.eip = (u32) &run_A;
-	pcb_A->tss.esp = (u32) alloc_mm(size) + size;
-	pcb_A->tss.esp0 = (u32) alloc_mm(size) + size;
-	//printf("%x\n", pcb_A->tss.esp);
-	//printf("%x\n", pcb_A->tss.esp0);
+	pcb_A->tss.esp = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + pagesize;
+	pcb_A->tss.esp0 = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + pagesize;
 
-	pcb_B = alloc_mm(sizeof(s_pcb));
-	//printf("%x\n", pcb_B);
+	pcb_B = alloc_page(pages);
 	init_process(pcb_B);
 	pcb_B->pid = 2;
 	pcb_B->tss.eip = (u32) &run_B;
-	pcb_B->tss.esp = (u32) alloc_mm(size) + size;
-	pcb_B->tss.esp0 = (u32) alloc_mm(size) + size;
-	//printf("%x\n", pcb_B->tss.esp);
-	//printf("%x\n", pcb_B->tss.esp0);
+	pcb_B->tss.esp = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + pagesize;
+	pcb_B->tss.esp0 = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + pagesize;
 
-	s_pcb *pcb = alloc_mm(sizeof(s_pcb));
-	//printf("%x\n", pcb);
+	s_pcb *pcb = alloc_page(pages);
 	init_process(pcb);
 	pcb->tss.eip = 0;
 	pcb->tss.esp = 0;
