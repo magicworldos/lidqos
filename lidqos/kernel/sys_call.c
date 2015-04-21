@@ -153,10 +153,7 @@ void int_page_error()
 {
 	printf("int_page_error.\n");
 
-	u32 addr = cr2();
-	printf("pid: %d, %x\n", pcb_current->pid, addr);
-
-	hlt();
+	page_error();
 }
 
 /***

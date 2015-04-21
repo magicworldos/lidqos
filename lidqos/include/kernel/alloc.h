@@ -30,8 +30,8 @@
 #define KERNEL_SIZE			(0x100)
 //MMAP所在内存地址为0x100000 ~ 0x1fffff
 //Kernel所在页表项及页表地址0x300000 ~ 0x302000
-//从0x400000以下为0x400个内存页
-#define MMAP_USED_SIZE		(0x400)
+//从0x800000以下为0x400个内存页
+#define MMAP_USED_SIZE		(0x800)
 
 
 /*

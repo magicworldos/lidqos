@@ -9,6 +9,8 @@
 #define _INCLUDE_KERNEL_PAGE_H_
 
 #include <kernel/typedef.h>
+#include <kernel/io.h>
+#include <kernel/alloc.h>
 
 #define PAGE_SIZE			(4 * 1024)
 #define MEMORY_RANGE 		(4 * 1024 * 1024)
@@ -16,5 +18,7 @@
 #define PAGE_TABLE			(PAGE_DIR + PAGE_SIZE)
 
 void install_page();
+
+void page_error();
 
 #endif /* INCLUDE_KERNEL_PAGE_H_ */
