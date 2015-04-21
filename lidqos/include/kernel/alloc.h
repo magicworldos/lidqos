@@ -14,13 +14,13 @@
 #define MM_SWAP_TYPE_CAN	(1)
 #define MM_SWAP_TYPE_NO		(0)
 //未使用
-#define MM_FREE				(0x0 << 0)
+#define MM_FREE				(0x0)
 //已使用
-#define MM_USED				(0x1 << 0)
+#define MM_USED				(0x1)
 //动态分配
 //#define MM_DYNAMIC			(2)
-#define MM_NO_SWAP			(0x0 << 1)
-#define MM_CAN_SWAP			(0x1 << 1)
+#define MM_NO_SWAP			(0x0)
+#define MM_CAN_SWAP			(0x2)
 
 //内存页大小4096B
 #define MM_PAGE_SIZE		(4 * 1024)

@@ -57,7 +57,7 @@ void* alloc_page(int count, int can_swap)
 	for (int i = MMAP_USED_SIZE; i < MAP_SIZE; i++)
 	{
 		//如果找到空闲页
-		if (mmap[i] & 0x1 == MM_FREE)
+		if ((mmap[i] & 0x1) == MM_FREE)
 		{
 			//设置可分配内存起始编号
 			if (start_with == 0)

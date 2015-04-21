@@ -46,7 +46,7 @@ void run_B()
 //			i = 33;
 //		}
 //	}
-	char *p = (char *) 0x812345;
+	char *p = (char *) 0x400000;
 	*p = 'A';
 	while (1)
 	{
