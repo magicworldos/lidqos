@@ -151,7 +151,7 @@ void int_protection_error()
  */
 void int_page_error()
 {
-	printf("int_page_error.\n");
+	//printf("int_page_error.\n");
 
 	page_error();
 }
@@ -174,7 +174,7 @@ void int_timer()
 	outb_p(0x20, 0x20);
 
 	//任务调度算法
-	schedule();
+	//schedule();
 }
 
 /*

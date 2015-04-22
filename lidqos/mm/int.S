@@ -269,12 +269,15 @@ _int_0x0d:
 
 //页错误
 _int_0x0e:
+	popl %eax
 	pushal
 	pushfl
 	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
+	sub		$0x28, %esp
+    movl	%eax, (%esp)
 	//调用C函数来处理这个异常
 	call	int_page_error
 	leave

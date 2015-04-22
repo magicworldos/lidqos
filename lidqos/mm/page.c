@@ -39,6 +39,43 @@ void install_page()
 	}
 
 	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
+	__asm__ volatile(
+			"movl	%cr0, %eax;"
+			"orl	$0x80000000, %eax;"
+			"movl    %eax, %cr0;"
+	);
+
+
+
+}
+
+void test()
+{
+	//关闭分页
+	__asm__ volatile(
+			"movl	%cr0, %eax;"
+			"andl	$0x7FFFFFFF, %eax;"
+			"movl    %eax, %cr0;"
+	);
+
+	//页目录开始于0x300000，大小为1024个（每个4字节）共4096字节
+	u32 *page_dir = ((u32 *) PAGE_DIR);
+	//页表1开始于0x300000 + 0x1000 = 0x301000
+	u32 *page_table = (u32 *) 0x800000;
+	u32 address = 0x800000;
+	//页表1有1024个，每个4字节，共4096个字节
+	for (int i = 0; i < MEMORY_RANGE / PAGE_SIZE; ++i)
+	{
+		page_table[i] = address | 7;
+		address += PAGE_SIZE;
+
+	};
+	page_dir[2] = ((u32) page_table | 7);
+
+	__asm__ volatile(
+				"movl	$0x0, %eax;"
+				"movl    %eax, %cr2;"
+		);
 
 	__asm__ volatile(
 			"movl	%cr0, %eax;"
@@ -49,7 +86,9 @@ void install_page()
 
 void page_error()
 {
-//	//关闭分页
+
+	//test();
+	//关闭分页
 	__asm__ volatile(
 			"movl	%cr0, %eax;"
 			"andl	$0x7FFFFFFF, %eax;"
@@ -79,11 +118,30 @@ void page_error()
 		u32 *page_table = (u32 *) alloc_page(1, MM_SWAP_TYPE_NO);
 		//这个目录项的页表已存在
 		page_dir[page_dir_index] = ((u32) page_table | 7);
+
 		//页表1有1024个，每个4字节，共4096个字节
 		for (int i = 0; i < MEMORY_RANGE / PAGE_SIZE; ++i)
 		{
 			//这些页表尚未分配
 			page_table[i] = 6;
+		}
+
+		int end_flag = 0;
+		for (int i = 0; i < 1024 && !end_flag; i++)
+		{
+			if ((page_dir[i] & 0x1) == 1)
+			{
+				u32 *page_tbl = (u32 *) (page_dir[i] & 0xFFFFF000);
+				for (int j = 0; j < 1024 && !end_flag; j++)
+				{
+					if ((page_tbl[j] & 0x1) == 0 && (page_tbl[j] & 0x200) == 0)
+					{
+						page_tbl[j] = (u32) page_table | 7;
+						end_flag = 1;
+						printf("Move OK %x %x %x\n", page_table, i, j);
+					}
+				}
+			}
 		}
 	}
 
@@ -96,7 +154,7 @@ void page_error()
 		if ((page_table[page_table_index] & 0x200) == 0)
 		{
 			//申请一个空白页
-			u32 alloc_addr = (u32)alloc_page(1, MM_SWAP_TYPE_CAN);
+			u32 alloc_addr = (u32) alloc_page(1, MM_SWAP_TYPE_CAN);
 			//如果内存已无可用页面
 			if (alloc_addr == 0)
 			{
@@ -104,11 +162,10 @@ void page_error()
 				//将交换后的页面地址赋值给alloc_addr
 				printf("Page E0\n");
 			}
-
 			//更新页表值
 			page_table[page_table_index] = alloc_addr | 7;
 
-			printf("Page OK.\n");
+			printf("Page OK %x %x\n",page_table_index, alloc_addr);
 		}
 		//已分配，但被换出到交换分区中
 		else if ((page_table[page_table_index] & 0x200) == 1)
@@ -126,10 +183,10 @@ void page_error()
 	{
 		printf("Page E2\n");
 	}
+
 	__asm__ volatile(
 			"movl	%cr0, %eax;"
 			"orl	$0x80000000, %eax;"
 			"movl    %eax, %cr0;"
 	);
-	printf("Page End\n");
 }
