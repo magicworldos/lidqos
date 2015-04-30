@@ -35,7 +35,11 @@ void run_A()
 
 void run_B()
 {
-//	char *p = (char *) 0xb8000;
+//	char *p = (char *) 0x800;
+//	char a = *p;
+	while (1)
+	{
+	}
 //	p += ((23 * 80 + 76)) * 2;
 //	int i = 64;
 //	while (1)
@@ -46,14 +50,14 @@ void run_B()
 //			i = 33;
 //		}
 //	}
-	char *p = (char *) 0x800000;
-	*p = 'A';
-	p = (char *) 0xb8000;
-	p += ((23 * 80 + 76)) * 2;
-	*p= 'S';
-	while (1)
-	{
-	}
+//	char *p = (char *) 0x800000;
+//	*p = 'A';
+//	p = (char *) 0xb8000;
+//	p += ((23 * 80 + 76)) * 2;
+//	*p= 'S';
+//	while (1)
+//	{
+//	}
 }
 
 /*
@@ -62,21 +66,53 @@ void run_B()
  */
 void install_process()
 {
-	int pages = 0x4;
-	int pagesize = 0x1000 * 0x4;
+	int pages = 1;
+	int size = 0x1000 * pages;
 	pcb_A = alloc_page(pages, MM_SWAP_TYPE_CAN);
 	init_process(pcb_A);
 	pcb_A->pid = 1;
 	pcb_A->tss.eip = (u32) &run_A;
-	pcb_A->tss.esp = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + pagesize;
-	pcb_A->tss.esp0 = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + pagesize;
+	pcb_A->tss.esp = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + size;
+	pcb_A->tss.esp0 = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + size;
+	pcb_A->tss.cr3 = 0x300000;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	pcb_B = alloc_page(pages, MM_SWAP_TYPE_CAN);
 	init_process(pcb_B);
 	pcb_B->pid = 2;
-	pcb_B->tss.eip = (u32) &run_B;
-	pcb_B->tss.esp = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + pagesize;
-	pcb_B->tss.esp0 = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + pagesize;
+
+	//16MB
+	u32 addr_start = (u32) alloc_page(0x1000, MM_SWAP_TYPE_CAN);
+
+	u32 *page_dir = (u32 *) addr_start;
+	u32 *page_table = (u32 *) (addr_start + 0x1000);
+
+	u32 address = addr_start;
+	u32 tbl_addr = 0x1000;
+	for (int i = 0; i < 1024; i++)
+	{
+		for (int j = 0; j < 1024; j++)
+		{
+			page_table[j] = address | 7;
+			address += 0x1000;
+		}
+		page_dir[i] = ((u32) tbl_addr | 7);
+		page_table += 1024;
+		tbl_addr += 0x1000;
+	}
+
+	pcb_B->tss.eip = 0xE00000;
+	pcb_B->tss.esp = 0xE02000;
+	pcb_B->tss.esp0 = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + size;
+	pcb_B->tss.cr3 = addr_start;
+
+	addr_to_gdt(LDT_TYPE_CS, addr_start, &(pcb_B->ldt[0]), GDT_G_KB, 0xfffff);
+	addr_to_gdt(LDT_TYPE_DS, addr_start, &(pcb_B->ldt[1]), GDT_G_KB, 0xfffff);
+
+	mmcopy(&run_B, (void *) (addr_start + 0xE00000), size);
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 	s_pcb *pcb = alloc_page(pages, MM_SWAP_TYPE_CAN);
 	init_process(pcb);
@@ -106,8 +142,7 @@ void init_process(s_pcb *pcb)
 	pcb->tss.ss1 = 0;
 	pcb->tss.esp2 = 0;
 	pcb->tss.ss2 = 0;
-	//(0x300000)
-	pcb->tss.cr3 = (0x300000);
+	pcb->tss.cr3 = 0;
 	pcb->tss.eflags = 0x3202;
 	pcb->tss.eax = 0;
 	pcb->tss.ecx = 0;

@@ -174,7 +174,7 @@ void int_timer()
 	outb_p(0x20, 0x20);
 
 	//任务调度算法
-	//schedule();
+	schedule();
 }
 
 /*

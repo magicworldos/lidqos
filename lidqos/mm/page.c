@@ -12,30 +12,19 @@ void install_page()
 	//页目录开始于0x300000，大小为1024个（每个4字节）共4096字节
 	u32 *page_dir = ((u32 *) PAGE_DIR);
 	//页表1开始于0x300000 + 0x1000 = 0x301000
-	u32 *page_table1 = ((u32 *) PAGE_TABLE);
-	//页表2开始于0x301000 + 0x1000 = 0x302000
-	u32 *page_table2 = ((u32 *) (PAGE_TABLE + PAGE_SIZE));
+	u32 *page_table = ((u32 *) PAGE_TABLE);
+	//用于内存地址计算
 	u32 address = 0;
-	//页表1有1024个，每个4字节，共4096个字节
-	for (int i = 0; i < MEMORY_RANGE / PAGE_SIZE; ++i)
+	//处理所有页目录
+	for (int i = 0; i < 1024; i++)
 	{
-		page_table1[i] = address | 7;
-		address += PAGE_SIZE;
-
-	};
-	//页表2有1024个，每个4字节，共4096个字节
-	for (int i = 0; i < MEMORY_RANGE / PAGE_SIZE; ++i)
-	{
-		page_table2[i] = address | 7;
-		address += PAGE_SIZE;
-	};
-
-	page_dir[0] = ((u32) page_table1 | 7);
-	page_dir[1] = ((u32) page_table2 | 7);
-
-	for (int i = 2; i < 1024; ++i)
-	{
-		page_dir[i] = 6;
+		for (int j = 0; j < 1024; j++)
+		{
+			page_table[j] = address | 7;
+			address += PAGE_SIZE;
+		}
+		page_dir[i] = ((u32) page_table | 7);
+		page_table += 1024;
 	}
 
 	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
@@ -47,43 +36,12 @@ void install_page()
 
 }
 
-void test()
-{
-	//关闭分页
-	__asm__ volatile(
-			"movl	%cr0, %eax;"
-			"andl	$0x7FFFFFFF, %eax;"
-			"movl    %eax, %cr0;"
-	);
-
-	//页目录开始于0x300000，大小为1024个（每个4字节）共4096字节
-	u32 *page_dir = ((u32 *) PAGE_DIR);
-	//页表1开始于0x300000 + 0x1000 = 0x301000
-	u32 *page_table = (u32 *) 0x800000;
-	u32 address = 0x800000;
-	//页表1有1024个，每个4字节，共4096个字节
-	for (int i = 0; i < MEMORY_RANGE / PAGE_SIZE; ++i)
-	{
-		page_table[i] = address | 7;
-		address += PAGE_SIZE;
-
-	};
-	page_dir[2] = ((u32) page_table | 7);
-
-	__asm__ volatile(
-			"movl	$0x0, %eax;"
-			"movl    %eax, %cr2;"
-	);
-
-	__asm__ volatile(
-			"movl	%cr0, %eax;"
-			"orl	$0x80000000, %eax;"
-			"movl    %eax, %cr0;"
-	);
-}
-
 void page_error()
 {
+	u16 temp;
+	__asm__ volatile("movw	%%ds, %0" : "=a" (temp) : );
+	printf("%x\n", temp);
+	hlt();
 
 	//test();
 	//关闭分页
