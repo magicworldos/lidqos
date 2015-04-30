@@ -83,34 +83,34 @@ void install_process()
 	pcb_B->pid = 2;
 
 	//16MB
-	u32 addr_start = (u32) alloc_page(0x1000, MM_SWAP_TYPE_CAN);
-
-	u32 *page_dir = (u32 *) addr_start;
-	u32 *page_table = (u32 *) (addr_start + 0x1000);
-
-	u32 address = addr_start;
-	u32 tbl_addr = 0x1000;
-	for (int i = 0; i < 1024; i++)
+	u32 code_start = (u32) alloc_page(0x4, MM_SWAP_TYPE_CAN);
+	u32 *page_dir = (u32 *) (code_start + 0x2000);
+	u32 *page_table = (u32 *) (code_start + 0x3000);
+	u32 address = code_start;
+	for (int j = 0; j < 1024; j++)
 	{
-		for (int j = 0; j < 1024; j++)
+		if (j < 4)
 		{
 			page_table[j] = address | 7;
 			address += 0x1000;
 		}
-		page_dir[i] = ((u32) tbl_addr | 7);
-		page_table += 1024;
-		tbl_addr += 0x1000;
+		else
+		{
+			page_table[j] = 6;
+		}
+	}
+	page_dir[0] = (u32) page_table | 7;
+	for (int i = 1; i < 1024; i++)
+	{
+		page_dir[i] = 6;
 	}
 
-	pcb_B->tss.eip = 0xE00000;
-	pcb_B->tss.esp = 0xE02000;
+	pcb_B->tss.eip = 0x0;
+	pcb_B->tss.esp = 0x1800;
 	pcb_B->tss.esp0 = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + size;
-	pcb_B->tss.cr3 = addr_start;
+	pcb_B->tss.cr3 = (u32) page_dir;
 
-	addr_to_gdt(LDT_TYPE_CS, addr_start, &(pcb_B->ldt[0]), GDT_G_KB, 0xfffff);
-	addr_to_gdt(LDT_TYPE_DS, addr_start, &(pcb_B->ldt[1]), GDT_G_KB, 0xfffff);
-
-	mmcopy(&run_B, (void *) (addr_start + 0xE00000), size);
+	mmcopy(&run_B, (void *) code_start, 1024);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -158,9 +158,10 @@ void init_process(s_pcb *pcb)
 	pcb->tss.fs = USER_DATA_SEL;
 	pcb->tss.gs = USER_DATA_SEL;
 	pcb->tss.ldt = GDT_INDEX_LDT;
-	pcb->tss.trace_bitmap = 0;
+	pcb->tss.trace_bitmap = 0x0;
+//	pcb->tss.trace_bitmap = 0x80000000;
 
-	//设置多任务的gdt描述符
+//设置多任务的gdt描述符
 	addr_to_gdt(LDT_TYPE_CS, 0, &(pcb->ldt[0]), GDT_G_KB, 0xfffff);
 	addr_to_gdt(LDT_TYPE_DS, 0, &(pcb->ldt[1]), GDT_G_KB, 0xfffff);
 }
@@ -174,12 +175,14 @@ void schedule()
 	else
 	{
 		pcb_current = pcb_B;
+
 	}
 
 	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb_current->tss, &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
 	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb_current->ldt, &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
 
 	call_tss();
+//	__asm__ volatile("jmp $0x20, $0");
 }
 
 #endif

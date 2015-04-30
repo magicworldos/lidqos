@@ -25,6 +25,7 @@ int temp = 0;
  */
 void int_div_error()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_div_error.\n");
 	hlt();
 }
@@ -34,6 +35,7 @@ void int_div_error()
  */
 void int_debug_error()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_debug_error.\n");
 	hlt();
 }
@@ -43,6 +45,7 @@ void int_debug_error()
  */
 void int_nmi()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_nmi.\n");
 	hlt();
 }
@@ -52,6 +55,7 @@ void int_nmi()
  */
 void int_power_down()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_power_down.\n");
 	hlt();
 }
@@ -61,6 +65,7 @@ void int_power_down()
  */
 void int_bound_out()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_bound_out.\n");
 	hlt();
 }
@@ -70,6 +75,7 @@ void int_bound_out()
  */
 void int_bound_check()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_bound_check.\n");
 	hlt();
 }
@@ -79,6 +85,7 @@ void int_bound_check()
  */
 void int_invalid_opcode()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_invalid_opcode.\n");
 	hlt();
 }
@@ -88,6 +95,7 @@ void int_invalid_opcode()
  */
 void int_no_fpu()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_no_fpu.\n");
 	hlt();
 }
@@ -97,6 +105,7 @@ void int_no_fpu()
  */
 void int_double_error()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_double_error.\n");
 	hlt();
 }
@@ -106,6 +115,7 @@ void int_double_error()
  */
 void int_fpu_out()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_fpu_out.\n");
 	hlt();
 }
@@ -115,6 +125,7 @@ void int_fpu_out()
  */
 void int_tss_error()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_tss_error.\n");
 	hlt();
 }
@@ -124,6 +135,7 @@ void int_tss_error()
  */
 void int_section_error()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_section_error.\n");
 	hlt();
 }
@@ -133,6 +145,7 @@ void int_section_error()
  */
 void int_stack_error()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_stack_error.\n");
 	hlt();
 }
@@ -142,6 +155,7 @@ void int_stack_error()
  */
 void int_protection_error()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_protection_error.\n");
 	hlt();
 }
@@ -151,8 +165,8 @@ void int_protection_error()
  */
 void int_page_error()
 {
-	//printf("int_page_error.\n");
-
+	//set_ds(GDT_INDEX_KERNEL_DS);
+	printf("int_page_error.\n");
 	page_error();
 }
 
@@ -161,6 +175,7 @@ void int_page_error()
  */
 void int_fpu_error()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_fpu_error.\n");
 	hlt();
 }
@@ -170,6 +185,8 @@ void int_fpu_error()
  */
 void int_timer()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
+
 	//通知PIC可以接受新中断
 	outb_p(0x20, 0x20);
 
@@ -182,6 +199,8 @@ void int_timer()
  */
 void int_keyboard()
 {
+	//set_ds(GDT_INDEX_KERNEL_DS);
+
 	//取得扫描码
 	u8 scan_code = inb_p(0x60);
 	//取得按下、抬起状态
