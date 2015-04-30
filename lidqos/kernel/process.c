@@ -57,7 +57,6 @@ void install_process()
 	int pages = 1;
 	int size = 0x1000 * pages;
 	pcb_A = alloc_page(pages, MM_SWAP_TYPE_CAN);
-	printf("%x %x %x \n", pcb_A, &pcb_A->tss, &pcb_A->tss.cr3);
 	init_process(pcb_A);
 	pcb_A->pid = 1;
 	pcb_A->tss.eip = (u32) &run_A;
@@ -71,7 +70,7 @@ void install_process()
 	pcb_B = (s_pcb *) (code_start + 0x8000);
 	init_process(pcb_B);
 	pcb_B->pid = 2;
-	pcb_B->tss.esp0 = code_start+0x9000;
+	pcb_B->tss.esp0 = code_start + 0x9000;
 	u32 *page_dir = (u32 *) (code_start + 0x1000);
 	u32 *page_tbl = (u32 *) (code_start + 0x2000);
 
@@ -86,25 +85,40 @@ void install_process()
 		page_dir[i] = ((u32) page_tbl | 7);
 		page_tbl += 1024;
 	}
+
+//	address = code_start;
+//	u32 page_dir_index = (address >> 22) & 0x3ff;
+//	u32 page_table_index = (address >> 12) & 0x3ff;
+//	printf("%x %x\n", page_dir_index, page_table_index);
+//
+//	for (int i = page_dir_index; i < page_dir_index + 1; i++)
+//	{
+//		for (int j = page_table_index; j < 1024; j++)
+//		{
+//			page_tbl[j] = address | 7;
+//			address += 0x1000;
+//		}
+//		page_dir[i] = ((u32) page_tbl | 7);
+//		page_tbl += 1024;
+//	}
+
 	address = code_start;
 	u32 page_dir_index = (address >> 22) & 0x3ff;
 	u32 page_table_index = (address >> 12) & 0x3ff;
 	printf("%x %x\n", page_dir_index, page_table_index);
-
-	for (int i = page_dir_index; i < page_dir_index + 1; i++)
+	page_tbl = (u32 *) (code_start + 0x2000 + 0x1000 * page_dir_index);
+	printf("%x\n", page_tbl);
+	for (int i = 0; i < 1024; i++)
 	{
-		for (int j = page_table_index; j < 1024; j++)
-		{
-			page_tbl[j] = address | 7;
-			address += 0x1000;
-		}
-		page_dir[i] = ((u32) page_tbl | 7);
-		page_tbl += 1024;
+		page_tbl[i] = address | 7;
+		address += 0x1000;
 	}
+	page_dir[page_dir_index] = ((u32) page_tbl | 7);
 
 	pcb_B->tss.eip = code_start + 0x6000;
 	pcb_B->tss.esp = code_start + 0x8000;
 	pcb_B->tss.cr3 = (u32) page_dir;
+	printf("cr3: %x\n", page_dir);
 	mmcopy(&run_B, (void *) (code_start + 0x6000), 1024);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -176,8 +190,10 @@ void schedule()
 	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb_current->tss, &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
 	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb_current->ldt, &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
 
+	//在时钟中断时并没有切换ds和cr3寄存器
+	//但是在call tss时cr3会被修改为tss中的cr3
+	set_ds(0xf);
 	call_tss();
-//	__asm__ volatile("jmp $0x20, $0");
 }
 
 #endif
