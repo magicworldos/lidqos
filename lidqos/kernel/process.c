@@ -35,7 +35,7 @@ void run_A()
 
 void run_B()
 {
-//	char *p = (char *) 0x800;
+//	char *p = (char *) 0x80000000;
 //	char a = *p;
 	while (1)
 	{
@@ -81,36 +81,36 @@ void install_process()
 	pcb_B = alloc_page(pages, MM_SWAP_TYPE_CAN);
 	init_process(pcb_B);
 	pcb_B->pid = 2;
+	pcb_B->tss.esp0 = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + size;
+	u32 code_start = (u32) alloc_page(4098, MM_SWAP_TYPE_CAN);
+	u32 *page_dir = (u32 *) (code_start);
+	u32 *page_tbl = (u32 *) (code_start + 0x1000);
+	printf("%x\n", code_start);
 
-	//16MB
-	u32 code_start = (u32) alloc_page(0x4, MM_SWAP_TYPE_CAN);
-	u32 *page_dir = (u32 *) (code_start + 0x2000);
-	u32 *page_table = (u32 *) (code_start + 0x3000);
-	u32 address = code_start;
-	for (int j = 0; j < 1024; j++)
+	u32 address = 0;
+	for (int i = 0; i < 1024; i++)
 	{
-		if (j < 4)
+		if (i < 3)
 		{
-			page_table[j] = address | 7;
-			address += 0x1000;
+			for (int j = 0; j < 1024; j++)
+			{
+				page_tbl[j] = address | 7;
+				address += 0x1000;
+			}
+			page_dir[i] = ((u32) page_tbl | 7);
+			page_tbl += 1024;
 		}
 		else
 		{
-			page_table[j] = 6;
+			page_dir[i] = 6;
 		}
 	}
-	page_dir[0] = (u32) page_table | 7;
-	for (int i = 1; i < 1024; i++)
-	{
-		page_dir[i] = 6;
-	}
 
-	pcb_B->tss.eip = 0x0;
-	pcb_B->tss.esp = 0x1800;
-	pcb_B->tss.esp0 = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + size;
+	pcb_B->tss.eip = code_start + 0x5000;
+	pcb_B->tss.esp = code_start + 0x6000;
 	pcb_B->tss.cr3 = (u32) page_dir;
 
-	mmcopy(&run_B, (void *) code_start, 1024);
+	mmcopy(&run_B, (void *) (code_start + 0x5000), 1024);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

@@ -38,9 +38,8 @@ void install_page()
 
 void page_error()
 {
-	u16 temp;
-	__asm__ volatile("movw	%%ds, %0" : "=a" (temp) : );
-	printf("%x\n", temp);
+	u32 addr = cr2();
+	printf("%x\n", addr);
 	hlt();
 
 	//test();
@@ -52,7 +51,7 @@ void page_error()
 	);
 
 	//取得页面错误地址
-	u32 addr = cr2();
+	//u32 addr = cr2();
 	//printf("%x\n", addr);
 
 	//页目录索引 / 4M
