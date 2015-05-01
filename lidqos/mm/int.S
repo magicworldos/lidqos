@@ -269,6 +269,7 @@ _int_0x0d:
 
 //页错误
 _int_0x0e:
+	//弹出因缺页错误而被压栈的内容
 	popl %eax
 	pushal
 	pushfl

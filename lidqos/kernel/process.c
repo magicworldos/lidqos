@@ -35,6 +35,8 @@ void run_A()
 
 void run_B()
 {
+	char *s = (char*)0x6000000;
+	char sf = *s;
 	char *p = (char *) 0xb8000;
 	p += ((23 * 80 + 76)) * 2;
 	int i = 33;
