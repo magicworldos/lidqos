@@ -72,7 +72,7 @@ void install_process()
 	pcb_B = (s_pcb *) (code_start + 0x10000);
 	init_process(pcb_B);
 	pcb_B->pid = 2;
-	pcb_B->tss.esp0 = 0x780000;
+	pcb_B->tss.esp0 = code_start + 0x14000;
 	u32 *page_dir = (u32 *) (code_start + 0x1000);
 	u32 *page_tbl = (u32 *) (code_start + 0x2000);
 
@@ -87,10 +87,10 @@ void install_process()
 		page_dir[i] = ((u32) page_tbl | 7);
 		page_tbl += 1024;
 	}
-	for (int i = 2; i < 1024; i++)
-	{
-		page_dir[i] = 6;
-	}
+//	for (int i = 2; i < 1024; i++)
+//	{
+//		page_dir[i] = 6;
+//	}
 
 //	address = code_start;
 //	u32 page_dir_index = (address >> 22) & 0x3ff;
@@ -117,7 +117,7 @@ void install_process()
 	for (int i = 0; i < 1024; i++)
 	{
 		//将pbc、eip和esp所在的页面设置为在内存中
-		if (i >= 0x10 && i <= 0x12)
+		if (i >= 0x10 && i <= 0x14)
 		{
 			page_tbl[i] = address | 7;
 		}

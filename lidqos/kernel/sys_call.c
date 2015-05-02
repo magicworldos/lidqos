@@ -186,8 +186,9 @@ void int_fpu_error()
 void int_timer()
 {
 	//在时钟中断时并没有切换ds和cr3寄存器
-	set_ds(GDT_INDEX_KERNEL_DS);
+
 	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
+	set_ds(GDT_INDEX_KERNEL_DS);
 
 	//通知PIC可以接受新中断
 	outb_p(0x20, 0x20);
