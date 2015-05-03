@@ -19,6 +19,6 @@
 
 void install_page();
 
-void page_error();
+void page_error(u32 error_code);
 
 #endif /* INCLUDE_KERNEL_PAGE_H_ */

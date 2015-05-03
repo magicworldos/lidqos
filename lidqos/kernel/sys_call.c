@@ -12,7 +12,7 @@
 
 #include <kernel/sys_call.h>
 
-extern s_pcb *pcb_current;
+//extern s_pcb *pcb_current;
 //可显字符
 extern u8 keys[0x53][2];
 //shift键按下状态
@@ -25,7 +25,7 @@ int temp = 0;
  */
 void int_div_error()
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
+	set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_div_error.\n");
 	hlt();
 }
@@ -35,7 +35,7 @@ void int_div_error()
  */
 void int_debug_error()
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
+	set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_debug_error.\n");
 	hlt();
 }
@@ -45,7 +45,7 @@ void int_debug_error()
  */
 void int_nmi()
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
+	set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_nmi.\n");
 	hlt();
 }
@@ -55,7 +55,7 @@ void int_nmi()
  */
 void int_power_down()
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
+	set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_power_down.\n");
 	hlt();
 }
@@ -65,7 +65,7 @@ void int_power_down()
  */
 void int_bound_out()
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
+	set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_bound_out.\n");
 	hlt();
 }
@@ -75,7 +75,7 @@ void int_bound_out()
  */
 void int_bound_check()
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
+	set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_bound_check.\n");
 	hlt();
 }
@@ -85,7 +85,7 @@ void int_bound_check()
  */
 void int_invalid_opcode()
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
+	set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_invalid_opcode.\n");
 	hlt();
 }
@@ -95,7 +95,7 @@ void int_invalid_opcode()
  */
 void int_no_fpu()
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
+	set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_no_fpu.\n");
 	hlt();
 }
@@ -105,7 +105,7 @@ void int_no_fpu()
  */
 void int_double_error()
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
+	set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_double_error.\n");
 	hlt();
 }
@@ -115,7 +115,7 @@ void int_double_error()
  */
 void int_fpu_out()
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
+	set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_fpu_out.\n");
 	hlt();
 }
@@ -135,7 +135,7 @@ void int_tss_error()
  */
 void int_section_error()
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
+	set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_section_error.\n");
 	hlt();
 }
@@ -145,7 +145,7 @@ void int_section_error()
  */
 void int_stack_error()
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
+	set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_stack_error.\n");
 	hlt();
 }
@@ -155,7 +155,7 @@ void int_stack_error()
  */
 void int_protection_error()
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
+	set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_protection_error.\n");
 	hlt();
 }
@@ -163,11 +163,12 @@ void int_protection_error()
 /***
  * 页错误
  */
-void int_page_error()
+void int_page_error(u32 error_code)
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
+	set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_page_error.\n");
-	page_error();
+	page_error(error_code);
+	set_ds(0xf);
 }
 
 /***
@@ -175,7 +176,7 @@ void int_page_error()
  */
 void int_fpu_error()
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
+	set_ds(GDT_INDEX_KERNEL_DS);
 	printf("int_fpu_error.\n");
 	hlt();
 }
@@ -186,9 +187,8 @@ void int_fpu_error()
 void int_timer()
 {
 	//在时钟中断时并没有切换ds和cr3寄存器
-
-	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
 	set_ds(GDT_INDEX_KERNEL_DS);
+	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
 
 	//通知PIC可以接受新中断
 	outb_p(0x20, 0x20);

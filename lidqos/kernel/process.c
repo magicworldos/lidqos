@@ -37,16 +37,18 @@ void run_B()
 {
 	char *s = (char*)0x6000000;
 	char sf = *s;
-	char *p = (char *) 0xb8000;
-	p += ((23 * 80 + 76)) * 2;
-	int i = 33;
-	while (1)
-	{
-		*p = i;
-		if (++i >= 127)
-		{
-			i = 33;
-		}
+//	char *p = (char *) 0xb8000;
+//	p += ((23 * 80 + 76)) * 2;
+//	int i = 33;
+//	while (1)
+//	{
+//		*p = i;
+//		if (++i >= 127)
+//		{
+//			i = 33;
+//		}
+//	}
+	while(1){
 	}
 }
 
@@ -81,10 +83,10 @@ void install_process()
 	{
 		for (int j = 0; j < 1024; j++)
 		{
-			page_tbl[j] = address | 7;
+			page_tbl[j] = address | 5;
 			address += 0x1000;
 		}
-		page_dir[i] = ((u32) page_tbl | 7);
+		page_dir[i] = ((u32) page_tbl | 5);
 		page_tbl += 1024;
 	}
 //	for (int i = 2; i < 1024; i++)
@@ -111,9 +113,7 @@ void install_process()
 	address = code_start;
 	u32 page_dir_index = (address >> 22) & 0x3ff;
 	u32 page_table_index = (address >> 12) & 0x3ff;
-	printf("%x %x\n", page_dir_index, page_table_index);
 	page_tbl = (u32 *) (code_start + 0x2000 + 0x1000 * page_dir_index);
-	printf("%x\n", page_tbl);
 	for (int i = 0; i < 1024; i++)
 	{
 		//将pbc、eip和esp所在的页面设置为在内存中
@@ -132,7 +132,6 @@ void install_process()
 	pcb_B->tss.eip = code_start + 0x11000;
 	pcb_B->tss.esp = code_start + 0x12000;
 	pcb_B->tss.cr3 = (u32) page_dir;
-	printf("cr3: %x\n", page_dir);
 	mmcopy(&run_B, (void *) (code_start + 0x11000), 1024);
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

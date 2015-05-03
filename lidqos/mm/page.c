@@ -36,8 +36,15 @@ void install_page()
 
 }
 
-void page_error()
+void page_error(u32 error_code)
 {
+
+	if (error_code == 7)
+	{
+		printf("Seqestion error. %x\n", error_code);
+		hlt();
+	}
+
 	//取得页面错误地址
 	u32 error_addr = cr2();
 	u32 cr3 = 0;
@@ -46,7 +53,6 @@ void page_error()
 	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
 
 	u32 *page_dir = (u32 *) cr3;
-	printf("%x\n", error_addr);
 
 	//页目录索引 / 4M
 	u32 page_dir_index = error_addr / 0x400000;
