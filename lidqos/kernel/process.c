@@ -149,7 +149,7 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 
 	u32 address = 0;
 	//前16M系统内存
-	for (int i = 0; i < 6; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		for (int j = 0; j < 1024; j++)
 		{
