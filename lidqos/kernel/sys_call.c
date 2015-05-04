@@ -190,6 +190,9 @@ void int_timer()
 	set_ds(GDT_INDEX_KERNEL_DS);
 	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
 
+	//通知PIC可以接受新中断
+	outb_p(0x20, 0x20);
+
 	//任务调度算法
 	schedule();
 }

@@ -129,6 +129,13 @@ static inline u16 ds()
 	return ds;
 }
 
+static inline u16 cs()
+{
+	u16 cs;
+	__asm__ volatile("movw	%%cs, %0" : "=a" (cs) : );
+	return cs;
+}
+
 static inline u32 cr2()
 {
 	u32 cr2;

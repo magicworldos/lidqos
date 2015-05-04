@@ -20,39 +20,33 @@ int timer = 0;
 
 void run_A()
 {
-//	char *p = (char *) 0xb8000;
-//	p += ((23 * 80 + 74)) * 2;
-//	int i = 33;
-//	while (1)
-//	{
-//		*p = i;
-//		if (++i >= 127)
-//		{
-//			i = 33;
-//		}
-//	}
+	char *p = (char *) 0xb8000;
+	p += ((23 * 80 + 74)) * 2;
+	int i = 33;
 	while (1)
 	{
+		*p = i;
+		if (++i >= 127)
+		{
+			i = 33;
+		}
 	}
 }
 
 void run_B()
 {
-//	char *s = (char*) 0x6000000;
-//	char sf = *s;
-//	char *p = (char *) 0xb8000;
-//	p += ((23 * 80 + 76)) * 2;
-//	int i = 33;
-//	while (1)
-//	{
-//		*p = i;
-//		if (++i >= 127)
-//		{
-//			i = 33;
-//		}
-//	}
+	char *s = (char*) 0x6000000;
+	char sf = *s;
+	char *p = (char *) 0xb8000;
+	p += ((23 * 80 + 76)) * 2;
+	int i = 33;
 	while (1)
 	{
+		*p = i;
+		if (++i >= 127)
+		{
+			i = 33;
+		}
 	}
 }
 
@@ -81,14 +75,17 @@ void install_process()
 
 	s_pcb *pcb_empty = NULL;
 	void* mm_pcb = alloc_page(process_id, pages, MM_SWAP_TYPE_CAN);
+	pcb_empty = (s_pcb *) mm_pcb;
 	init_process(mm_pcb, pcb_empty, process_id, NULL);
 	process_id++;
 
 	void* mm_pcb_A = alloc_page(process_id, pages, MM_SWAP_TYPE_CAN);
+	pcb_A = (s_pcb *) mm_pcb_A;
 	init_process(mm_pcb_A, pcb_A, process_id, &run_A);
 	process_id++;
 
 	void* mm_pcb_B = alloc_page(process_id, pages, MM_SWAP_TYPE_CAN);
+	pcb_B = (s_pcb *) mm_pcb_B;
 	init_process(mm_pcb_B, pcb_B, process_id, &run_B);
 	process_id++;
 
@@ -107,8 +104,6 @@ void install_process()
  */
 void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 {
-	pcb = (s_pcb *) mm_pcb;
-
 	//s_tss
 	pcb->tss.back_link = 0;
 	pcb->tss.ss0 = GDT_INDEX_KERNEL_DS;
@@ -145,9 +140,7 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 	pcb->tss.eip = (u32) mm_pcb + 0x1000;
 	pcb->tss.esp = (u32) mm_pcb + 0x2000;
 	pcb->tss.esp0 = (u32) mm_pcb + 0x3000;
-//	pcb->tss.cr3 = (u32) mm_pcb + 0x4000;
-	pcb->tss.cr3 = 0x700000;
-	printf("%x\n", mm_pcb);
+	pcb->tss.cr3 = (u32) mm_pcb + 0x4000;
 
 	mmcopy(run_addr, (void *) (pcb->tss.eip), 0x1000);
 
@@ -156,7 +149,7 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 
 	u32 address = 0;
 	//前16M系统内存
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < 6; i++)
 	{
 		for (int j = 0; j < 1024; j++)
 		{
@@ -167,45 +160,46 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 		page_tbl += 1024;
 	}
 
-//	//mm_pcb所在内存
-//	address = (u32) mm_pcb;
-//	u32 page_dir_index = (address >> 22) & 0x3ff;
-//	u32 page_table_index = (address >> 12) & 0x3ff;
-//
-//	page_tbl = (u32 *) ((u32) mm_pcb + 0x9000); //alloc_page(process_id, 1, 0);
-//	for (int i = 0; i < 1024; i++)
-//	{
-//		if (i >= page_table_index && i <= (page_table_index + 16))
-//		{
-//			page_tbl[i] = address | 7;
-//		}
-//		else
-//		{
-//			page_tbl[i] = 6;
-//		}
-//		address += 0x1000;
-//	}
-//	page_dir[page_dir_index] = ((u32) page_tbl | 7);
-//
-//	printf("page_table_index 0x%x\n", page_table_index);
+	//mm_pcb所在内存
+	address = (u32) mm_pcb;
+	printf("%x\n", address);
+	u32 page_dir_index = (address >> 22) & 0x3ff;
+	u32 page_table_index = (address >> 12) & 0x3ff;
 
-//	if (page_table_index + 16 >= 1024)
-//	{
-//		page_tbl = (u32 *) ((u32) mm_pcb + 0xa000); //alloc_page(process_id, 1, 0);
-//		for (int i = 0; i < 1024; i++)
-//		{
-//			if (i < (10 - (1024 - page_table_index)))
-//			{
-//				page_tbl[i] = address | 7;
-//			}
-//			else
-//			{
-//				page_tbl[i] = 6;
-//			}
-//			address += 0x1000;
-//		}
-//		page_dir[page_dir_index + 1] = ((u32) page_tbl | 7);
-//	}
+	page_tbl = (u32 *) alloc_page(process_id, 1, 0);
+	for (int i = 0; i < 1024; i++)
+	{
+		if (i >= page_table_index && i <= (page_table_index + 16))
+		{
+			page_tbl[i] = address | 7;
+			address += 0x1000;
+		}
+		else
+		{
+			page_tbl[i] = 6;
+		}
+	}
+	page_dir[page_dir_index] = ((u32) page_tbl | 7);
+
+	printf("%x %x %x %x\n", mm_pcb, page_tbl, page_dir_index, page_table_index);
+
+	if (page_table_index + 16 >= 1024)
+	{
+		page_tbl = (u32 *) ((u32) mm_pcb + 0xa000); //alloc_page(process_id, 1, 0);
+		for (int i = 0; i < 1024; i++)
+		{
+			if (i < (10 - (1024 - page_table_index)))
+			{
+				page_tbl[i] = address | 7;
+				address += 0x1000;
+			}
+			else
+			{
+				page_tbl[i] = 6;
+			}
+		}
+		page_dir[page_dir_index + 1] = ((u32) page_tbl | 7);
+	}
 }
 
 void schedule()
@@ -225,9 +219,8 @@ void schedule()
 
 	//在时钟中断时并没有切换ds和cr3寄存器
 	//但是在call tss时cr3会被修改为tss中的cr3
-	//通知PIC可以接受新中断
-	outb_p(0x20, 0x20);
 	set_ds(0xf);
+
 	call_tss();
 }
 
