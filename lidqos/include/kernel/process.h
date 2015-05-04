@@ -12,6 +12,12 @@
 #include <kernel/alloc.h>
 #include <kernel/mm.h>
 #include <kernel/io.h>
+#include <kernel/page.h>
+
+/*
+ * map_process中存放process的ID为u32类型，
+ * 所以在以后的process数据结构中process_id也要是u32类型
+ */
 
 void run_A();
 

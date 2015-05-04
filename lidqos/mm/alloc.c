@@ -16,17 +16,26 @@
 u8 *mmap = NULL;
 
 /*
+ * 每一个内存页面所被程序使用情况
+ * 位图所在的固定内存区域为 [0x300000, 0x700000) 占用4M
+ * map_process中存放了使用这个内存页的任务ID
+ * 对于内核程序所使用的内存页面map_process被设置为0
+ * 其它程序所使用的内存页面被设置为其任务ID
+ */
+u32 *map_process = NULL;
+
+/*
  * install_alloc : 安装申请内存位图
  * return : void
  */
 void install_alloc()
 {
-	//位图所在的固定内存区域为0x200000 ~ 0x2fffff
-	mmap = (u8 *) 0x200000;
+	//位图所在的固定内存区域为 [0x200000, 0x300000)
+	mmap = (u8 *) MMAP;
 
 	for (int i = 0; i < MAP_SIZE; i++)
 	{
-		//mmap所占用的0x500000以下均为已使用
+		//mmap所占用的0xc00000以下均为已使用
 		if (i < MMAP_USED_SIZE)
 		{
 			//设定内核所占用的1MB内存为已使用
@@ -37,6 +46,19 @@ void install_alloc()
 		{
 			mmap[i] = (MM_FREE | MM_CAN_SWAP);
 		}
+	}
+}
+
+void install_used_map()
+{
+	map_process = (u32 *) MMAP_PRO;
+	/*
+	 * 初始化map_process，因为map和map_process的大小永远都是一样的所以用MAP_SIZE
+	 * map_process所占内存空间为 [0x300000, 0x700000)
+	 */
+	for (int i = 0; i < MAP_SIZE; i++)
+	{
+		map_process[i] = 0;
 	}
 }
 

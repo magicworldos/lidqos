@@ -11,11 +11,10 @@
 #include <kernel/typedef.h>
 #include <kernel/io.h>
 #include <kernel/alloc.h>
+#include <kernel/printf.h>
 
-#define PAGE_SIZE			(4 * 1024)
-#define MEMORY_RANGE 		(4 * 1024 * 1024)
-#define PAGE_DIR			(0x300000)
-#define PAGE_TABLE			(PAGE_DIR + PAGE_SIZE)
+#define PAGE_DIR			(0x700000)
+#define PAGE_TABLE			(PAGE_DIR + MM_PAGE_SIZE)
 
 void install_page();
 

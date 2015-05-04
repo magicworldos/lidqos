@@ -28,7 +28,6 @@
 #define hlt()	\
 	({__asm__ volatile("hlt");})
 
-
 /***
  * 载入gdt
  */
@@ -99,6 +98,20 @@ static inline void outb_p(u8 val, u16 port)
 	__asm__ volatile("outb	%0, %1" : : "a" (val), "dN" (port));
 }
 
+static inline void set_cr3(u32 cr3)
+{
+	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(cr3));
+}
+
+static inline void open_mm_page()
+{
+	__asm__ volatile(
+			"movl	%cr0, %eax;"
+			"orl	$0x80000000, %eax;"
+			"movl    %eax, %cr0;"
+	);
+}
+
 /**
  * 从端口中读入一个字节
  */
@@ -121,6 +134,13 @@ static inline u32 cr2()
 	u32 cr2;
 	__asm__ volatile("movl	%%cr2, %0" : "=a" (cr2) : );
 	return cr2;
+}
+
+static inline u32 cr3()
+{
+	u32 cr3;
+	__asm__ volatile("movl	%%cr3, %0" : "=a" (cr3) : );
+	return cr3;
 }
 
 #endif

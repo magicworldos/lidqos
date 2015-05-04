@@ -9,31 +9,28 @@
 
 void install_page()
 {
-	//页目录开始于0x300000，大小为1024个（每个4字节）共4096字节
+	//页目录开始于 [0x700000, 0x701000) ，大小为1024个（每个4字节）共4096字节
 	u32 *page_dir = ((u32 *) PAGE_DIR);
-	//页表1开始于0x300000 + 0x1000 = 0x301000
+	//页表1开始于0x700000 + 0x1000 = 0x701000
 	u32 *page_table = ((u32 *) PAGE_TABLE);
 	//用于内存地址计算
 	u32 address = 0;
 	//处理所有页目录
+	//页表开始于 [0x701000, 0xb01000) ，大小为4M
 	for (int i = 0; i < 1024; i++)
 	{
 		for (int j = 0; j < 1024; j++)
 		{
 			page_table[j] = address | 7;
-			address += PAGE_SIZE;
+			address += MM_PAGE_SIZE;
 		}
 		page_dir[i] = ((u32) page_table | 7);
 		page_table += 1024;
 	}
 
-	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
-	__asm__ volatile(
-			"movl	%cr0, %eax;"
-			"orl	$0x80000000, %eax;"
-			"movl    %eax, %cr0;"
-	);
+	set_cr3(PAGE_DIR);
 
+	open_mm_page();
 }
 
 void page_error(u32 error_code)
@@ -47,12 +44,11 @@ void page_error(u32 error_code)
 
 	//取得页面错误地址
 	u32 error_addr = cr2();
-	u32 cr3 = 0;
-	__asm__ volatile("movl	%%cr3, %0" : "=a" (cr3) : );
+	u32 v_cr3 = cr3();
 
-	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
+	set_cr3(PAGE_DIR);
 
-	u32 *page_dir = (u32 *) cr3;
+	u32 *page_dir = (u32 *) v_cr3;
 
 	//页目录索引 / 4M
 	u32 page_dir_index = error_addr / 0x400000;
@@ -76,8 +72,5 @@ void page_error(u32 error_code)
 		}
 		address += 0x1000;
 	}
-
-	printf("alloc missing page OK.\n");
-
-	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(cr3));
+	set_cr3(v_cr3);
 }

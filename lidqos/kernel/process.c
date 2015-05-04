@@ -66,7 +66,7 @@ void install_process()
 	pcb_A->tss.eip = (u32) &run_A;
 	pcb_A->tss.esp = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + size;
 	pcb_A->tss.esp0 = (u32) alloc_page(pages, MM_SWAP_TYPE_CAN) + size;
-	pcb_A->tss.cr3 = 0x300000;
+	pcb_A->tss.cr3 = PAGE_DIR;
 
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -79,7 +79,7 @@ void install_process()
 	u32 *page_tbl = (u32 *) (code_start + 0x2000);
 
 	u32 address = 0;
-	for (int i = 0; i < 2; i++)
+	for (int i = 0; i < 4; i++)
 	{
 		for (int j = 0; j < 1024; j++)
 		{

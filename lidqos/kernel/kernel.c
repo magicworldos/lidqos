@@ -15,6 +15,9 @@ int start_kernel(int argc, char **args)
 	//安装内存申请模块
 	install_alloc();
 
+	//安装内存页面使用状态
+	install_used_map();
+
 	//安装GDT全局描述符
 	install_gdt();
 
@@ -41,7 +44,7 @@ int start_kernel(int argc, char **args)
 
 	for (;;)
 	{
-		//	__asm__ volatile("int $0x80");
 	}
+
 	return 0;
 }
