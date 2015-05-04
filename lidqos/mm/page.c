@@ -35,10 +35,10 @@ void install_page()
 
 void page_error(u32 error_code)
 {
+	printf("Seqestion error. %x\n", error_code);
 
 	if (error_code == 7)
 	{
-		printf("Seqestion error. %x\n", error_code);
 		hlt();
 	}
 
@@ -57,7 +57,7 @@ void page_error(u32 error_code)
 	//页内偏移
 	u32 page_inside = (error_addr % 0x400000) % 0x1000;
 
-	u32 *tbl = alloc_page(1, MM_SWAP_TYPE_CAN);
+	u32 *tbl = alloc_page(3, 1, MM_SWAP_TYPE_CAN);
 	page_dir[page_dir_index] = (u32) tbl | 7;
 	u32 address = error_addr & 0x3FFFFF;
 	for (int i = 0; i < 1024; i++)

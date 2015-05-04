@@ -67,7 +67,7 @@ void install_used_map()
  *  - int count : 页数
  * return : void*返回申请地址，NULL代表申请失败
  */
-void* alloc_page(int count, int can_swap)
+void* alloc_page(u32 process_id, int count, int can_swap)
 {
 	//查找内存申请地址
 	void *ret = NULL;
@@ -114,6 +114,8 @@ void* alloc_page(int count, int can_swap)
 		{
 			mmap[start_with + i] = MM_USED | MM_NO_SWAP;
 		}
+
+		map_process[i] = process_id;
 	}
 
 //	u32 addr = (u32) ret;
@@ -143,10 +145,11 @@ void* alloc_page(int count, int can_swap)
 void free_page(void *addr, int count)
 {
 	//释放内存页
-	for (int t = 0; t < count; t++)
+	for (int i = 0; i < count; i++)
 	{
 		//更新map中这些页的状态
-		mmap[(u32) (addr + (t * MM_PAGE_SIZE)) / MM_PAGE_SIZE] &= 0xfe;
+		mmap[(u32) (addr + (i * MM_PAGE_SIZE)) / MM_PAGE_SIZE] &= 0xfe;
+		map_process[i] = 0;
 	}
 }
 

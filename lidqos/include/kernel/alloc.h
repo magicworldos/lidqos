@@ -59,7 +59,7 @@ void install_used_map();
  *  - int count : 页数
  * return : void*返回申请地址，NULL代表申请失败
  */
-void* alloc_page(int count, int can_swap);
+void* alloc_page(u32 process_id, int count, int can_swap);
 
 /*
  * alloc_page : 释放内存页，每页为4KB大小
