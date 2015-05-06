@@ -72,6 +72,7 @@ void page_error(u32 pid, u32 error_code)
 		{
 			tbl[i] = 6;
 		}
+		printf("aa%x\n", tbl);
 		page_dir[page_dir_index] = (u32) tbl | 7;
 	}
 	//如果页表已分配
@@ -79,6 +80,7 @@ void page_error(u32 pid, u32 error_code)
 	{
 		//取得页表地址
 		tbl = (u32 *) (page_dir[page_dir_index] & 0xfffff000);
+		printf("bb%x\n", tbl);
 	}
 
 	//使地址4k对齐
@@ -102,6 +104,7 @@ void page_error(u32 pid, u32 error_code)
 	//如果此页面被已经换出则要从外存换回此页面到内存
 	else
 	{
+		printf("bbbbbb\n");
 		u32 sec_no = tbl[page_table_index] >> 12;
 		/*
 		 * 如果换入成功，在执行page_swap_in时，
