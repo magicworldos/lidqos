@@ -20,37 +20,52 @@ int timer = 0;
 
 void run_A()
 {
-	char *p = (char *) 0xb8000;
-	p += ((23 * 80 + 74)) * 2;
-	int i = 33;
+	char *p = NULL;
+	for (u32 i = 0x2000000; i < 0x20000000; i += 0x1000)
+	{
+		p = (char *) i;
+		*p = 'A';
+	}
 	while (1)
 	{
-		*p = i;
-		if (++i >= 127)
-		{
-			i = 33;
-		}
 	}
+
+//	char *p = (char *) 0xb8000;
+//	p += ((23 * 80 + 74)) * 2;
+//	int i = 33;
+//	while (1)
+//	{
+//		*p = i;
+//		if (++i >= 127)
+//		{
+//			i = 33;
+//		}
+//	}
 }
 
 void run_B()
 {
-	char *s = (char*) 0x8000000;
-	*s = 'A';
-	//*s = 'B';
-	char sf = *s;
-
-	char *p = (char *) 0xb8000;
-	p += ((23 * 80 + 76)) * 2;
-	int i = 33;
+	char *p = NULL;
+	for (u32 i = 0x2000000; i < 0x20000000; i += 0x1000)
+	{
+		p = (char *) i;
+		*p = 'B';
+	}
 	while (1)
 	{
-		*p = sf;
-		if (++i >= 127)
-		{
-			i = 33;
-		}
 	}
+
+//	char *p = (char *) 0xb8000;
+//	p += ((23 * 80 + 76)) * 2;
+//	int i = 33;
+//	while (1)
+//	{
+//		*p = sf;
+//		if (++i >= 127)
+//		{
+//			i = 33;
+//		}
+//	}
 }
 
 /*
@@ -201,6 +216,20 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 		}
 		page_dir[page_dir_index + 1] = ((u32) page_tbl | 7);
 	}
+}
+
+u32* pcb_page_dir(u32 pid)
+{
+	s_pcb *pcb = NULL;
+	if (pid == 2)
+	{
+		pcb = pcb_A;
+	}
+	else if (pid == 3)
+	{
+		pcb = pcb_B;
+	}
+	return (u32 *) (pcb->tss.cr3);
 }
 
 void schedule()

@@ -17,13 +17,12 @@
 #define MM_SWAP_TYPE_CAN	(1)
 #define MM_SWAP_TYPE_NO		(0)
 //未使用
-#define MM_FREE				(0x0)
+#define MM_FREE				(0x0 << 0)
 //已使用
-#define MM_USED				(0x1)
+#define MM_USED				(0x1 << 0)
 //动态分配
-//#define MM_DYNAMIC		(2)
-#define MM_NO_SWAP			(0x0)
-#define MM_CAN_SWAP			(0x2)
+#define MM_NO_SWAP			(0x0 << 1)
+#define MM_CAN_SWAP			(0x1 << 1)
 
 //内存页大小4096B
 #define MM_PAGE_SIZE		(4 * 1024)
@@ -83,5 +82,13 @@ void free_page(void *addr, int count);
 // * return : void
 // */
 //void free_mm(void* addr, int size);
+
+u8 mmap_status(u32 page_no);
+
+u32 map_process_id(u32 page_no);
+
+void set_mmap_status(u32 page_no, u8 status);
+
+void set_map_process_id(u32 page_no, u32 pid);
 
 #endif

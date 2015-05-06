@@ -27,6 +27,8 @@ void install_process();
 
 void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr);
 
+u32* pcb_page_dir(u32 pid);
+
 void schedule();
 
 #endif

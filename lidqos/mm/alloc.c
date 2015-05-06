@@ -397,4 +397,24 @@ void free_page(void *addr, int count)
 //	}
 //}
 
+u8 mmap_status(u32 page_no)
+{
+	return mmap[page_no];
+}
+
+u32 map_process_id(u32 page_no)
+{
+	return map_process[page_no];
+}
+
+void set_mmap_status(u32 page_no, u8 status)
+{
+	mmap[page_no] = status;
+}
+
+void set_map_process_id(u32 page_no, u32 pid)
+{
+	map_process[page_no] = pid;
+}
+
 #endif

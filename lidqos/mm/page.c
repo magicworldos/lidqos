@@ -41,6 +41,11 @@ void page_error(u32 pid, u32 error_code)
 
 	set_cr3(PAGE_DIR);
 
+	if (error_addr % 0x100000 == 0)
+	{
+		printf("%x %x\n", pid, error_addr);
+	}
+
 	if (error_code == 7)
 	{
 		printf("Segmentation fault.\n");
@@ -72,7 +77,7 @@ void page_error(u32 pid, u32 error_code)
 	else
 	{
 		//取得页表地址
-		tbl = (u32 *) (page_dir[page_dir_index] & 0xfffffc00);
+		tbl = (u32 *) (page_dir[page_dir_index] & 0xfffff000);
 	}
 
 	//使地址4k对齐
@@ -82,7 +87,7 @@ void page_error(u32 pid, u32 error_code)
 	if ((tbl[page_table_index] >> 8 & 0x1) == 0)
 	{
 		//如果缺页申请成功
-		if (alloc_page_no(page_no))
+		if (alloc_page_no(pid, page_no))
 		{
 			tbl[page_table_index] = address | 7;
 		}
@@ -96,11 +101,11 @@ void page_error(u32 pid, u32 error_code)
 	else
 	{
 		/*
-		 * 如果换回成功，在执行page_swap_in时，
+		 * 如果换入成功，在执行page_swap_in时，
 		 * tbl[page_table_index]的前20位存放的是此页被换出到外存的逻辑扇区号sec_no
-		 * 在读取外存扇区时sec_no要乘以4，因为是4k对齐
+		 * 在读取外存扇区时sec_no要乘以8，因为是4k对齐，8个512B的扇区大小为4096B=4K
 		 */
-		if (page_swap_in(page_no, tbl[page_table_index] >> 12))
+		if (page_swap_in(page_no, tbl[page_table_index] >> 12, pid))
 		{
 			/*
 			 * 这里的一条赋值语句有以下3个作用：
@@ -125,12 +130,147 @@ void page_error(u32 pid, u32 error_code)
  * 向内核申请一个指定页号的页面，如果些页在MMAP中为“可用”则可申请，如果为“已使用”再判断此页是否可以被换出
  * 如果此页不可以被换出，则返回0，如果可以被换出则尝试换出，如果换出失败则返回0，如果换出成功则返回1
  */
-int alloc_page_no(u32 page_no)
+int alloc_page_no(u32 pid, u32 page_no)
 {
-	return 1;
+	//取得此页的状态
+	u8 status = mmap_status(page_no);
+	//如果第0位为0,说明页面未使用
+	if ((status & 0x1) == 0)
+	{
+		//设置此页为“已使用”、“可换出”
+		set_mmap_status(page_no, MM_USED | MM_CAN_SWAP);
+		//设置此页的使用者id，即pid
+		set_map_process_id(page_no, pid);
+		//返回成功
+		return 1;
+	}
+	//如果第0位为1,说明页面已使用
+	else
+	{
+		//如果页面不可以换出
+		if (((status >> 1) & 0x1) == 0)
+		{
+			//返回失败
+			return 0;
+		}
+		//如果页面可以换出
+		else
+		{
+			//向外存申请8个扇区用来存放一个4k的页面
+			u32 sec_no = swap_alloc_page();
+			//如果申请扇区失败
+			if (sec_no == 0)
+			{
+				//返回失败
+				return 0;
+			}
+			else
+			{
+				if (page_swap_out(page_no) == 0)
+				{
+					return 0;
+				}
+				else
+				{
+					//设置此页为“已使用”、“可换出”
+					set_mmap_status(page_no, MM_USED | MM_CAN_SWAP);
+					//设置此页的使用者id，即pid
+					set_map_process_id(page_no, pid);
+
+					//返回成功
+					return 1;
+				}
+			}
+		}
+	}
+
+	//返回失败
+	return 0;
 }
 
-int page_swap_in(u32 page_no, u32 sec_no)
+int page_swap_out(u32 page_no)
 {
-	return 1;
+	//向外存申请8个扇区用来存放一个4k的页面
+	u32 sec_no = swap_alloc_page();
+	//如果申请扇区失败
+	if (sec_no == 0)
+	{
+		//返回失败
+		return 0;
+	}
+	else
+	{
+		//取得正在使用这一页面的pid_used
+		u32 pid_used = map_process_id(page_no);
+		//取得页目录及页表，为换出做准备
+		u32 *page_dir = pcb_page_dir(pid_used);
+		u32 d_ind = page_no / 1024;
+		u32 t_ind = page_no % 1024;
+		u32 *tbl = (u32 *) page_dir[d_ind];
+
+		//取得页面地址4k对齐
+		void* page_data = (void *) (tbl[t_ind] & 0xfffff000);
+		//将页面数据写入外存
+		swap_write_page(sec_no, page_data);
+
+		/*
+		 * 设置原任务的此页面失效
+		 * 将页表中的地址域放入逻辑扇区号
+		 * 将swap状态位置为1表示此页面被换出到外存
+		 */
+		tbl[t_ind] = 6 | (0x1 << 9) | ((sec_no / 8) << 12);
+
+		//返回成功
+		return 1;
+	}
+}
+
+int page_swap_in(u32 page_no, u32 sec_no, u32 pid)
+{
+	//取得此页的状态
+	u8 status = mmap_status(page_no);
+
+	//如果页面不可以换出
+	if (((status >> 1) & 0x1) == 0)
+	{
+		//返回失败
+		return 0;
+	}
+
+	//如果第0位为0,说明页面未使用
+	if ((status & 0x1) == 0)
+	{
+		void *page_data = (void *) (page_no * 0x1000);
+		//将页面数据从外存读入到内存
+		swap_read_page(sec_no * 8, page_data);
+
+		//返回成功
+		return 1;
+	}
+
+	//如果第0位为0,说明页面已使用
+	if ((status & 0x1) == 1)
+	{
+		//将正在使用的页面换出，如果换出失败返回0
+		if (page_swap_out(page_no) == 0)
+		{
+			return 0;
+		}
+		else
+		{
+			void *page_data = (void *) (page_no * 0x1000);
+			//将页面数据从外存读入到内存
+			swap_read_page(sec_no * 8, page_data);
+
+			//设置此页为“已使用”、“可换出”
+			set_mmap_status(page_no, MM_USED | MM_CAN_SWAP);
+			//设置此页的使用者id，即pid
+			set_map_process_id(page_no, pid);
+
+			//返回成功
+			return 1;
+		}
+	}
+
+	return 0;
 }

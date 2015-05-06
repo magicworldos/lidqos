@@ -156,7 +156,8 @@ $(KERNEL)_elfs:		$(KERNEL)_objs
 		$(BUILD_PATH)/$(KERNEL)/mm.o			\
 		$(BUILD_PATH)/$(KERNEL)/int.o			\
 		$(BUILD_PATH)/$(KERNEL)/key.o			\
-		$(BUILD_PATH)/$(KERNEL)/page.o
+		$(BUILD_PATH)/$(KERNEL)/page.o			\
+		$(BUILD_PATH)/$(KERNEL)/hd.o
 
 #内核程序的obj文件
 $(KERNEL)_objs:
@@ -169,6 +170,7 @@ $(KERNEL)_objs:
 	$(CC) $(GC_K_PARAMS) mm/int.S 						-o $(BUILD_PATH)/$(KERNEL)/int.o
 	$(CC) $(GC_K_PARAMS) mm/key.c 						-o $(BUILD_PATH)/$(KERNEL)/key.o
 	$(CC) $(GC_K_PARAMS) mm/page.c 						-o $(BUILD_PATH)/$(KERNEL)/page.o
+	$(CC) $(GC_K_PARAMS) driver/hd.c 					-o $(BUILD_PATH)/$(KERNEL)/hd.o
 	
 ##################################################################################################################
 
