@@ -269,8 +269,13 @@ _int_0x0d:
 
 //页错误
 _int_0x0e:
-	//弹出因缺页错误而被压栈的内容
-	popl %eax
+
+	/*
+	 * 弹出因缺页错误而被压栈的内容
+	 * 程序运行时使用%eax作为变量赋值的临时存放区，这时如果采用popl %eax的方式来处理
+	 * 当此中断执行完毕iret执行之后%eax的值并没有被还原为原来的值，所以程序不正确
+	 */
+	popl	%edx
 	pushal
 	pushfl
 	cli
@@ -278,7 +283,7 @@ _int_0x0e:
 	push	%ebp
 	mov		%esp, %ebp
 	sub		$0x28, %esp
-    movl	%eax, (%esp)
+    movl	%edx, (%esp)
 	//调用C函数来处理这个异常
 	call	int_page_error
 	leave

@@ -116,6 +116,7 @@ typedef struct s_pcb
 	void *stack;
 	void *stack0;
 	int pid;
+	void *swap;
 	struct s_pcb* next;
 } s_pcb;
 

@@ -35,14 +35,17 @@ void run_A()
 
 void run_B()
 {
-	char *s = (char*) 0x6000000;
+	char *s = (char*) 0x8000000;
+	*s = 'A';
+	//*s = 'B';
 	char sf = *s;
+
 	char *p = (char *) 0xb8000;
 	p += ((23 * 80 + 76)) * 2;
 	int i = 33;
 	while (1)
 	{
-		*p = i;
+		*p = sf;
 		if (++i >= 127)
 		{
 			i = 33;
@@ -74,17 +77,17 @@ void install_process()
 	u32 process_id = 1;
 
 	s_pcb *pcb_empty = NULL;
-	void* mm_pcb = alloc_page(process_id, pages, MM_SWAP_TYPE_CAN);
+	void* mm_pcb = alloc_page(process_id, pages, 0);
 	pcb_empty = (s_pcb *) mm_pcb;
 	init_process(mm_pcb, pcb_empty, process_id, NULL);
 	process_id++;
 
-	void* mm_pcb_A = alloc_page(process_id, pages, MM_SWAP_TYPE_CAN);
+	void* mm_pcb_A = alloc_page(process_id, pages, 0);
 	pcb_A = (s_pcb *) mm_pcb_A;
 	init_process(mm_pcb_A, pcb_A, process_id, &run_A);
 	process_id++;
 
-	void* mm_pcb_B = alloc_page(process_id, pages, MM_SWAP_TYPE_CAN);
+	void* mm_pcb_B = alloc_page(process_id, pages, 0);
 	pcb_B = (s_pcb *) mm_pcb_B;
 	init_process(mm_pcb_B, pcb_B, process_id, &run_B);
 	process_id++;
@@ -141,7 +144,7 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 	pcb->tss.esp = (u32) mm_pcb + 0x2000;
 	pcb->tss.esp0 = (u32) mm_pcb + 0x3000;
 	pcb->tss.cr3 = (u32) mm_pcb + 0x4000;
-
+	pcb->swap = NULL;
 	mmcopy(run_addr, (void *) (pcb->tss.eip), 0x1000);
 
 	u32 *page_dir = (u32 *) (pcb->tss.cr3);
@@ -162,7 +165,7 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 
 	//mm_pcb所在内存
 	address = (u32) mm_pcb;
-	printf("%x\n", address);
+
 	u32 page_dir_index = (address >> 22) & 0x3ff;
 	u32 page_table_index = (address >> 12) & 0x3ff;
 
@@ -181,11 +184,9 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 	}
 	page_dir[page_dir_index] = ((u32) page_tbl | 7);
 
-	printf("%x %x %x %x\n", mm_pcb, page_tbl, page_dir_index, page_table_index);
-
 	if (page_table_index + 16 >= 1024)
 	{
-		page_tbl = (u32 *) ((u32) mm_pcb + 0xa000); //alloc_page(process_id, 1, 0);
+		page_tbl = (u32 *) alloc_page(process_id, 1, 0);
 		for (int i = 0; i < 1024; i++)
 		{
 			if (i < (10 - (1024 - page_table_index)))
