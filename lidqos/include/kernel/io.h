@@ -103,6 +103,14 @@ static inline void set_cr3(u32 cr3)
 	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(cr3));
 }
 
+#define insl(buf, port, nr) 				\
+		__asm__ ("cld;rep;insl\n\t"			\
+		::"d"(port), "D"(buf), "c"(nr))
+
+#define outsl(buf, port, nr ) 				\
+		__asm__ ("cld;rep;outsl\n\t"		\
+		::"d"(port), "S" (buf), "c" (nr))
+
 static inline void open_mm_page()
 {
 	__asm__ volatile(

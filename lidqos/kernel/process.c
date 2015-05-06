@@ -20,14 +20,16 @@ int timer = 0;
 
 void run_A()
 {
-	char *p = NULL;
-	for (u32 i = 0x2000000; i < 0x20000000; i += 0x1000)
-	{
-		p = (char *) i;
-		*p = 'A';
-	}
+	char *pT = (char *) 0x10000000;
+	*pT = 'A';
+
+	char *p = (char *) 0xb8000;
+	p += ((23 * 80 + 74)) * 2;
 	while (1)
 	{
+		//pT = (char *) 0x10000000;
+		//*pT = 'A';
+		*p = *pT;
 	}
 
 //	char *p = (char *) 0xb8000;
@@ -45,14 +47,17 @@ void run_A()
 
 void run_B()
 {
-	char *p = NULL;
-	for (u32 i = 0x2000000; i < 0x20000000; i += 0x1000)
-	{
-		p = (char *) i;
-		*p = 'B';
-	}
+	char *pT = (char *) 0x10000000;
+	*pT = 'B';
+
+	char *p = (char *) 0xb8000;
+	p += ((23 * 80 + 76)) * 2;
+
 	while (1)
 	{
+		//pT = (char *) 0x10000000;
+		//*pT = 'B';
+		*p = *pT;
 	}
 
 //	char *p = (char *) 0xb8000;
@@ -164,6 +169,8 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 
 	u32 *page_dir = (u32 *) (pcb->tss.cr3);
 	u32 *page_tbl = (u32 *) ((u32) mm_pcb + 0x5000);
+
+	printf("%x %x\n", process_id, pcb->tss.cr3);
 
 	u32 address = 0;
 	//前16M系统内存

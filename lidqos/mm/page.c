@@ -40,11 +40,11 @@ void page_error(u32 pid, u32 error_code)
 	u32 v_cr3 = cr3();
 
 	set_cr3(PAGE_DIR);
-
-	if (error_addr % 0x100000 == 0)
-	{
-		printf("%x %x\n", pid, error_addr);
-	}
+//
+//	if (error_addr % 0x100000 == 0)
+//	{
+//	printf("%x %x\n", pid, error_addr);
+//	}
 
 	if (error_code == 7)
 	{
@@ -58,6 +58,7 @@ void page_error(u32 pid, u32 error_code)
 	u32 page_dir_index = (error_addr >> 22) & 0x3ff;
 	//页表索引
 	u32 page_table_index = (error_addr >> 12) & 0x3ff;
+
 	//页号
 	u32 page_no = error_addr / 0x1000;
 
@@ -83,13 +84,14 @@ void page_error(u32 pid, u32 error_code)
 	//使地址4k对齐
 	u32 address = error_addr & 0xfffff000;
 
-	//如果此页面并没有被换出swap状态为0
-	if ((tbl[page_table_index] >> 8 & 0x1) == 0)
+	//如果此页面并没有被换出，swap状态为0
+	if ((tbl[page_table_index] >> 9 & 0x1) == 0)
 	{
 		//如果缺页申请成功
 		if (alloc_page_no(pid, page_no))
 		{
 			tbl[page_table_index] = address | 7;
+			printf("a:%x %x %x %x\n", page_dir[page_dir_index], tbl[page_table_index], page_dir_index, page_table_index);
 		}
 		else
 		{
@@ -100,12 +102,13 @@ void page_error(u32 pid, u32 error_code)
 	//如果此页面被已经换出则要从外存换回此页面到内存
 	else
 	{
+		u32 sec_no = tbl[page_table_index] >> 12;
 		/*
 		 * 如果换入成功，在执行page_swap_in时，
 		 * tbl[page_table_index]的前20位存放的是此页被换出到外存的逻辑扇区号sec_no
 		 * 在读取外存扇区时sec_no要乘以8，因为是4k对齐，8个512B的扇区大小为4096B=4K
 		 */
-		if (page_swap_in(page_no, tbl[page_table_index] >> 12, pid))
+		if (page_swap_in(page_no, sec_no, pid))
 		{
 			/*
 			 * 这里的一条赋值语句有以下3个作用：
@@ -114,6 +117,9 @@ void page_error(u32 pid, u32 error_code)
 			 * 3.修改后3位为在内存中，并可读写
 			 */
 			tbl[page_table_index] = address | 7;
+
+			//释放扇区
+			swap_free_sec(sec_no);
 		}
 		else
 		{
@@ -159,15 +165,19 @@ int alloc_page_no(u32 pid, u32 page_no)
 			//向外存申请8个扇区用来存放一个4k的页面
 			u32 sec_no = swap_alloc_page();
 			//如果申请扇区失败
-			if (sec_no == 0)
+			if (sec_no == 0xffffffff)
 			{
 				//返回失败
 				return 0;
 			}
 			else
 			{
-				if (page_swap_out(page_no) == 0)
+				//如果换出失败
+				if (page_swap_out(page_no, sec_no) == 0)
 				{
+					//释放扇区
+					swap_free_sec(sec_no);
+
 					return 0;
 				}
 				else
@@ -188,41 +198,35 @@ int alloc_page_no(u32 pid, u32 page_no)
 	return 0;
 }
 
-int page_swap_out(u32 page_no)
+int page_swap_out(u32 page_no, u32 sec_no)
 {
-	//向外存申请8个扇区用来存放一个4k的页面
-	u32 sec_no = swap_alloc_page();
-	//如果申请扇区失败
-	if (sec_no == 0)
-	{
-		//返回失败
-		return 0;
-	}
-	else
-	{
-		//取得正在使用这一页面的pid_used
-		u32 pid_used = map_process_id(page_no);
-		//取得页目录及页表，为换出做准备
-		u32 *page_dir = pcb_page_dir(pid_used);
-		u32 d_ind = page_no / 1024;
-		u32 t_ind = page_no % 1024;
-		u32 *tbl = (u32 *) page_dir[d_ind];
+	//取得正在使用这一页面的pid_used
+	u32 pid_used = map_process_id(page_no);
+	//取得页目录及页表，为换出做准备
+	u32 *page_dir = pcb_page_dir(pid_used);
 
-		//取得页面地址4k对齐
-		void* page_data = (void *) (tbl[t_ind] & 0xfffff000);
-		//将页面数据写入外存
-		swap_write_page(sec_no, page_data);
+	u32 d_ind = page_no / 1024;
+	u32 t_ind = page_no % 1024;
 
-		/*
-		 * 设置原任务的此页面失效
-		 * 将页表中的地址域放入逻辑扇区号
-		 * 将swap状态位置为1表示此页面被换出到外存
-		 */
-		tbl[t_ind] = 6 | (0x1 << 9) | ((sec_no / 8) << 12);
+	u32 *tbl = (u32 *) (page_dir[d_ind]);
+	printf("b:%x %x %x %x\n", page_dir[d_ind], tbl[t_ind], d_ind, t_ind);
 
-		//返回成功
-		return 1;
-	}
+	//取得页面地址4k对齐
+	void* page_data = (void *) (tbl[t_ind] & 0xfffff000);
+	//将页面数据写入外存
+	swap_write_page(sec_no, page_data);
+
+	/*
+	 * 设置原任务的此页面失效
+	 * 将页表中的地址域放入逻辑扇区号
+	 * 将swap状态位置为1表示此页面被换出到外存
+	 */
+	tbl[t_ind] = 6;
+	tbl[t_ind] |= (0x1 << 9);
+	tbl[t_ind] |= (sec_no / 8) << 12;
+
+	//返回成功
+	return 1;
 }
 
 int page_swap_in(u32 page_no, u32 sec_no, u32 pid)
@@ -252,7 +256,7 @@ int page_swap_in(u32 page_no, u32 sec_no, u32 pid)
 	if ((status & 0x1) == 1)
 	{
 		//将正在使用的页面换出，如果换出失败返回0
-		if (page_swap_out(page_no) == 0)
+		if (page_swap_out(page_no, sec_no) == 0)
 		{
 			return 0;
 		}
