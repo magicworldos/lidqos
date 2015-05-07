@@ -90,7 +90,8 @@ u32 swap_alloc_sec()
 				{
 					bitmap[k] |= (0x1 << l);
 					hd_rw(j, HD_WRITE, bitmap);
-					return k * 8 + l;
+					u32 sec_no = (j * 0x200 * 8) + k * 8 + l;
+					return sec_no;
 				}
 			}
 		}
@@ -103,14 +104,8 @@ void swap_free_sec(u32 sec_no)
 	u8 bitmap[0x200];
 	u32 ind = sec_no / 8 / 0x200;
 	hd_rw(ind, HD_READ, bitmap);
-	bitmap[sec_no / 8] |= (0x1 << sec_no % 8);
+	bitmap[(sec_no % (0x200 * 8)) / 8] &= ~(0x1 << ((sec_no % (0x200 * 8)) % 8));
 	hd_rw(ind, HD_WRITE, bitmap);
-}
-
-u32 swap_alloc_page()
-{
-	u32 sec_no = swap_alloc_sec();
-	return sec_no;
 }
 
 void swap_write_page(u32 sec_no, void *page_data)

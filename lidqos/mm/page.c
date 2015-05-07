@@ -45,15 +45,20 @@ void page_error(u32 pid, u32 error_code)
 		hlt();
 	}
 
+	//页号
+	u32 page_no = error_addr / 0x1000;
+	if (page_no >= MAP_SIZE)
+	{
+		printf("Segmentation fault.\n");
+		hlt();
+	}
+
 	u32 *page_dir = (u32 *) v_cr3;
 
 	//页目录索引
 	u32 page_dir_index = (error_addr >> 22) & 0x3ff;
 	//页表索引
 	u32 page_table_index = (error_addr >> 12) & 0x3ff;
-
-	//页号
-	u32 page_no = error_addr / 0x1000;
 
 	u32 *tbl = NULL;
 	//如果页表尚未分配则申请一个页表
@@ -89,7 +94,6 @@ void page_error(u32 pid, u32 error_code)
 		else
 		{
 			tbl[page_table_index] = address | 7;
-			printf("a:%x %x %x %x %x %x\n", pid, page_dir, page_dir[page_dir_index], tbl[page_table_index], page_dir_index, page_table_index);
 		}
 	}
 	//如果此页面被已经换出则要从外存换回此页面到内存
@@ -110,9 +114,6 @@ void page_error(u32 pid, u32 error_code)
 			 * 3.修改后3位为在内存中，并可读写
 			 */
 			tbl[page_table_index] = address | 7;
-
-			//释放扇区
-			swap_free_sec(sec_no);
 		}
 		else
 		{
@@ -156,7 +157,7 @@ int alloc_page_no(u32 pid, u32 page_no)
 		else
 		{
 			//向外存申请8个扇区用来存放一个4k的页面
-			u32 sec_no = swap_alloc_page();
+			u32 sec_no = swap_alloc_sec();
 			//如果申请扇区失败
 			if (sec_no == 0xffffffff)
 			{
@@ -179,7 +180,6 @@ int alloc_page_no(u32 pid, u32 page_no)
 					set_mmap_status(page_no, MM_USED | MM_CAN_SWAP);
 					//设置此页的使用者id，即pid
 					set_map_process_id(page_no, pid);
-
 					//返回成功
 					return 1;
 				}
@@ -215,7 +215,7 @@ int page_swap_out(u32 page_no, u32 sec_no)
 	 */
 	tbl[t_ind] = 6;
 	tbl[t_ind] |= (0x1 << 9);
-	tbl[t_ind] |= (sec_no / 8) << 12;
+	tbl[t_ind] |= sec_no << 12;
 
 	//返回成功
 	return 1;
@@ -238,8 +238,9 @@ int page_swap_in(u32 page_no, u32 sec_no, u32 pid)
 	{
 		void *page_data = (void *) (page_no * 0x1000);
 		//将页面数据从外存读入到内存
-		swap_read_page(sec_no * 8, page_data);
-
+		swap_read_page(sec_no, page_data);
+		//释放扇区
+		swap_free_sec(sec_no);
 		//返回成功
 		return 1;
 	}
@@ -247,24 +248,40 @@ int page_swap_in(u32 page_no, u32 sec_no, u32 pid)
 	//如果第0位为0,说明页面已使用
 	if ((status & 0x1) == 1)
 	{
-		//将正在使用的页面换出，如果换出失败返回0
-		if (page_swap_out(page_no, sec_no) == 0)
+
+		//向外存申请8个扇区用来存放一个4k的页面
+		u32 sec_no_out = swap_alloc_sec();
+		//如果申请扇区失败
+		if (sec_no_out == 0xffffffff)
 		{
+			//返回失败
 			return 0;
 		}
 		else
 		{
-			void *page_data = (void *) (page_no * 0x1000);
-			//将页面数据从外存读入到内存
-			swap_read_page(sec_no * 8, page_data);
+			//如果换出失败
+			if (page_swap_out(page_no, sec_no_out) == 0)
+			{
+				//释放扇区
+				swap_free_sec(sec_no_out);
 
-			//设置此页为“已使用”、“可换出”
-			set_mmap_status(page_no, MM_USED | MM_CAN_SWAP);
-			//设置此页的使用者id，即pid
-			set_map_process_id(page_no, pid);
+				return 0;
+			}
+			else
+			{
+				void *page_data = (void *) (page_no * 0x1000);
+				//将页面数据从外存读入到内存
+				swap_read_page(sec_no, page_data);
+				//释放扇区
+				swap_free_sec(sec_no);
+				//设置此页为“已使用”、“可换出”
+				set_mmap_status(page_no, MM_USED | MM_CAN_SWAP);
+				//设置此页的使用者id，即pid
+				set_map_process_id(page_no, pid);
 
-			//返回成功
-			return 1;
+				//返回成功
+				return 1;
+			}
 		}
 	}
 
