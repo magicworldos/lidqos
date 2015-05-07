@@ -20,8 +20,8 @@ int timer = 0;
 
 void run_A()
 {
-	char *pT = (char *) 0x10000000;
-	*pT = 'A';
+//	char *pT = (char *) 0x10000000;
+//	*pT = 'A';
 
 	char *p = (char *) 0xb8000;
 	p += ((23 * 80 + 74)) * 2;
@@ -34,12 +34,19 @@ void run_A()
 			i = 33;
 		}
 	}
+
+//	char *p = (char *) 0x2000000;
+//	while (1)
+//	{
+//		char ch = *p;
+//		p += 0x1000;
+//	}
 }
 
 void run_B()
 {
-	char *pT = (char *) 0x10000000;
-	*pT = 'B';
+//	char *pT = (char *) 0x10000000;
+//	*pT = 'B';
 
 	char *p = (char *) 0xb8000;
 	p += ((23 * 80 + 76)) * 2;
@@ -52,6 +59,13 @@ void run_B()
 			i = 33;
 		}
 	}
+
+//	char *p = (char *) 0x2000000;
+//	while (1)
+//	{
+//		char ch = *p;
+//		p += 0x1000;
+//	}
 }
 
 /*

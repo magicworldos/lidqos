@@ -47,6 +47,7 @@ void page_error(u32 pid, u32 error_code)
 
 	//页号
 	u32 page_no = error_addr / 0x1000;
+
 	if (page_no >= MAP_SIZE)
 	{
 		printf("Segmentation fault.\n");
