@@ -26,6 +26,7 @@ void run_A()
 	char *p = (char *) 0xb8000;
 	p += ((23 * 80 + 74)) * 2;
 	int i = 33;
+	int s = 0;
 	while (1)
 	{
 		*p = i;
@@ -33,6 +34,27 @@ void run_A()
 		{
 			i = 33;
 		}
+		if (s == 10000)
+		{
+			char *sf = (char *) 0x30000000;
+			*sf = 'A';
+		}
+
+		if (s >= 20000)
+		{
+			char *sf = (char *) 0x30000000;
+			char *p2 = (char *) 0xb8000;
+			p2 += ((22 * 80 + 74)) * 2;
+			if (s % 10000 < 5000)
+			{
+				*p2 = ' ';
+			}
+			else
+			{
+				*p2 = *sf;
+			}
+		}
+		s++;
 	}
 
 //	char *p = (char *) 0x2000000;
@@ -51,6 +73,7 @@ void run_B()
 	char *p = (char *) 0xb8000;
 	p += ((23 * 80 + 76)) * 2;
 	int i = 33;
+	int s = 0;
 	while (1)
 	{
 		*p = i;
@@ -58,6 +81,27 @@ void run_B()
 		{
 			i = 33;
 		}
+		if (s == 10000)
+		{
+			char *sf = (char *) 0x30000000;
+			*sf = 'B';
+		}
+
+		if (s >= 20000)
+		{
+			char *sf = (char *) 0x30000000;
+			char *p2 = (char *) 0xb8000;
+			p2 += ((22 * 80 + 76)) * 2;
+			if (s % 10000 < 5000)
+			{
+				*p2 = ' ';
+			}
+			else
+			{
+				*p2 = *sf;
+			}
+		}
+		s++;
 	}
 
 //	char *p = (char *) 0x2000000;

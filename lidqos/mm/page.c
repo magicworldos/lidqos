@@ -50,8 +50,35 @@ void page_error(u32 pid, u32 error_code)
 
 	if (page_no >= MAP_SIZE)
 	{
-		printf("Segmentation fault.\n");
-		hlt();
+		printf("out\n");
+
+		u32 *page_dir = (u32 *) v_cr3;
+
+		//页目录索引
+		u32 page_dir_index = (error_addr >> 22) & 0x3ff;
+		//页表索引
+		u32 page_table_index = (error_addr >> 12) & 0x3ff;
+
+		u32 *tbl = NULL;
+		//如果页表尚未分配则申请一个页表
+		if ((page_dir[page_dir_index] & 0x1) == 0)
+		{
+			tbl = alloc_page(pid, 1, 0);
+			//处理新分配的页表所表示的页面均不在内存中
+			for (int i = 0; i < 1024; i++)
+			{
+				tbl[i] = 6;
+			}
+			page_dir[page_dir_index] = (u32) tbl | 7;
+		}
+
+		tbl[page_table_index] = (u32) alloc_page(pid, 1, 1) | 7;
+
+		set_cr3(v_cr3);
+		return;
+
+//		printf("Segmentation fault.\n");
+//		hlt();
 	}
 
 	u32 *page_dir = (u32 *) v_cr3;
