@@ -36,16 +36,9 @@ void install_page()
 void page_error(u32 pid, u32 error_code)
 {
 	//取得页面错误地址
-	u32 error_addr = cr2();
 	u32 v_cr3 = cr3();
-
 	set_cr3(PAGE_DIR);
-//
-//	if (error_addr % 0x100000 == 0)
-//	{
-//	printf("%x %x\n", pid, error_addr);
-//	}
-
+	u32 error_addr = cr2();
 	if (error_code == 7)
 	{
 		printf("Segmentation fault.\n");
@@ -72,7 +65,6 @@ void page_error(u32 pid, u32 error_code)
 		{
 			tbl[i] = 6;
 		}
-		printf("aa%x\n", tbl);
 		page_dir[page_dir_index] = (u32) tbl | 7;
 	}
 	//如果页表已分配
@@ -80,7 +72,6 @@ void page_error(u32 pid, u32 error_code)
 	{
 		//取得页表地址
 		tbl = (u32 *) (page_dir[page_dir_index] & 0xfffff000);
-		printf("bb%x\n", tbl);
 	}
 
 	//使地址4k对齐
@@ -90,21 +81,20 @@ void page_error(u32 pid, u32 error_code)
 	if ((tbl[page_table_index] >> 9 & 0x1) == 0)
 	{
 		//如果缺页申请成功
-		if (alloc_page_no(pid, page_no))
-		{
-			tbl[page_table_index] = address | 7;
-			printf("a:%x %x %x %x\n", page_dir[page_dir_index], tbl[page_table_index], page_dir_index, page_table_index);
-		}
-		else
+		if (alloc_page_no(pid, page_no) == 0)
 		{
 			printf("Segmentation fault.\n");
 			hlt();
+		}
+		else
+		{
+			tbl[page_table_index] = address | 7;
+			printf("a:%x %x %x %x %x %x\n", pid, page_dir, page_dir[page_dir_index], tbl[page_table_index], page_dir_index, page_table_index);
 		}
 	}
 	//如果此页面被已经换出则要从外存换回此页面到内存
 	else
 	{
-		printf("bbbbbb\n");
 		u32 sec_no = tbl[page_table_index] >> 12;
 		/*
 		 * 如果换入成功，在执行page_swap_in时，
@@ -211,8 +201,7 @@ int page_swap_out(u32 page_no, u32 sec_no)
 	u32 d_ind = page_no / 1024;
 	u32 t_ind = page_no % 1024;
 
-	u32 *tbl = (u32 *) (page_dir[d_ind]);
-	printf("b:%x %x %x %x\n", page_dir[d_ind], tbl[t_ind], d_ind, t_ind);
+	u32 *tbl = (u32 *) (page_dir[d_ind] & 0xfffff000);
 
 	//取得页面地址4k对齐
 	void* page_data = (void *) (tbl[t_ind] & 0xfffff000);
