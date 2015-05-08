@@ -20,13 +20,16 @@ int timer = 0;
 
 void run_A()
 {
-//	char *pT = (char *) 0x10000000;
-//	*pT = 'A';
+	char *t = (char *) 0x0;
+	while ((u32) t < 0xfffff000)
+	{
+		char u = *t;
+		t += 0x1000;
+	}
 
 	char *p = (char *) 0xb8000;
 	p += ((23 * 80 + 74)) * 2;
 	int i = 33;
-	int s = 0;
 	while (1)
 	{
 		*p = i;
@@ -34,46 +37,21 @@ void run_A()
 		{
 			i = 33;
 		}
-		if (s == 10000)
-		{
-			char *sf = (char *) 0x30000000;
-			*sf = 'A';
-		}
-
-		if (s >= 20000)
-		{
-			char *sf = (char *) 0x30000000;
-			char *p2 = (char *) 0xb8000;
-			p2 += ((22 * 80 + 74)) * 2;
-			if (s % 10000 < 5000)
-			{
-				*p2 = ' ';
-			}
-			else
-			{
-				*p2 = *sf;
-			}
-		}
-		s++;
 	}
-
-//	char *p = (char *) 0x2000000;
-//	while (1)
-//	{
-//		char ch = *p;
-//		p += 0x1000;
-//	}
 }
 
 void run_B()
 {
-//	char *pT = (char *) 0x10000000;
-//	*pT = 'B';
+	char *t = (char *) 0x0;
+	while ((u32) t < 0xfffff000)
+	{
+		char u = *t;
+		t += 0x1000;
+	}
 
 	char *p = (char *) 0xb8000;
 	p += ((23 * 80 + 76)) * 2;
-	int i = 33;
-	int s = 0;
+	int i = 99;
 	while (1)
 	{
 		*p = i;
@@ -81,35 +59,7 @@ void run_B()
 		{
 			i = 33;
 		}
-		if (s == 10000)
-		{
-			char *sf = (char *) 0x30000000;
-			*sf = 'B';
-		}
-
-		if (s >= 20000)
-		{
-			char *sf = (char *) 0x30000000;
-			char *p2 = (char *) 0xb8000;
-			p2 += ((22 * 80 + 76)) * 2;
-			if (s % 10000 < 5000)
-			{
-				*p2 = ' ';
-			}
-			else
-			{
-				*p2 = *sf;
-			}
-		}
-		s++;
 	}
-
-//	char *p = (char *) 0x2000000;
-//	while (1)
-//	{
-//		char ch = *p;
-//		p += 0x1000;
-//	}
 }
 
 /*
@@ -137,16 +87,28 @@ void install_process()
 
 	s_pcb *pcb_empty = NULL;
 	void* mm_pcb = alloc_page(process_id, pages, 0);
+	if (mm_pcb == NULL)
+	{
+		printf("alloc error!\n");
+	}
 	pcb_empty = (s_pcb *) mm_pcb;
 	init_process(mm_pcb, pcb_empty, process_id, NULL);
 	process_id++;
 
 	void* mm_pcb_A = alloc_page(process_id, pages, 0);
+	if (mm_pcb_A == NULL)
+	{
+		printf("alloc error!\n");
+	}
 	pcb_A = (s_pcb *) mm_pcb_A;
 	init_process(mm_pcb_A, pcb_A, process_id, &run_A);
 	process_id++;
 
 	void* mm_pcb_B = alloc_page(process_id, pages, 0);
+	if (mm_pcb_B == NULL)
+	{
+		printf("alloc error!\n");
+	}
 	pcb_B = (s_pcb *) mm_pcb_B;
 	init_process(mm_pcb_B, pcb_B, process_id, &run_B);
 	process_id++;
@@ -229,6 +191,10 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 	u32 page_table_index = (address >> 12) & 0x3ff;
 
 	page_tbl = (u32 *) alloc_page(process_id, 1, 0);
+	if (page_tbl == NULL)
+	{
+		printf("alloc error!\n");
+	}
 	for (int i = 0; i < 1024; i++)
 	{
 		if (i >= page_table_index && i <= (page_table_index + 16))
@@ -246,6 +212,10 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 	if (page_table_index + 16 >= 1024)
 	{
 		page_tbl = (u32 *) alloc_page(process_id, 1, 0);
+		if (page_tbl == NULL)
+		{
+			printf("alloc error!\n");
+		}
 		for (int i = 0; i < 1024; i++)
 		{
 			if (i < (10 - (1024 - page_table_index)))
@@ -265,6 +235,11 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 u32* pcb_page_dir(u32 pid)
 {
 	s_pcb *pcb = NULL;
+	if (pid == 0)
+	{
+		return (u32*) PAGE_DIR;
+	}
+
 	if (pid == 2)
 	{
 		pcb = pcb_A;

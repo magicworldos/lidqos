@@ -24,7 +24,7 @@
 
 //定义内核程序.Ttext的offset
 #define _SEG_KERNEL_OFFSET 0x2000
-#define _SEG_KERNEL_DATA_OFFSET 0x400000
+#define _SEG_KERNEL_DATA_OFFSET 0x1000000
 
 //内核大小256个扇区*2048
 #define _KERNEL_SIZE 0x80000

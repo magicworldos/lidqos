@@ -9,9 +9,11 @@
 #define _ALLOC_H_
 
 #include <kernel/typedef.h>
+#include <kernel/page.h>
 
 //内存总大小以M为单位
-#define MEM_TOTAL_SIZE		(512)
+#define MEM_SIZE			(512)
+#define MEM_SIZE_LOGIC		(4096)
 
 //位图状态标识
 #define MM_SWAP_TYPE_CAN	(1)
@@ -27,7 +29,8 @@
 //内存页大小4096B
 #define MM_PAGE_SIZE		(4 * 1024)
 //内存总页数
-#define MAP_SIZE			(MEM_TOTAL_SIZE * 1024 * 1024 / MM_PAGE_SIZE)
+#define MAP_SIZE			(0x20000)	//(MEM_SIZE * 1024 * 1024 / MM_PAGE_SIZE)
+#define MAP_SIZE_LOGIC		(0x100000)	//(MEM_SIZE_LOGIC * 1024 * 1024 / MM_PAGE_SIZE)
 
 //内核程序大小256页 256*4096 = 1MB
 #define KERNEL_SIZE			(0x100)
@@ -90,5 +93,7 @@ u32 map_process_id(u32 page_no);
 void set_mmap_status(u32 page_no, u8 status);
 
 void set_map_process_id(u32 page_no, u32 pid);
+
+u32 alloc_page_ph(u32 pid);
 
 #endif

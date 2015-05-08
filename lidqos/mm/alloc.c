@@ -23,6 +23,7 @@ u8 *mmap = NULL;
  * 其它程序所使用的内存页面被设置为其任务ID
  */
 u32 *map_process = NULL;
+u32 find_index = MMAP_USED_SIZE;
 
 /*
  * install_alloc : 安装申请内存位图
@@ -33,7 +34,7 @@ void install_alloc()
 	//位图所在的固定内存区域为 [0x200000, 0x300000)
 	mmap = (u8 *) MMAP;
 
-	for (int i = 0; i < MAP_SIZE; i++)
+	for (u32 i = 0; i < MAP_SIZE_LOGIC; i++)
 	{
 		//mmap所占用的0xc00000以下均为已使用
 		if (i < MMAP_USED_SIZE)
@@ -56,7 +57,7 @@ void install_used_map()
 	 * 初始化map_process，因为map和map_process的大小永远都是一样的所以用MAP_SIZE
 	 * map_process所占内存空间为 [0x300000, 0x700000)
 	 */
-	for (int i = 0; i < MAP_SIZE; i++)
+	for (u32 i = 0; i < MAP_SIZE_LOGIC; i++)
 	{
 		map_process[i] = 0;
 	}
@@ -74,9 +75,9 @@ void* alloc_page(u32 process_id, int count, int can_swap)
 	//找到空闲内存页计数
 	int num = 0;
 	//开始编号
-	int start_with = 0;
+	u32 start_with = 0;
 	//从未被分配内存页的地方开始查找
-	for (int i = MMAP_USED_SIZE; i < MAP_SIZE; i++)
+	for (u32 i = MMAP_USED_SIZE; i < MAP_SIZE; i++)
 	{
 		//如果找到空闲页
 		if ((mmap[i] & 0x1) == MM_FREE)
@@ -104,15 +105,15 @@ void* alloc_page(u32 process_id, int count, int can_swap)
 		}
 	}
 	//设置map的各个内存页的状态为已使用
-	for (int i = 0; i < count; i++)
+	for (u32 i = 0; i < count; i++)
 	{
 		if (can_swap == 1)
 		{
-			mmap[start_with + i] = MM_USED | MM_CAN_SWAP;
+			mmap[start_with + i] = (MM_USED | MM_CAN_SWAP);
 		}
 		else
 		{
-			mmap[start_with + i] = MM_USED | MM_NO_SWAP;
+			mmap[start_with + i] = (MM_USED | MM_NO_SWAP);
 		}
 
 		map_process[i] = process_id;
@@ -132,7 +133,7 @@ void* alloc_page(u32 process_id, int count, int can_swap)
 //	result |= (page_inside & 0x3FF);
 //	ret = (void *) result;
 
-//返回查找到内存地址
+	//返回查找到内存地址
 	return ret;
 }
 
@@ -415,6 +416,52 @@ void set_mmap_status(u32 page_no, u8 status)
 void set_map_process_id(u32 page_no, u32 pid)
 {
 	map_process[page_no] = pid;
+}
+
+u32 alloc_page_ph(u32 pid)
+{
+	u32 ret = 0;
+	//从未被分配内存页的地方开始查找
+	for (u32 i = MMAP_USED_SIZE; i < MAP_SIZE && ret == 0; i++)
+	{
+		//如果找到空闲页
+		if ((mmap[find_index] & 0x3) == (MM_FREE | MM_CAN_SWAP))
+		{
+			set_mmap_status(find_index, MM_USED | MM_CAN_SWAP);
+			set_map_process_id(find_index, pid);
+			ret = find_index;
+		}
+		find_index++;
+		if (find_index >= MAP_SIZE)
+		{
+			find_index = MMAP_USED_SIZE;
+		}
+
+	}
+	//如果没有free页面，则再找可换出页面
+	for (u32 i = MMAP_USED_SIZE; i < MAP_SIZE && ret == 0; i++)
+	{
+		//如果找到可换出页面
+		if ((mmap[find_index] & 0x3) == (MM_USED | MM_CAN_SWAP))
+		{
+			//将此物理页面换出
+			if (page_swap_out(find_index) == 0)
+			{
+				return 0;
+			}
+			set_mmap_status(find_index, MM_USED | MM_CAN_SWAP);
+			set_map_process_id(find_index, pid);
+			ret = find_index;
+		}
+
+		find_index++;
+		if (find_index >= MAP_SIZE)
+		{
+			find_index = MMAP_USED_SIZE;
+		}
+	}
+
+	return ret;
 }
 
 #endif

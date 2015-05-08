@@ -22,10 +22,12 @@ void install_page();
 
 void page_error(u32 pid, u32 error_code);
 
-int alloc_page_no(u32 pid, u32 page_no);
+int alloc_page_no(u32 pid, u32 page_no, u32 *page_no_ret, u32 *shared, u32 *share_addr);
 
-int page_swap_out(u32 page_no, u32 sec_no);
+int page_swap_out(u32 page_no);
 
-int page_swap_in(u32 page_no, u32 sec_no, u32 pid);
+int page_swap_in(u32 page_no, u32 sec_no, u32 pid, u32 *page_no_ret);
+
+int page_share(u32 page_no, u32 *share_addr);
 
 #endif /* INCLUDE_KERNEL_PAGE_H_ */
