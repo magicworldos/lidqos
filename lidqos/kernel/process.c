@@ -20,13 +20,6 @@ int timer = 0;
 
 void run_A()
 {
-	char *t = (char *) 0x0;
-	while ((u32) t < 0xfffff000)
-	{
-		char u = *t;
-		t += 0x1000;
-	}
-
 	char *p = (char *) 0xb8000;
 	p += ((23 * 80 + 74)) * 2;
 	int i = 33;
@@ -42,13 +35,6 @@ void run_A()
 
 void run_B()
 {
-	char *t = (char *) 0x0;
-	while ((u32) t < 0xfffff000)
-	{
-		char u = *t;
-		t += 0x1000;
-	}
-
 	char *p = (char *) 0xb8000;
 	p += ((23 * 80 + 76)) * 2;
 	int i = 99;

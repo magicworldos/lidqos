@@ -40,11 +40,6 @@ void page_error(u32 pid, u32 error_code)
 	set_cr3(PAGE_DIR);
 	u32 error_addr = cr2();
 
-	if (error_addr % 0x100000 == 0)
-	{
-		printf("%x\n", error_addr);
-	}
-
 	if (error_code == 7)
 	{
 		printf("1 Segmentation fault.\n");
