@@ -54,27 +54,33 @@ void run_B()
  */
 void install_process()
 {
+	//定义栈大小
 	int size = 0x800;
 
+	//任务A
 	pcb_A = alloc_mm(sizeof(s_pcb));
 	init_process(pcb_A);
 	pcb_A->tss.eip = (u32) &run_A;
 	pcb_A->tss.esp = (u32) alloc_mm(size) + size;
 	pcb_A->tss.esp0 = (u32) alloc_mm(size) + size;
 
+	//任务B
 	pcb_B = alloc_mm(sizeof(s_pcb));
 	init_process(pcb_B);
 	pcb_B->tss.eip = (u32) &run_B;
 	pcb_B->tss.esp = (u32) alloc_mm(size) + size;
 	pcb_B->tss.esp0 = (u32) alloc_mm(size) + size;
 
+	//初始化空任务
 	s_pcb *pcb = alloc_mm(sizeof(s_pcb));
 	init_process(pcb);
 	pcb->tss.eip = 0;
 	pcb->tss.esp = 0;
 	pcb->tss.esp0 = 0;
 
+	//设置TSS所在地址的GDT
 	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb->tss, &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
+	//设置LDT所在地址的GDT
 	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb->ldt, &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
 
 	//载入tss和ldt

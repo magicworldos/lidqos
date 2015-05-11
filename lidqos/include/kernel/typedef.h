@@ -112,10 +112,6 @@ typedef struct s_pcb
 {
 	s_tss tss;
 	s_gdt ldt[2];
-	void *run_addr;
-	void *stack;
-	void *stack0;
-	struct s_pcb* next;
 } s_pcb;
 
 #endif
