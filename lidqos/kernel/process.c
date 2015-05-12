@@ -35,6 +35,9 @@ void run_A()
 
 void run_B()
 {
+	char *ps = (char *) 0x2000000;
+	char ch = *ps;
+
 	char *p = (char *) 0xb8000;
 	p += ((23 * 80 + 76)) * 2;
 	int i = 64;
