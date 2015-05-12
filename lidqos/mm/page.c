@@ -35,7 +35,9 @@ void install_page()
 		}
 	}
 
+	//设置CR3寄存器的值为page_dir
 	set_cr3(PAGE_DIR);
 
+	//开启分页
 	open_mm_page();
 }
