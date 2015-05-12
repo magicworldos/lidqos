@@ -88,7 +88,7 @@ void page_error(u32 pid, u32 error_code)
 		tbl = (u32 *) (page_dir[page_dir_index] & 0xfffff000);
 	}
 
-//如果此页面并没有被换出，swap状态为0
+	//如果此页面并没有被换出，swap状态为0
 	if ((tbl[page_table_index] >> 9 & 0x1) == 0)
 	{
 		u32 ph_page_no = 0;
@@ -111,7 +111,7 @@ void page_error(u32 pid, u32 error_code)
 			tbl[page_table_index] = address | 7;
 		}
 	}
-//如果此页面被已经换出则要从外存换回此页面到内存
+	//如果此页面被已经换出则要从外存换回此页面到内存
 	else
 	{
 		u32 sec_no = tbl[page_table_index] >> 12;

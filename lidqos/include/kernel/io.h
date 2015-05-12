@@ -112,11 +112,6 @@ static inline void outb_p(u8 val, u16 port)
 	__asm__ volatile("outb	%0, %1" : : "a" (val), "dN" (port));
 }
 
-static inline void set_cr3(u32 cr3)
-{
-	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(cr3));
-}
-
 #define insl(buf, port, nr) 				\
 		__asm__ ("cld;rep;insl\n\t"			\
 		::"d"(port), "D"(buf), "c"(nr))
@@ -124,15 +119,6 @@ static inline void set_cr3(u32 cr3)
 #define outsl(buf, port, nr ) 				\
 		__asm__ ("cld;rep;outsl\n\t"		\
 		::"d"(port), "S" (buf), "c" (nr))
-
-static inline void open_mm_page()
-{
-	__asm__ volatile(
-			"movl	%cr0, %eax;"
-			"orl	$0x80000000, %eax;"
-			"movl    %eax, %cr0;"
-	);
-}
 
 /**
  * 从端口中读入一个字节
