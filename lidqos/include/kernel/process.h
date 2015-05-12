@@ -12,6 +12,7 @@
 #include <kernel/alloc.h>
 #include <kernel/mm.h>
 #include <kernel/io.h>
+#include <kernel/page.h>
 
 void run_A();
 

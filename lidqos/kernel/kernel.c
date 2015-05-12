@@ -15,6 +15,9 @@ int start_kernel(int argc, char **args)
 	//安装内存申请模块
 	install_alloc();
 
+	//安装内存分页
+	install_page();
+
 	//安装8259A
 	install_pic();
 

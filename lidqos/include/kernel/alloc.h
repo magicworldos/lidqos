@@ -21,13 +21,24 @@
 //内存页大小4096B
 #define MM_PAGE_SIZE		(4 * 1024)
 //内存总页数
-#define MAP_SIZE			(1024 * 1024)
+#define MAP_SIZE			(0x20000)	//(MEM_SIZE * 1024 * 1024 / MM_PAGE_SIZE)
+#define MAP_SIZE_LOGIC		(0x100000)	//(MEM_SIZE_LOGIC * 1024 * 1024 / MM_PAGE_SIZE)
+
 //内核程序大小256页 256*4096 = 1MB
 #define KERNEL_SIZE			(0x100)
-//MMAP所在内存地址为0x400000 ~ 0x4fffff
-//从0x500000以下为0x500个内存页
-#define MMAP_USED_SIZE		(0x500)
 
+/*
+ * MMAP所在内存地址为 [0x100000, 0x200000)
+ * MAP使用情况内存地址为 [0x300000, 0x700000)
+ * Kernel所在页目录及页表地址 [0x700000, 0xb01000)
+ * 从0x1000000以下为0x1000个内存页
+ */
+#define MMAP_USED_SIZE		(0x1000)
+
+//map起始地址
+#define MMAP				(0x200000)
+//map_process起始地址
+#define MMAP_PRO			(0x300000)
 
 /*
  * install_alloc : 安装申请内存位图

@@ -21,12 +21,12 @@ u8 *mmap = NULL;
  */
 void install_alloc()
 {
-	//位图所在的固定内存区域为0x400000 ~ 0x4fffff
-	mmap = (u8 *) 0x400000;
+	//位图所在的固定内存区域为 [0x200000, 0x300000)
+	mmap = (u8 *) MMAP;
 
-	for (int i = 0; i < MAP_SIZE; i++)
+	for (int i = 0; i < MAP_SIZE_LOGIC; i++)
 	{
-		//mmap所占用的0x500000以下均为已使用
+		//mmap所占用的0x1000000以下均为已使用
 		if (i < MMAP_USED_SIZE)
 		{
 			//设定内核所占用的1MB内存为已使用
@@ -117,7 +117,7 @@ void* alloc_mm(int size)
 	if (size > (MM_PAGE_SIZE - 128))
 	{
 		//计算有多少个内存页
-		 u32 count = (size / MM_PAGE_SIZE);
+		u32 count = (size / MM_PAGE_SIZE);
 		//如果有余数，说明要多分配一个页面
 		if (size % MM_PAGE_SIZE != 0)
 		{

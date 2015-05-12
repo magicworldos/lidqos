@@ -28,7 +28,6 @@
 #define hlt()	\
 	({__asm__ volatile("hlt");})
 
-
 /***
  * 载入gdt
  */
@@ -65,6 +64,20 @@
 	({	\
 		__asm__ volatile("call $0x20, $0");	\
 	})
+
+static inline void set_cr3(u32 cr3)
+{
+	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(cr3));
+}
+
+static inline void open_mm_page()
+{
+	__asm__ volatile(
+			"movl	%cr0, %eax;"
+			"orl	$0x80000000, %eax;"
+			"movl    %eax, %cr0;"
+	);
+}
 
 static inline void set_ds(u16 gdt_ind)
 {
@@ -114,6 +127,20 @@ static inline u16 ds()
 	u16 ds;
 	__asm__ volatile("movw	%%ds, %0" : "=a" (ds) : );
 	return ds;
+}
+
+static inline u32 cr2()
+{
+	u32 cr2;
+	__asm__ volatile("movl	%%cr2, %0" : "=a" (cr2) : );
+	return cr2;
+}
+
+static inline u32 cr3()
+{
+	u32 cr3;
+	__asm__ volatile("movl	%%cr3, %0" : "=a" (cr3) : );
+	return cr3;
 }
 
 #endif
