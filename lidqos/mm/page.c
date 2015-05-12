@@ -373,9 +373,9 @@ int page_swap_in(u32 page_no, u32 sec_no, u32 pid, u32 *page_no_ret)
 
 int page_share(u32 page_no, u32 *share_addr)
 {
-//取得正在使用这一页面的pid_used
+	//取得正在使用这一页面的pid_used
 	u32 pid_used = map_process_id(page_no);
-//取得页目录及页表，为换出做准备
+	//取得页目录及页表，为换出做准备
 	u32 *page_dir = pcb_page_dir(pid_used);
 
 	u32 d_ind = page_no / 1024;
@@ -383,7 +383,7 @@ int page_share(u32 page_no, u32 *share_addr)
 
 	u32 *tbl = (u32 *) (page_dir[d_ind] & 0xfffff000);
 
-//取得页面地址4k对齐
+	//取得页面地址4k对齐
 	*share_addr = (u32) (tbl[t_ind] & 0xfffff000);
 
 	return 1;

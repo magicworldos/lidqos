@@ -14,6 +14,7 @@
 #include <kernel/page.h>
 #include <kernel/mm.h>
 #include <kernel/process.h>
+#include <kernel/page.h>
 
 int start_kernel(int argc, char **args);
 

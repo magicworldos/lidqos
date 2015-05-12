@@ -121,7 +121,7 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 	pcb->tss.ss1 = 0;
 	pcb->tss.esp2 = 0;
 	pcb->tss.ss2 = 0;
-	pcb->tss.cr3 = 0;
+	pcb->tss.cr3 = PAGE_DIR;
 	pcb->tss.eflags = 0x3202;
 	pcb->tss.eax = 0;
 	pcb->tss.ecx = 0;

@@ -18,6 +18,9 @@ int start_kernel(int argc, char **args)
 	//安装内存页面使用状态
 	install_used_map();
 
+	//安装内存分页
+	install_page();
+
 	//安装GDT全局描述符
 	install_gdt();
 
@@ -35,9 +38,6 @@ int start_kernel(int argc, char **args)
 
 	//安装多任务
 	install_process();
-
-	//安装内在分页
-	install_page();
 
 	//安装交换空间
 	install_swap();

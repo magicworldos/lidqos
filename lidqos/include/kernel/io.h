@@ -65,6 +65,20 @@
 		__asm__ volatile("call $0x20, $0");	\
 	})
 
+static inline void set_cr3(u32 cr3)
+{
+	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(cr3));
+}
+
+static inline void open_mm_page()
+{
+	__asm__ volatile(
+			"movl	%cr0, %eax;"
+			"orl	$0x80000000, %eax;"
+			"movl    %eax, %cr0;"
+	);
+}
+
 static inline void set_ds(u16 gdt_ind)
 {
 	__asm__ volatile("movw	%%ax, %%ds" :: "a"(gdt_ind));
