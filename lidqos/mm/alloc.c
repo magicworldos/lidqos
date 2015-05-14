@@ -31,12 +31,12 @@ u32 find_index = MMAP_USED_SIZE;
  */
 void install_alloc()
 {
-	//位图所在的固定内存区域为 [0x200000, 0x300000)
+	//位图所在的固定内存区域为 [0x100000, 0x200000)
 	mmap = (u8 *) MMAP;
 
 	for (u32 i = 0; i < MAP_SIZE_LOGIC; i++)
 	{
-		//mmap所占用的0xc00000以下均为已使用
+		//16M以下均为已使用
 		if (i < MMAP_USED_SIZE)
 		{
 			//设定内核所占用的1MB内存为已使用
@@ -55,7 +55,7 @@ void install_used_map()
 	map_process = (u32 *) MMAP_PRO;
 	/*
 	 * 初始化map_process，因为map和map_process的大小永远都是一样的所以用MAP_SIZE
-	 * map_process所占内存空间为 [0x300000, 0x700000)
+	 * map_process所占内存空间为 [0x200000, 0x600000)
 	 */
 	for (u32 i = 0; i < MAP_SIZE_LOGIC; i++)
 	{

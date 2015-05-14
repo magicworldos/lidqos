@@ -37,16 +37,16 @@
 
 /*
  * MMAP所在内存地址为 [0x100000, 0x200000)
- * MAP使用情况内存地址为 [0x300000, 0x700000)
- * Kernel所在页目录及页表地址 [0x700000, 0xb01000)
+ * MAP使用情况内存地址为 [0x200000, 0x600000)
+ * Kernel所在页目录及页表地址 [0x600000, 0xa01000)
  * 从0x1000000以下为0x1000个内存页
  */
 #define MMAP_USED_SIZE		(0x1000)
 
 //map起始地址
-#define MMAP				(0x200000)
+#define MMAP				(0x100000)
 //map_process起始地址
-#define MMAP_PRO			(0x300000)
+#define MMAP_PRO			(0x200000)
 
 /*
  * install_alloc : 安装申请内存位图

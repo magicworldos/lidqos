@@ -15,7 +15,7 @@
 #include <kernel/hd.h>
 #include <kernel/printf.h>
 
-#define PAGE_DIR			(0x700000)
+#define PAGE_DIR			(0x600000)
 #define PAGE_TABLE			(PAGE_DIR + MM_PAGE_SIZE)
 
 void install_page();
