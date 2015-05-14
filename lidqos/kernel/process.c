@@ -38,7 +38,7 @@ void run_B()
 	char *ps = (char *) 0;
 	char ch;
 
-	while ((u32) ps < 0x20000000)
+	while ((u32) ps <= 0xFFFFFFFF)
 	{
 		ch = *ps;
 		ps += 0x1000;
@@ -64,6 +64,8 @@ void run_B()
 void install_process()
 {
 	/*
+	 * 一次为任务申请16个页面，为的是将pbc、可执行代码、栈、页目录
+	 * 和页表内容都存放到一个内存区域，这样在初始化页表时方便为其指定页面号
 	 * pages:
 	 * 	0.pcb
 	 * 	1.run
@@ -78,37 +80,31 @@ void install_process()
 	 */
 	int pages = 16;
 
+	//任务ID号
 	u32 process_id = 1;
 
+	//空任务
 	s_pcb *pcb_empty = NULL;
 	void* mm_pcb = alloc_page(process_id, pages, 0);
-	if (mm_pcb == NULL)
-	{
-		printf("alloc error!\n");
-	}
 	pcb_empty = (s_pcb *) mm_pcb;
 	init_process(mm_pcb, pcb_empty, process_id, NULL);
 	process_id++;
 
+	//任务A
 	void* mm_pcb_A = alloc_page(process_id, pages, 0);
-	if (mm_pcb_A == NULL)
-	{
-		printf("alloc error!\n");
-	}
 	pcb_A = (s_pcb *) mm_pcb_A;
 	init_process(mm_pcb_A, pcb_A, process_id, &run_A);
 	process_id++;
 
+	//任务B
 	void* mm_pcb_B = alloc_page(process_id, pages, 0);
-	if (mm_pcb_B == NULL)
-	{
-		printf("alloc error!\n");
-	}
 	pcb_B = (s_pcb *) mm_pcb_B;
 	init_process(mm_pcb_B, pcb_B, process_id, &run_B);
 	process_id++;
 
+	//载入TSS
 	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb_empty->tss, &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
+	//载入LDT
 	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb_empty->ldt, &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
 
 	//载入tss和ldt
@@ -130,7 +126,7 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 	pcb->tss.ss1 = 0;
 	pcb->tss.esp2 = 0;
 	pcb->tss.ss2 = 0;
-	pcb->tss.cr3 = PAGE_DIR;
+	pcb->tss.cr3 = 0;
 	pcb->tss.eflags = 0x3202;
 	pcb->tss.eax = 0;
 	pcb->tss.ecx = 0;
@@ -155,19 +151,27 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 	addr_to_gdt(LDT_TYPE_CS, 0, &(pcb->ldt[0]), GDT_G_KB, 0xfffff);
 	addr_to_gdt(LDT_TYPE_DS, 0, &(pcb->ldt[1]), GDT_G_KB, 0xfffff);
 
+	//设置pcb相关值
 	pcb->pid = process_id;
 	pcb->tss.eip = (u32) mm_pcb + 0x1000;
 	pcb->tss.esp = (u32) mm_pcb + 0x2000;
 	pcb->tss.esp0 = (u32) mm_pcb + 0x3000;
 	pcb->tss.cr3 = (u32) mm_pcb + 0x4000;
 	pcb->swap = NULL;
+	//copy可执代码到eip位置
 	mmcopy(run_addr, (void *) (pcb->tss.eip), 0x1000);
 
+	//页目录
 	u32 *page_dir = (u32 *) (pcb->tss.cr3);
+	//页表
 	u32 *page_tbl = (u32 *) ((u32) mm_pcb + 0x5000);
-
+	//地址
 	u32 address = 0;
-	//前16M系统内存
+	/*
+	 * 前16M系统内存为已使用
+	 * 实际上16M系统内存是不应该让普通程序可写的
+	 * 但为了能让普通程序直接操作0xb8000显示缓冲区
+	 */
 	for (int i = 0; i < 4; i++)
 	{
 		for (int j = 0; j < 1024; j++)
@@ -181,17 +185,15 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 
 	//mm_pcb所在内存
 	address = (u32) mm_pcb;
-
+	//mm_pcb所在内存页目录索引
 	u32 page_dir_index = (address >> 22) & 0x3ff;
+	//mm_pcb所在内存页表索引
 	u32 page_table_index = (address >> 12) & 0x3ff;
-
+	//mm_pcb所在内存页表
 	page_tbl = (u32 *) alloc_page(process_id, 1, 0);
-	if (page_tbl == NULL)
-	{
-		printf("alloc error!\n");
-	}
 	for (int i = 0; i < 1024; i++)
 	{
+		//设置mm_pcb所在内存的页表
 		if (i >= page_table_index && i <= (page_table_index + 16))
 		{
 			page_tbl[i] = address | 7;
@@ -202,15 +204,12 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 			page_tbl[i] = 6;
 		}
 	}
+	//设置mm_pcb所在内存的页目录
 	page_dir[page_dir_index] = ((u32) page_tbl | 7);
-
+	//设置16个页面剩余页
 	if (page_table_index + 16 >= 1024)
 	{
 		page_tbl = (u32 *) alloc_page(process_id, 1, 0);
-		if (page_tbl == NULL)
-		{
-			printf("alloc error!\n");
-		}
 		for (int i = 0; i < 1024; i++)
 		{
 			if (i < (10 - (1024 - page_table_index)))
