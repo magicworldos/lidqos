@@ -40,9 +40,14 @@ void page_error(u32 pid, u32 error_code)
 	set_cr3(PAGE_DIR);
 	u32 error_addr = cr2();
 
+	if (error_addr % 0x100000 == 0)
+	{
+		printf("Missing Page: %x\n", error_addr);
+	}
+
 	if (error_code == 7)
 	{
-		printf("1 Segmentation fault.\n");
+		printf("Segmentation fault.\n");
 		hlt();
 	}
 
@@ -66,7 +71,7 @@ void page_error(u32 pid, u32 error_code)
 			u32 ph_page_no = alloc_page_ph(pid);
 			if (ph_page_no == 0)
 			{
-				printf("8 Segmentation fault.\n");
+				printf("Segmentation fault.\n");
 				hlt();
 			}
 			else
@@ -97,7 +102,7 @@ void page_error(u32 pid, u32 error_code)
 		//如果缺页申请失败
 		if (alloc_page_no(pid, page_no, &ph_page_no, &shared, &share_addr) == 0)
 		{
-			printf("2 Segmentation fault.\n");
+			printf("Segmentation fault.\n");
 			hlt();
 		}
 		else
@@ -136,7 +141,7 @@ void page_error(u32 pid, u32 error_code)
 		}
 		else
 		{
-			printf("3 Segmentation fault.\n");
+			printf("Segmentation fault.\n");
 			hlt();
 		}
 	}
@@ -155,9 +160,9 @@ int alloc_page_no(u32 pid, u32 page_no, u32 *page_no_ret, u32 *shared, u32 *shar
 	*share_addr = 0;
 
 	*page_no_ret = page_no;
-//取得此页的状态
+	//取得此页的状态
 	u8 status = mmap_status(page_no);
-//如果第0位为0,说明页面未使用
+	//如果第0位为0,说明页面未使用
 	if ((status & 0x1) == 0)
 	{
 		//设置此页为“已使用”、“可换出”
@@ -172,7 +177,6 @@ int alloc_page_no(u32 pid, u32 page_no, u32 *page_no_ret, u32 *shared, u32 *shar
 			u32 ph_page_no = alloc_page_ph(pid);
 			if (ph_page_no == 0)
 			{
-				printf("e0\n");
 				return 0;
 			}
 			*page_no_ret = ph_page_no;
@@ -180,7 +184,7 @@ int alloc_page_no(u32 pid, u32 page_no, u32 *page_no_ret, u32 *shared, u32 *shar
 		//返回成功
 		return 1;
 	}
-//如果第0位为1,说明页面已使用
+	//如果第0位为1,说明页面已使用
 	else
 	{
 		//尝试将此页面换出到外存
@@ -222,22 +226,22 @@ int alloc_page_no(u32 pid, u32 page_no, u32 *page_no_ret, u32 *shared, u32 *shar
 
 int page_swap_out(u32 page_no)
 {
-//取得此页的状态
+	//取得此页的状态
 	u8 status = mmap_status(page_no);
-//如果未使用
+	//如果未使用
 	if ((status & 0x1) == 0)
 	{
 		//直接返回成功
 		return 1;
 	}
 
-//如果页面不可以换出
+	//如果页面不可以换出
 	if (((status >> 1) & 0x1) == 0)
 	{
 		//返回失败
 		return 0;
 	}
-//如果页面可以换出
+	//如果页面可以换出
 	else
 	{
 		//向外存申请8个扇区用来存放一个4k的页面
@@ -302,17 +306,17 @@ int page_swap_in(u32 page_no, u32 sec_no, u32 pid, u32 *page_no_ret)
 
 	void* page_data = (void *) (page_no * 0x1000);
 
-//取得此页的状态
+	//取得此页的状态
 	u8 status = mmap_status(page_no);
 
-//如果页面不可以换出
+	//如果页面不可以换出
 	if (((status >> 1) & 0x1) == 0)
 	{
 		//返回失败
 		return 0;
 	}
 
-//如果第0位为0,说明页面未使用
+	//如果第0位为0,说明页面未使用
 	if ((status & 0x1) == 0)
 	{
 		//如果超出物理页面数
@@ -336,7 +340,7 @@ int page_swap_in(u32 page_no, u32 sec_no, u32 pid, u32 *page_no_ret)
 		return 1;
 	}
 
-//如果第0位为0,说明页面已使用
+	//如果第0位为0,说明页面已使用
 	if ((status & 0x1) == 1)
 	{
 		//如果换出失败

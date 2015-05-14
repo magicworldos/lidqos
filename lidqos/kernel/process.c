@@ -35,10 +35,14 @@ void run_A()
 
 void run_B()
 {
-	//尝试读入32M以上的内存区域
-	char *ps = (char *) 0x2000000;
-	//这里是真正读内存，会触发缺页异常
-	char ch = *ps;
+	char *ps = (char *) 0;
+	char ch;
+
+	while ((u32) ps < 0x20000000)
+	{
+		ch = *ps;
+		ps += 0x1000;
+	}
 
 	char *p = (char *) 0xb8000;
 	p += ((23 * 80 + 76)) * 2;
