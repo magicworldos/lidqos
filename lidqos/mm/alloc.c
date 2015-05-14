@@ -16,9 +16,9 @@
 u8 *mmap = NULL;
 
 /*
- * 每一个内存页面所被程序使用情况
- * 位图所在的固定内存区域为 [0x300000, 0x700000) 占用4M
- * map_process中存放了使用这个内存页的任务ID
+ * 使用map_process存入每一个内存页面所被程序使用情况
+ * map_process中存放了使用这个内存页的任务ID所在的
+ * 固定内存区域为 [0x200000, 0x600000) 占用4M
  * 对于内核程序所使用的内存页面map_process被设置为0
  * 其它程序所使用的内存页面被设置为其任务ID
  */
@@ -50,6 +50,7 @@ void install_alloc()
 	}
 }
 
+//初始化内存页的使用者
 void install_used_map()
 {
 	map_process = (u32 *) MMAP_PRO;
@@ -418,6 +419,9 @@ void set_map_process_id(u32 page_no, u32 pid)
 	map_process[page_no] = pid;
 }
 
+/*
+ * 申请物理内存页
+ */
 u32 alloc_page_ph(u32 pid)
 {
 	u32 ret = 0;

@@ -1,5 +1,8 @@
 #include <kernel/hd.h>
 
+/*
+ * IDE磁盘读写函数
+ */
 void hd_rw(u32 lba, u8 com, void *buf)
 {
 	u16 sects_to_access = 1;
@@ -59,6 +62,14 @@ void hd_rw(u32 lba, u8 com, void *buf)
 	while (((com == HD_READ) && (s != 0x50)) || ((com == HD_WRITE) && (s != 0x90)));
 }
 
+/*
+ * 安装交换分区，此时尚未真正的处理磁盘设备
+ * 这里只是使用了一个4G大小的物理磁盘
+ * 将4G的物理磁盘作为swap交换分区
+ * 因为页表中只有高20位可以存放地址数据，也就是为什么在分页时要对内存做4K对齐
+ * 当页面被换出到交换分区之后，页表中的高20位转变为存放20位的磁盘扇区号
+ * 系统启动时，初始化交换分区，将交换分区的map初始化为0
+ */
 void install_swap()
 {
 	u8 bitmap[0x200];
@@ -74,6 +85,9 @@ void install_swap()
 	}
 }
 
+/*
+ * 向交换分区申请一个可用的磁盘号
+ */
 u32 swap_alloc_sec()
 {
 	u8 bitmap[0x200];
@@ -99,6 +113,9 @@ u32 swap_alloc_sec()
 	return 0xffffffff;
 }
 
+/*
+ * 向交换分区释放一个磁盘号
+ */
 void swap_free_sec(u32 sec_no)
 {
 	u8 bitmap[0x200];
@@ -108,6 +125,9 @@ void swap_free_sec(u32 sec_no)
 	hd_rw(ind, HD_WRITE, bitmap);
 }
 
+/*
+ * 将内存数据写入交换分区
+ */
 void swap_write_page(u32 sec_no, void *page_data)
 {
 	//计算物理扇区号
@@ -123,6 +143,9 @@ void swap_write_page(u32 sec_no, void *page_data)
 	}
 }
 
+/*
+ * 从交换分区读入数据到内存
+ */
 void swap_read_page(u32 sec_no, void *page_data)
 {
 	//计算物理扇区号

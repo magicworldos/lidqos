@@ -24,8 +24,6 @@
 #define HD_READ         		0x20
 #define HD_WRITE        		0x30
 
-#include <kernel/hd.h>
-
 void hd_rw(u32 lba, u8 com, void *buf);
 
 void install_swap();

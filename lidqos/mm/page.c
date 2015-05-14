@@ -28,8 +28,9 @@ void install_page()
 		page_table += 1024;
 	}
 
+	//设置cr3寄存器为页目录的值
 	set_cr3(PAGE_DIR);
-
+	//开启内存分页
 	open_mm_page();
 }
 
@@ -53,30 +54,34 @@ void page_error(u32 pid, u32 error_code)
 
 	//页号
 	u32 page_no = error_addr / 0x1000;
-
+	//面目录
 	u32 *page_dir = (u32 *) v_cr3;
-
 	//页目录索引
 	u32 page_dir_index = (error_addr >> 22) & 0x3ff;
 	//页表索引
 	u32 page_table_index = (error_addr >> 12) & 0x3ff;
-
+	//页表
 	u32 *tbl = NULL;
 	//如果页表尚未分配则申请一个页表
 	if ((page_dir[page_dir_index] & 0x1) == 0)
 	{
+		//申请一个普通可用页面
 		tbl = alloc_page(pid, 1, 0);
+		//如果申请失败
 		if (tbl == NULL)
 		{
+			//申请一个可用的物理页面
 			u32 ph_page_no = alloc_page_ph(pid);
-			if (ph_page_no == 0)
+			//如果申请成功
+			if (ph_page_no != 0)
+			{
+				tbl = (u32 *) (ph_page_no * 0x1000);
+			}
+			//如果申请失败
+			else
 			{
 				printf("Segmentation fault.\n");
 				hlt();
-			}
-			else
-			{
-				tbl = (u32 *) (ph_page_no * 0x1000);
 			}
 		}
 		//处理新分配的页表所表示的页面均不在内存中
@@ -84,6 +89,7 @@ void page_error(u32 pid, u32 error_code)
 		{
 			tbl[i] = 6;
 		}
+		//设置页目录
 		page_dir[page_dir_index] = (u32) tbl | 7;
 	}
 	//如果页表已分配
@@ -139,13 +145,14 @@ void page_error(u32 pid, u32 error_code)
 			u32 address = ph_page_no * 0x1000;
 			tbl[page_table_index] = address | 7;
 		}
+		//如果换回内存页失败
 		else
 		{
 			printf("Segmentation fault.\n");
 			hlt();
 		}
 	}
-
+	//恢复cr3
 	set_cr3(v_cr3);
 }
 
@@ -224,6 +231,10 @@ int alloc_page_no(u32 pid, u32 page_no, u32 *page_no_ret, u32 *shared, u32 *shar
 	}
 }
 
+/*
+ * 换出页面，向交换分区申请一个可用外存页面号
+ * 将当前页面数据写入交换分区
+ */
 int page_swap_out(u32 page_no)
 {
 	//取得此页的状态
@@ -300,6 +311,9 @@ int page_swap_out(u32 page_no)
 	}
 }
 
+/*
+ * 换回页面，将交换分区的数据换回至内存
+ */
 int page_swap_in(u32 page_no, u32 sec_no, u32 pid, u32 *page_no_ret)
 {
 	*page_no_ret = page_no;
@@ -375,6 +389,9 @@ int page_swap_in(u32 page_no, u32 sec_no, u32 pid, u32 *page_no_ret)
 	return 0;
 }
 
+/*
+ * 共享内存页，共享时只读，不能写入，以避免出现内存数据被其它程序破坏
+ */
 int page_share(u32 page_no, u32 *share_addr)
 {
 	//取得正在使用这一页面的pid_used
