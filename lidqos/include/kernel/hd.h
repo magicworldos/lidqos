@@ -26,16 +26,4 @@
 
 void hd_rw(u32 lba, u8 com, void *buf);
 
-void install_swap();
-
-u32 swap_alloc_sec();
-
-void swap_free_sec(u32 sec_no);
-
-u32 swap_alloc_page();
-
-void swap_write_page(u32 sec_no, void *page_data);
-
-void swap_read_page(u32 sec_no, void *page_data);
-
 #endif /* INCLUDE_KERNEL_HD_H_ */

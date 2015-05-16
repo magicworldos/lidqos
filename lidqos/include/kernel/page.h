@@ -12,7 +12,7 @@
 #include <kernel/io.h>
 #include <kernel/alloc.h>
 #include <kernel/process.h>
-#include <kernel/hd.h>
+#include <kernel/swap.h>
 #include <kernel/printf.h>
 
 #define PAGE_DIR			(0x600000)
