@@ -166,7 +166,7 @@ void int_protection_error()
 void int_page_error(u32 error_code)
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	page_error(pcb_current->pid, error_code);
+	page_error(pcb_current->process_id, error_code);
 	set_ds(0xf);
 }
 

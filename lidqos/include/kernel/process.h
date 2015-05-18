@@ -13,6 +13,7 @@
 #include <kernel/mm.h>
 #include <kernel/io.h>
 #include <kernel/page.h>
+#include <kernel/sys_var.h>
 
 /*
  * map_process中存放process的ID为u32类型，

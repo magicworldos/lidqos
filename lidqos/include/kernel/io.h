@@ -130,6 +130,28 @@ static inline u8 inb_p(u16 port)
 	return val;
 }
 
+static inline void outw_p(u16 val, u16 port)
+{
+	__asm__ volatile("outw	%0, %1" : : "a" (val), "dN" (port));
+}
+
+static inline u16 inw_p(u16 port)
+{
+	u16 val;
+	__asm__ volatile("inw	%%dx, %%al" :"=a"(val) : "dx"(port));
+	return val;
+}
+
+static inline void insl_p(u32 buf, u16 port, u32 count)
+{
+	__asm__ volatile("cld;rep;insl\n\t" ::"d"(port), "D"(buf), "c"(count<<9));
+}
+
+static inline void outsl_p(u32 buf, u16 port, u32 count)
+{
+	__asm__ volatile("cld;rep;outsl\n\t" ::"d"(port), "D" (buf), "c" (count<<9));
+}
+
 static inline u16 ds()
 {
 	u16 ds;

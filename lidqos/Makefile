@@ -157,8 +157,14 @@ $(KERNEL)_elfs:		$(KERNEL)_objs
 		$(BUILD_PATH)/$(KERNEL)/int.o			\
 		$(BUILD_PATH)/$(KERNEL)/key.o			\
 		$(BUILD_PATH)/$(KERNEL)/page.o			\
+		$(BUILD_PATH)/$(KERNEL)/swap.o			\
 		$(BUILD_PATH)/$(KERNEL)/hd.o			\
-		$(BUILD_PATH)/$(KERNEL)/swap.o
+		$(BUILD_PATH)/$(KERNEL)/fs.o			\
+		$(BUILD_PATH)/$(KERNEL)/sys_var.o		\
+		$(BUILD_PATH)/$(KERNEL)/string.o		\
+		$(BUILD_PATH)/$(KERNEL)/osiso.o			\
+		$(BUILD_PATH)/$(KERNEL)/mount.o			\
+		$(BUILD_PATH)/$(KERNEL)/tree.o
 
 #内核程序的obj文件
 $(KERNEL)_objs:
@@ -172,7 +178,13 @@ $(KERNEL)_objs:
 	$(CC) $(GC_K_PARAMS) mm/key.c 						-o $(BUILD_PATH)/$(KERNEL)/key.o
 	$(CC) $(GC_K_PARAMS) mm/page.c 						-o $(BUILD_PATH)/$(KERNEL)/page.o
 	$(CC) $(GC_K_PARAMS) mm/swap.c 						-o $(BUILD_PATH)/$(KERNEL)/swap.o
-	$(CC) $(GC_K_PARAMS) driver/hd.c 					-o $(BUILD_PATH)/$(KERNEL)/hd.o
+	$(CC) $(GC_K_PARAMS) driver/hd/hd.c 				-o $(BUILD_PATH)/$(KERNEL)/hd.o
+	$(CC) $(GC_K_PARAMS) driver/fs/fs.c 				-o $(BUILD_PATH)/$(KERNEL)/fs.o
+	$(CC) $(GC_K_PARAMS) $(KERNEL)/sys_var.c 			-o $(BUILD_PATH)/$(KERNEL)/sys_var.o
+	$(CC) $(GC_K_PARAMS) mm/string.c 					-o $(BUILD_PATH)/$(KERNEL)/string.o
+	$(CC) $(GC_K_PARAMS) driver/hd/osiso.c 				-o $(BUILD_PATH)/$(KERNEL)/osiso.o
+	$(CC) $(GC_K_PARAMS) driver/fs/mount.c 				-o $(BUILD_PATH)/$(KERNEL)/mount.o
+	$(CC) $(GC_K_PARAMS) $(KERNEL)/tree.c 				-o $(BUILD_PATH)/$(KERNEL)/tree.o
 	
 ##################################################################################################################
 

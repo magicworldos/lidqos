@@ -130,4 +130,14 @@ void install_kb();
 
 void mmcopy(void *from, void *to, u32 n);
 
+/*
+ * mmcopy_with : 按一定条件复制内存区域
+ *  - : 源地址
+ *  - : 目的地址
+ *  - : 起始偏移量
+ *  - : 复制大小
+ * return : void
+ */
+void mmcopy_with(void *from, void *to, int offset, int size);
+
 #endif

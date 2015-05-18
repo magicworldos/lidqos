@@ -9,10 +9,9 @@
 #define _HD_H_
 
 #include <kernel/typedef.h>
-#include <kernel/fs.h>
+#include <kernel/fs_for_install.h>
 #include <kernel/osiso.h>
 #include <kernel/sys_var.h>
-#include <kernel/alloc.h>
 
 #define HD_PORT_DATA            0x1f0
 #define HD_PORT_ERROR           0x1f1
@@ -84,12 +83,6 @@ void load_root(u32 hd_type, void *fs_root);
  * return : u32块编号
  */
 u32 alloc_sec(u32 hd_type);
-
-u32 hda_alloc_sec(u32 dev_id);
-
-void free_sec(u32 hd_dev_id, u32 lba);
-
-void hda_free_sec(u32 hd_dev_id, u32 lba);
 
 void hd_rw_cmd(u32 lba, u8 com, u8* buff);
 
