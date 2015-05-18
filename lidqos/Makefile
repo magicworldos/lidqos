@@ -69,7 +69,7 @@ DD_PARAMS_KERNEL	= 297
 #文件系统起始扇区号0x400
 DD_PARAMS_FILESYS	= 1024
 #结尾内容所在扇区0x800
-DD_PARAMS_END		= 4096
+DD_PARAMS_END		= 8192
 
 ##################################################################################################################
 
@@ -149,9 +149,10 @@ $(KERNEL)_S:		$(KERNEL)_elfs
 #内核程序的elf可执行文件
 $(KERNEL)_elfs:		$(KERNEL)_objs
 	$(LD) $(LD_KERNEL_PARAMS) -o $(BUILD_PATH)/$(KERNEL)/$(KERNEL) -e start_kernel $(BUILD_PATH)/$(KERNEL)/$(KERNEL).o	\
+		$(BUILD_PATH)/$(KERNEL)/osiso.o			\
+		$(BUILD_PATH)/$(KERNEL)/printf.o		\
 		$(BUILD_PATH)/$(KERNEL)/sys_call.o		\
 		$(BUILD_PATH)/$(KERNEL)/process.o		\
-		$(BUILD_PATH)/$(KERNEL)/printf.o		\
 		$(BUILD_PATH)/$(KERNEL)/alloc.o 		\
 		$(BUILD_PATH)/$(KERNEL)/mm.o			\
 		$(BUILD_PATH)/$(KERNEL)/int.o			\
@@ -159,10 +160,9 @@ $(KERNEL)_elfs:		$(KERNEL)_objs
 		$(BUILD_PATH)/$(KERNEL)/page.o			\
 		$(BUILD_PATH)/$(KERNEL)/swap.o			\
 		$(BUILD_PATH)/$(KERNEL)/hd.o			\
-		$(BUILD_PATH)/$(KERNEL)/fs.o			\
 		$(BUILD_PATH)/$(KERNEL)/sys_var.o		\
+		$(BUILD_PATH)/$(KERNEL)/fs.o			\
 		$(BUILD_PATH)/$(KERNEL)/string.o		\
-		$(BUILD_PATH)/$(KERNEL)/osiso.o			\
 		$(BUILD_PATH)/$(KERNEL)/mount.o			\
 		$(BUILD_PATH)/$(KERNEL)/tree.o
 

@@ -12,6 +12,9 @@ int start_kernel(int argc, char **args)
 {
 	printf("Welcome to LidqOS.\n");
 
+	//安装内核程序（从iso光盘启动时载入的内核程序不完整）
+	install_kernel();
+
 	//安装内存申请模块
 	install_alloc();
 
@@ -48,12 +51,60 @@ int start_kernel(int argc, char **args)
 	//安装交换空间
 	install_swap();
 
+	s_file *fp = f_open("/home/lidq/Documents/welcome", FS_MODE_READ, 0, 0);
+	char *temp = alloc_mm(fp->fs.size);
+	f_read(fp, fp->fs.size, (char *) temp);
+	for (int i = 0; i < fp->fs.size; i++)
+	{
+		putchar(temp[i]);
+	}
+	putchar('\n');
+	f_close(fp);
+
 	//开中断，在进入保护模式前已经关闭了中断这时需要将其打开
 	sti();
 
-	for (;;)
-	{
-	}
+	kernel_running();
 
 	return 0;
+}
+
+void install_kernel()
+{
+
+	//载入内核程序
+	char *data = (char *) KERNEL_INS_TEMP_ADDR;
+	for (int i = 0; i < KERNEL_INS_SECTOR_COUNT; ++i)
+	{
+		osiso_read_block_phy(ATA_BUS_PRIMARY, ATA_DRIVE_SLAVE, KERNEL_INS_START_SECTOR + i, (char *) (data + 0x800 * i));
+	}
+	__asm__ volatile("									\t\n"
+			"pushal										\t\n"
+			"pushfl										\t\n"
+
+			"movl " KERNEL_INS_TEMP_ADDR_STR ", %eax	\t\n"
+			"movl %eax, %edi							\t\n"
+			"movl " KERNEL_INS_ADDR_STR ", %eax			\t\n"
+			"movl %eax, %esi							\n\t"
+
+			"movl " KERNEL_INS_SIZE_STR ", %ecx			\t\n"
+			"_cp1: 										\t\n"
+			"movw (%edi), %ax							\t\n"
+			"movw %ax, (%esi) 							\t\n"
+
+			"add $0x2, %edi								\t\n"
+			"add $0x2, %esi								\t\n"
+			"sub $0x2, %ecx								\t\n"
+			"cmp $0x0, %ecx								\t\n"
+
+			"jne _cp1									\t\n"
+
+			"popfl										\t\n"
+			"popal										\t\n"
+			"");
+}
+
+void kernel_running()
+{
+	RUNNING_WITH_FOR
 }

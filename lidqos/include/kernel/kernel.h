@@ -9,6 +9,8 @@
 #define _INCLUDE_KERNEL_KERNEL_H_
 
 #include <kernel/typedef.h>
+#include <kernel/config.h>
+#include <kernel/osiso.h>
 #include <kernel/printf.h>
 #include <kernel/alloc.h>
 #include <kernel/page.h>
@@ -17,5 +19,9 @@
 #include <kernel/page.h>
 
 int start_kernel(int argc, char **args);
+
+void install_kernel();
+
+void kernel_running();
 
 #endif /* INCLUDE_KERNEL_KERNEL_H_ */

@@ -103,9 +103,9 @@ void install_process()
 	process_id++;
 
 	//载入TSS
-	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb_empty->task->tss, &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
+	addr_to_gdt(GDT_TYPE_TSS, (u32) &(pcb_empty->tss), &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
 	//载入LDT
-	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb_empty->task->ldt, &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
+	addr_to_gdt(GDT_TYPE_LDT, (u32) (pcb_empty->ldt), &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
 
 	//载入tss和ldt
 	load_tss(GDT_INDEX_TSS);
@@ -120,48 +120,48 @@ void install_process()
 void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 {
 	//s_tss
-	pcb->task->tss.back_link = 0;
-	pcb->task->tss.ss0 = GDT_INDEX_KERNEL_DS;
-	pcb->task->tss.esp1 = 0;
-	pcb->task->tss.ss1 = 0;
-	pcb->task->tss.esp2 = 0;
-	pcb->task->tss.ss2 = 0;
-	pcb->task->tss.cr3 = 0;
-	pcb->task->tss.eflags = 0x3202;
-	pcb->task->tss.eax = 0;
-	pcb->task->tss.ecx = 0;
-	pcb->task->tss.edx = 0;
-	pcb->task->tss.ebx = 0;
-	pcb->task->tss.ebp = 0;
-	pcb->task->tss.esi = 0;
-	pcb->task->tss.edi = 0;
-	pcb->task->tss.eip = 0;
-	pcb->task->tss.esp = 0;
-	pcb->task->tss.esp0 = 0;
-	pcb->task->tss.es = USER_DATA_SEL;
-	pcb->task->tss.cs = USER_CODE_SEL;
-	pcb->task->tss.ss = USER_DATA_SEL;
-	pcb->task->tss.ds = USER_DATA_SEL;
-	pcb->task->tss.fs = USER_DATA_SEL;
-	pcb->task->tss.gs = USER_DATA_SEL;
-	pcb->task->tss.ldt = GDT_INDEX_LDT;
-	pcb->task->tss.trace_bitmap = 0x0;
+	pcb->tss.back_link = 0;
+	pcb->tss.ss0 = GDT_INDEX_KERNEL_DS;
+	pcb->tss.esp1 = 0;
+	pcb->tss.ss1 = 0;
+	pcb->tss.esp2 = 0;
+	pcb->tss.ss2 = 0;
+	pcb->tss.cr3 = 0;
+	pcb->tss.eflags = 0x3202;
+	pcb->tss.eax = 0;
+	pcb->tss.ecx = 0;
+	pcb->tss.edx = 0;
+	pcb->tss.ebx = 0;
+	pcb->tss.ebp = 0;
+	pcb->tss.esi = 0;
+	pcb->tss.edi = 0;
+	pcb->tss.eip = 0;
+	pcb->tss.esp = 0;
+	pcb->tss.esp0 = 0;
+	pcb->tss.es = USER_DATA_SEL;
+	pcb->tss.cs = USER_CODE_SEL;
+	pcb->tss.ss = USER_DATA_SEL;
+	pcb->tss.ds = USER_DATA_SEL;
+	pcb->tss.fs = USER_DATA_SEL;
+	pcb->tss.gs = USER_DATA_SEL;
+	pcb->tss.ldt = GDT_INDEX_LDT;
+	pcb->tss.trace_bitmap = 0x0;
 
 	//设置多任务的gdt描述符
-	addr_to_gdt(LDT_TYPE_CS, 0, &(pcb->task->ldt[0]), GDT_G_KB, 0xfffff);
-	addr_to_gdt(LDT_TYPE_DS, 0, &(pcb->task->ldt[1]), GDT_G_KB, 0xfffff);
+	addr_to_gdt(LDT_TYPE_CS, 0, &(pcb->ldt[0]), GDT_G_KB, 0xfffff);
+	addr_to_gdt(LDT_TYPE_DS, 0, &(pcb->ldt[1]), GDT_G_KB, 0xfffff);
 
 	//设置pcb相关值
 	pcb->process_id = process_id;
-	pcb->task->tss.eip = (u32) mm_pcb + 0x1000;
-	pcb->task->tss.esp = (u32) mm_pcb + 0x2000;
-	pcb->task->tss.esp0 = (u32) mm_pcb + 0x3000;
-	pcb->task->tss.cr3 = (u32) mm_pcb + 0x4000;
+	pcb->tss.eip = (u32) mm_pcb + 0x1000;
+	pcb->tss.esp = (u32) mm_pcb + 0x2000;
+	pcb->tss.esp0 = (u32) mm_pcb + 0x3000;
+	pcb->tss.cr3 = (u32) mm_pcb + 0x4000;
 	//copy可执代码到eip位置
-	mmcopy(run_addr, (void *) (pcb->task->tss.eip), 0x1000);
+	mmcopy(run_addr, (void *) (pcb->tss.eip), 0x1000);
 
 	//页目录
-	u32 *page_dir = (u32 *) (pcb->task->tss.cr3);
+	u32 *page_dir = (u32 *) (pcb->tss.cr3);
 	//页表
 	u32 *page_tbl = (u32 *) ((u32) mm_pcb + 0x5000);
 	//地址
@@ -241,7 +241,7 @@ u32* pcb_page_dir(u32 pid)
 	{
 		pcb = pcb_B;
 	}
-	return (u32 *) (pcb->task->tss.cr3);
+	return (u32 *) (pcb->tss.cr3);
 }
 
 void schedule()
@@ -255,9 +255,8 @@ void schedule()
 		pcb_current = pcb_B;
 	}
 
-	addr_to_gdt(GDT_TYPE_TSS, (u32) &pcb_current->task->tss, &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
-	addr_to_gdt(GDT_TYPE_LDT, (u32) pcb_current->task->ldt, &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
-
+	addr_to_gdt(GDT_TYPE_TSS, (u32) &(pcb_current->tss), &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
+	addr_to_gdt(GDT_TYPE_LDT, (u32) (pcb_current->ldt), &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
 	//在时钟中断时并没有切换ds和cr3寄存器
 	//但是在call tss时cr3会被修改为tss中的cr3
 	set_ds(0xf);
