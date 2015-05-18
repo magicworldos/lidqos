@@ -35,14 +35,14 @@ void run_A()
 
 void run_B()
 {
-	char *ps = (char *) 0;
-	char ch;
-
-	while ((u32) ps <= 0xFFFFFFFF)
-	{
-		ch = *ps;
-		ps += 0x1000;
-	}
+//	char *ps = (char *) 0;
+//	char ch;
+//
+//	while ((u32) ps <= 0xFFFFFFFF)
+//	{
+//		ch = *ps;
+//		ps += 0x1000;
+//	}
 
 	char *p = (char *) 0xb8000;
 	p += ((23 * 80 + 76)) * 2;
@@ -85,19 +85,19 @@ void install_process()
 
 	//空任务
 	s_pcb *pcb_empty = NULL;
-	void* mm_pcb = alloc_page(process_id, pages, 0);
+	void* mm_pcb = alloc_page(process_id, pages, 0, 0);
 	pcb_empty = (s_pcb *) mm_pcb;
 	init_process(mm_pcb, pcb_empty, process_id, NULL);
 	process_id++;
 
 	//任务A
-	void* mm_pcb_A = alloc_page(process_id, pages, 0);
+	void* mm_pcb_A = alloc_page(process_id, pages, 0, 0);
 	pcb_A = (s_pcb *) mm_pcb_A;
 	init_process(mm_pcb_A, pcb_A, process_id, &run_A);
 	process_id++;
 
 	//任务B
-	void* mm_pcb_B = alloc_page(process_id, pages, 0);
+	void* mm_pcb_B = alloc_page(process_id, pages, 0, 0);
 	pcb_B = (s_pcb *) mm_pcb_B;
 	init_process(mm_pcb_B, pcb_B, process_id, &run_B);
 	process_id++;
@@ -190,7 +190,7 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 	//mm_pcb所在内存页表索引
 	u32 page_table_index = (address >> 12) & 0x3ff;
 	//mm_pcb所在内存页表
-	page_tbl = (u32 *) alloc_page(process_id, 1, 0);
+	page_tbl = (u32 *) alloc_page(process_id, 1, 0, 0);
 	for (int i = 0; i < 1024; i++)
 	{
 		//设置mm_pcb所在内存的页表
@@ -209,7 +209,7 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 	//设置16个页面剩余页
 	if (page_table_index + 16 >= 1024)
 	{
-		page_tbl = (u32 *) alloc_page(process_id, 1, 0);
+		page_tbl = (u32 *) alloc_page(process_id, 1, 0, 0);
 		for (int i = 0; i < 1024; i++)
 		{
 			if (i < (10 - (1024 - page_table_index)))

@@ -66,7 +66,7 @@ void page_error(u32 pid, u32 error_code)
 	if ((page_dir[page_dir_index] & 0x1) == 0)
 	{
 		//申请一个普通可用页面
-		tbl = alloc_page(pid, 1, 0);
+		tbl = alloc_page(pid, 1, 0, 0);
 		//如果申请失败
 		if (tbl == NULL)
 		{

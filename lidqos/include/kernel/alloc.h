@@ -16,15 +16,18 @@
 #define MEM_SIZE_LOGIC		(4096)
 
 //位图状态标识
-#define MM_SWAP_TYPE_CAN	(1)
-#define MM_SWAP_TYPE_NO		(0)
+//#define MM_SWAP_TYPE_CAN	(1)
+//#define MM_SWAP_TYPE_NO		(0)
 //未使用
 #define MM_FREE				(0x0 << 0)
 //已使用
 #define MM_USED				(0x1 << 0)
-//动态分配
+//是否可交换
 #define MM_NO_SWAP			(0x0 << 1)
 #define MM_CAN_SWAP			(0x1 << 1)
+//动态分配
+#define MM_NO_DYNAMIC		(0x0 << 2)
+#define MM_DYNAMIC			(0x1 << 2)
 
 //内存页大小4096B
 #define MM_PAGE_SIZE		(4 * 1024)
@@ -61,7 +64,7 @@ void install_used_map();
  *  - int count : 页数
  * return : void*返回申请地址，NULL代表申请失败
  */
-void* alloc_page(u32 process_id, int count, int can_swap);
+void* alloc_page(u32 process_id, int count, int can_swap, int is_dynamic);
 
 /*
  * alloc_page : 释放内存页，每页为4KB大小
@@ -71,20 +74,20 @@ void* alloc_page(u32 process_id, int count, int can_swap);
  */
 void free_page(void *addr, int count);
 
-///*
-// * alloc_mm : 申请内存
-// *  - int size : 申请大小
-// * return : void*返回申请地址，NULL代表申请失败
-// */
-//void* alloc_mm(int size);
-//
-///*
-// * free_mm : 释放内存
-// *  - void* addr : 释放地址
-// *  - int size : 释放大小
-// * return : void
-// */
-//void free_mm(void* addr, int size);
+/*
+ * alloc_mm : 申请内存
+ *  - int size : 申请大小
+ * return : void*返回申请地址，NULL代表申请失败
+ */
+void* alloc_mm(int size);
+
+/*
+ * free_mm : 释放内存
+ *  - void* addr : 释放地址
+ *  - int size : 释放大小
+ * return : void
+ */
+void free_mm(void* addr, int size);
 
 u8 mmap_status(u32 page_no);
 
