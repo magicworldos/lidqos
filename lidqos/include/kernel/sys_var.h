@@ -43,27 +43,8 @@ typedef struct process_control_block
 {
 	//pcb id
 	int process_id;
-	//pcb type
-	int type;
-	//执行参数
-	char *params;
-	//状态
-	int status;
-	//栈大小
-	int stack_size;
-	//程序地址
-	u32 program_addr;
-	//程序大小
-	int program_size;
-	//esp地址
-	u32 stack_esp;
-	//esp0地址
-	u32 stack_esp0;
-	//浮点寄存器数据保存区
-	char fpu_data[FPU_SIZE];
 	s_tss tss;
 	s_gdt ldt[2];
-	s_alloc_list *alloc_list;
 } s_pcb;
 
 typedef struct
