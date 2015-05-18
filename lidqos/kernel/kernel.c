@@ -12,7 +12,7 @@ int start_kernel(int argc, char **args)
 {
 	printf("Welcome to LidqOS.\n");
 
-	//安装内核程序（从iso光盘启动时载入的内核程序不完整）
+	//安装内核程序
 	install_kernel();
 
 	//安装内存申请模块
@@ -43,7 +43,7 @@ int start_kernel(int argc, char **args)
 	install_kb();
 
 	//安装文件系统
-	install_fs_system();
+//	install_fs_system();
 
 	//安装多任务
 	install_process();
@@ -51,15 +51,15 @@ int start_kernel(int argc, char **args)
 	//安装交换空间
 	install_swap();
 
-	s_file *fp = f_open("/home/lidq/Documents/welcome", FS_MODE_READ, 0, 0);
-	char *temp = alloc_mm(fp->fs.size);
-	f_read(fp, fp->fs.size, (char *) temp);
-	for (int i = 0; i < fp->fs.size; i++)
-	{
-		putchar(temp[i]);
-	}
-	putchar('\n');
-	f_close(fp);
+//	s_file *fp = f_open("/home/lidq/Documents/welcome", FS_MODE_READ, 0, 0);
+//	char *temp = alloc_mm(fp->fs.size);
+//	f_read(fp, fp->fs.size, (char *) temp);
+//	for (int i = 0; i < fp->fs.size; i++)
+//	{
+//		putchar(temp[i]);
+//	}
+//	putchar('\n');
+//	f_close(fp);
 
 	//开中断，在进入保护模式前已经关闭了中断这时需要将其打开
 	sti();

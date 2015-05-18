@@ -41,10 +41,15 @@ void page_error(u32 pid, u32 error_code)
 	set_cr3(PAGE_DIR);
 	u32 error_addr = cr2();
 
-	if (error_addr % 0x100000 == 0)
-	{
-		printf("Missing Page: %x\n", error_addr);
-	}
+//	if (error_addr % 0x100000 == 0)
+//	{
+//		printf("Missing Page: %x\n", error_addr);
+//	}
+
+//	if (error_addr >= 0x20000000)
+//	{
+//		printf("Missing Page: %x\n", error_addr);
+//	}
 
 	if (error_code == 7)
 	{
@@ -70,19 +75,8 @@ void page_error(u32 pid, u32 error_code)
 		//如果申请失败
 		if (tbl == NULL)
 		{
-			//申请一个可用的物理页面
-			u32 ph_page_no = alloc_page_ph(pid);
-			//如果申请成功
-			if (ph_page_no != 0)
-			{
-				tbl = (u32 *) (ph_page_no * 0x1000);
-			}
-			//如果申请失败
-			else
-			{
-				printf("Segmentation fault.\n");
-				hlt();
-			}
+			printf("Segmentation fault.\n");
+			hlt();
 		}
 		//处理新分配的页表所表示的页面均不在内存中
 		for (int i = 0; i < 1024; i++)
@@ -197,6 +191,7 @@ int alloc_page_no(u32 pid, u32 page_no, u32 *page_no_ret, u32 *shared, u32 *shar
 		//尝试将此页面换出到外存
 		if (page_swap_out(page_no) == 0)
 		{
+			//printf("out NG %x\n", page_no);
 			//如果页面共享失败
 			if (page_share(page_no, share_addr) == 0)
 			{
@@ -210,6 +205,7 @@ int alloc_page_no(u32 pid, u32 page_no, u32 *page_no_ret, u32 *shared, u32 *shar
 		}
 		else
 		{
+			//printf("out OK %x\n", page_no);
 			//设置此页为“已使用”、“可换出”
 			set_mmap_status(page_no, MM_USED | MM_CAN_SWAP);
 			//设置此页的使用者id为0
@@ -247,7 +243,7 @@ int page_swap_out(u32 page_no)
 	}
 
 	//如果页面不可以换出
-	if (((status >> 1) & 0x1) == 0)
+	if ((status & 2) == MM_NO_SWAP)
 	{
 		//返回失败
 		return 0;
@@ -279,7 +275,6 @@ int page_swap_out(u32 page_no)
 			void* page_data = (void *) (tbl[t_ind] & 0xfffff000);
 			//将页面数据写入外存
 			swap_write_page(sec_no, page_data);
-
 			/*
 			 * 设置原任务的此页面失效
 			 * 将页表中的地址域放入逻辑扇区号

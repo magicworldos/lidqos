@@ -33,7 +33,6 @@ void install_alloc()
 {
 	//位图所在的固定内存区域为 [0x100000, 0x200000)
 	mmap = (u8 *) MMAP;
-
 	for (u32 i = 0; i < MAP_SIZE_LOGIC; i++)
 	{
 		//16M以下均为已使用
@@ -108,32 +107,18 @@ void* alloc_page(u32 process_id, int count, int can_swap, int is_dynamic)
 	//设置map的各个内存页的状态为已使用
 	for (u32 i = 0; i < count; i++)
 	{
-//		if (can_swap == 1)
-//		{
-//			mmap[start_with + i] = (MM_USED | MM_CAN_SWAP);
-//		}
-//		else
-//		{
-//			mmap[start_with + i] = (MM_USED | MM_NO_SWAP);
-//		}
-		mmap[start_with + i] = (MM_USED | (can_swap << 1) | (is_dynamic << 1));
-
+		mmap[start_with + i] = (MM_USED | ((u32) can_swap << 1) | ((u32) is_dynamic << 1));
 		map_process[i] = process_id;
 	}
 
-//	u32 addr = (u32) ret;
-//	//页目录索引 / 4M
-//	u32 page_dir_index = addr / 0x400000;
-//	//页表索引 / 4K
-//	u32 page_table_index = (addr % 0x400000) / 0x1000;
-//	//页内偏移
-//	u32 page_inside = (addr % 0x400000) % 0x1000;
-//	//开启分页后的地址计算
-//	u32 result = 0;
-//	result |= (page_dir_index & 0x3FF) << 22;
-//	result |= (page_table_index & 0x3FF) << 12;
-//	result |= (page_inside & 0x3FF);
-//	ret = (void *) result;
+	if (ret == NULL)
+	{
+		u32 page_no = alloc_page_ph(process_id);
+		if (page_no != 0)
+		{
+			ret = (void *)(0x1000 * page_no);
+		}
+	}
 
 //返回查找到内存地址
 	return ret;
@@ -177,148 +162,147 @@ void* alloc_mm(int size)
 		return alloc_page(0, count, 0, 1);
 	}
 
-	//4字节对齐分配内存
-	u32 alloc_size = size / 4;
-	//如果有余数，说明要多分配一个4字节
-	if (size % 4 > 0)
+	int try_time = 1;
+	do
 	{
-		alloc_size++;
-	}
 
-	//i为map下标，j为页内map下标，k为页内字节位偏移，c为查找count
-	int i, j, k, c = 0, break_status = 0, run_time = 0;
-	//is为起始map下标，js为页内起始map下标，ks为面内起始字节偏移
-	int is = -1, js = -1, ks = -1;
-	//从未被分配内存页的地方开始查找
-	for (i = MMAP_USED_SIZE; i < MAP_SIZE && !break_status; i++)
-	{
-		//如果是未使用或已使用但是动态内存
-		if ((mmap[i] & 0x1) == MM_FREE || ((mmap[i] & 0x1) == MM_USED && (mmap[i] & 0x4) == MM_DYNAMIC))
+		//4字节对齐分配内存
+		u32 alloc_size = size / 4;
+		//如果有余数，说明要多分配一个4字节
+		if (size % 4 > 0)
 		{
-			is = -1;
-			js = -1;
-			ks = -1;
-			c = 0;
+			alloc_size++;
+		}
 
-			//取得页内map位图
-			u8 *mpmap = (u8*) (i * MM_PAGE_SIZE);
-			//跳过前4个字节，并小于128个字节中查找页内位图map
-			//一个页面为4096字节，前128字节为页内位图，0x80 * 0x8 * 0x4 = 0x1000 = 4096
-			//这128个字节占用页内位图为 0x80 / 0x8 / 0x4 = 0x4字节，所以要跳过前4个字节
-			for (j = 4; j < 128 && !break_status; j++)
-			{
-				//字节偏移从0到7字节来查找可用内存
-				for (k = 0; k < 8 && !break_status; k++)
-				{
-					//如果可以使用
-					if (((mpmap[j] >> k) & 0x1) == 0)
-					{
-						//设置各项起始号
-						if (is == -1 && js == -1 && ks == -1)
-						{
-							is = i;
-							js = j;
-							ks = k;
-						}
-						//已找到数量自增
-						c++;
-					}
-					//如果不可用
-					else
-					{
-						//各项起始号清除
-						is = -1;
-						js = -1;
-						ks = -1;
-						c = 0;
-					}
-					//如果找到可分配内存数量达到预先要申请的数量
-					if (c >= alloc_size)
-					{
-						//跳出
-						break_status = 1;
-					}
-				}
-			}
-		}
-		//如果内存页为已使用
-		else
+		//i为map下标，j为页内map下标，k为页内字节位偏移，c为查找count
+		int i, j, k, c = 0, break_status = 0, run_time = 0;
+		//is为起始map下标，js为页内起始map下标，ks为面内起始字节偏移
+		int is = -1, js = -1, ks = -1;
+		//从未被分配内存页的地方开始查找
+		for (i = MMAP_USED_SIZE; i < MAP_SIZE && !break_status; i++)
 		{
-			//各项起始号清除
-			is = -1;
-			js = -1;
-			ks = -1;
-			c = 0;
-		}
-	}
-	//清空分配数
-	c = 0;
-	//正式分配内存
-	if (break_status == 1 && is != -1 && js != -1 && ks != -1)
-	{
-		//从内存位图开始
-		for (i = is; i < MAP_SIZE; i++)
-		{
-			//如果是可分配内存
+			//如果是未使用或已使用但是动态内存
 			if ((mmap[i] & 0x1) == MM_FREE || ((mmap[i] & 0x1) == MM_USED && (mmap[i] & 0x4) == MM_DYNAMIC))
 			{
-				//取得页内位图
+				is = -1;
+				js = -1;
+				ks = -1;
+				c = 0;
+
+				//取得页内map位图
 				u8 *mpmap = (u8*) (i * MM_PAGE_SIZE);
-				//从页内位图的第4个字节开始
-				for (j = 4; j < 128; j++)
+				//跳过前4个字节，并小于128个字节中查找页内位图map
+				//一个页面为4096字节，前128字节为页内位图，0x80 * 0x8 * 0x4 = 0x1000 = 4096
+				//这128个字节占用页内位图为 0x80 / 0x8 / 0x4 = 0x4字节，所以要跳过前4个字节
+				for (j = 4; j < 128 && !break_status; j++)
 				{
-					//如果是第1次，找到起始地址
-					if (run_time == 0)
+					//字节偏移从0到7字节来查找可用内存
+					for (k = 0; k < 8 && !break_status; k++)
 					{
-						j = js;
-					}
-					//页内偏移
-					for (k = 0; k < 8; k++)
-					{
-						//如果是第1次，找到起始偏移
-						if (run_time == 0)
+						//如果可以使用
+						if (((mpmap[j] >> k) & 0x1) == 0)
 						{
-							k = ks;
+							//设置各项起始号
+							if (is == -1 && js == -1 && ks == -1)
+							{
+								is = i;
+								js = j;
+								ks = k;
+							}
+							//已找到数量自增
+							c++;
 						}
-						//更新页内位图
-						mpmap[j] |= (1 << k);
-						//找到数量自增
-						c++;
-						//次数加1
-						run_time++;
-						//找到预期的申请数量
+						//如果不可用
+						else
+						{
+							//各项起始号清除
+							is = -1;
+							js = -1;
+							ks = -1;
+							c = 0;
+						}
+						//如果找到可分配内存数量达到预先要申请的数量
 						if (c >= alloc_size)
 						{
-							//将此内存页设定为动态分配
-							mmap[i] = MM_USED | MM_NO_SWAP | MM_DYNAMIC;
+							//跳出
+							break_status = 1;
+						}
+					}
+				}
+			}
+			//如果内存页为已使用
+			else
+			{
+				//各项起始号清除
+				is = -1;
+				js = -1;
+				ks = -1;
+				c = 0;
+			}
+		}
+		//清空分配数
+		c = 0;
+		//正式分配内存
+		if (break_status == 1 && is != -1 && js != -1 && ks != -1)
+		{
+			//从内存位图开始
+			for (i = is; i < MAP_SIZE; i++)
+			{
+				//如果是可分配内存
+				if ((mmap[i] & 0x1) == MM_FREE || ((mmap[i] & 0x1) == MM_USED && (mmap[i] & 0x4) == MM_DYNAMIC))
+				{
+					//取得页内位图
+					u8 *mpmap = (u8*) (i * MM_PAGE_SIZE);
+					//从页内位图的第4个字节开始
+					for (j = 4; j < 128; j++)
+					{
+						//如果是第1次，找到起始地址
+						if (run_time == 0)
+						{
+							j = js;
+						}
+						//页内偏移
+						for (k = 0; k < 8; k++)
+						{
+							//如果是第1次，找到起始偏移
+							if (run_time == 0)
+							{
+								k = ks;
+							}
+							//更新页内位图
+							mpmap[j] |= (1 << k);
+							//找到数量自增
+							c++;
+							//次数加1
+							run_time++;
+							//找到预期的申请数量
+							if (c >= alloc_size)
+							{
+								//将此内存页设定为动态分配
+								mmap[i] = MM_USED | MM_NO_SWAP | MM_DYNAMIC;
 
-							u32 ret = (is * MM_PAGE_SIZE + (js * 8 * 4) + (ks * 4));
-//							//printf("addr %x\n", ret);
-//							u32 addr = (u32) ret;
-//							//页目录索引 / 4M
-//							u32 page_dir_index = addr / 0x400000;
-//							//printf("p_dir %x\n", page_dir_index);
-//							//页表索引 / 4K
-//							u32 page_table_index = (addr % 0x400000) / 0x1000;
-//							//printf("p_tab %x\n", page_table_index);
-//							//页内偏移
-//							u32 page_inside = (addr % 0x400000) % 0x1000;
-//							//printf("p_addr %x\n", page_inside);
-//							//开启分页后的地址计算
-//							u32 result = 0;
-//							result |= (page_dir_index & 0x3FF) << 22;
-//							result |= (page_table_index & 0x3FF) << 12;
-//							result |= (page_inside & 0x3FF);
-//							ret = result;
+								u32 ret = (is * MM_PAGE_SIZE + (js * 8 * 4) + (ks * 4));
 
-							//返回申请内存地址
-							return (void*) ret;
+								//返回申请内存地址
+								return (void*) ret;
+							}
 						}
 					}
 				}
 			}
 		}
+
+		/*
+		 * 如果运行到这里说明没有申请成功，尝试交换出一个可用页面
+		 * 这样再循环一次，就可以尝试使用一个动态申请页面
+		 */
+		u32 page_no = alloc_page_ph(0);
+		//将此内存页设定为动态分配
+		mmap[i] = MM_USED | MM_NO_SWAP | MM_DYNAMIC;
+
+		try_time--;
 	}
+	while (try_time >= 0);
 
 	//返回空指针
 	return NULL;

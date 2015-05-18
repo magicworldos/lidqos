@@ -35,10 +35,11 @@ void run_A()
 
 void run_B()
 {
-//	char *ps = (char *) 0;
-//	char ch;
-//
+	char *ps = (char *) 0;
+	char ch;
+
 //	while ((u32) ps <= 0xFFFFFFFF)
+//	while ((u32) ps < 0x21000000)
 //	{
 //		ch = *ps;
 //		ps += 0x1000;
