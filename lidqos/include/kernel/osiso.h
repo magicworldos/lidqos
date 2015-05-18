@@ -9,6 +9,7 @@
 #define _OSISO_H_
 
 #include <kernel/typedef.h>
+#include <kernel/fsdef.h>
 #include <kernel/hd.h>
 #include <kernel/io.h>
 #include <kernel/mm.h>

@@ -8,6 +8,8 @@
 #ifndef _PRINTF_H_
 #define _PRINTF_H_
 
+#ifndef MK_ISO_FS
+
 #include <kernel/typedef.h>
 #include <kernel/io.h>
 #include <kernel/arg.h>
@@ -25,5 +27,7 @@ void putchar(char ch);
 int puts(char *str);
 
 int printf(char *fmt, ...);
+
+#endif
 
 #endif
