@@ -293,6 +293,17 @@ void install_kb()
 }
 
 /*
+ * install_kb : 安装键盘中断
+ * return : void
+ */
+void install_hda()
+{
+	//PIC1的第3个bit是连接到PIC2的开关，所以要先打开11111011=0xfb
+	outb_p(inb_p(0x21) & 0xfb, 0x21);
+	outb_p(inb_p(0xa1) & 0xbf, 0xa1);
+}
+
+/*
  * mmcopy : 复制内存区域
  *  - void *from : 源地址
  *  - void *to : 目的地址

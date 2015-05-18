@@ -33,8 +33,14 @@ int start_kernel(int argc, char **args)
 	//安装时钟中断
 	install_timer();
 
+	//安装hda硬盘中断
+	install_hda();
+
 	//安装键盘中断
 	install_kb();
+
+	//安装文件系统
+	install_fs_system();
 
 	//安装多任务
 	install_process();

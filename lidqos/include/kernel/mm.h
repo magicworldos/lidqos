@@ -128,6 +128,12 @@ void install_timer();
  */
 void install_kb();
 
+/*
+ * install_kb : 安装键盘中断
+ * return : void
+ */
+void install_hda();
+
 void mmcopy(void *from, void *to, u32 n);
 
 /*
