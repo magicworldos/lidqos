@@ -13,50 +13,8 @@
 
 extern s_gdt gdts[GDT_MAX_SIZE];
 
-s_pcb *pcb_A = NULL;
-s_pcb *pcb_B = NULL;
-s_pcb *pcb_current = NULL;
-int timer = 0;
-
-void run_A()
-{
-	char *p = (char *) 0xb8000;
-	p += ((23 * 80 + 74)) * 2;
-	int i = 33;
-	while (1)
-	{
-		*p = i;
-		if (++i >= 127)
-		{
-			i = 33;
-		}
-	}
-}
-
-void run_B()
-{
-	char *ps = (char *) 0;
-	char ch;
-
-//	while ((u32) ps <= 0xFFFFFFFF)
-//	while ((u32) ps < 0x21000000)
-//	{
-//		ch = *ps;
-//		ps += 0x1000;
-//	}
-
-	char *p = (char *) 0xb8000;
-	p += ((23 * 80 + 76)) * 2;
-	int i = 99;
-	while (1)
-	{
-		*p = i;
-		if (++i >= 127)
-		{
-			i = 33;
-		}
-	}
-}
+u32 process_id = 0;
+extern s_list* pcb_current;
 
 /*
  * install_task : 安装多任务
@@ -64,43 +22,15 @@ void run_B()
  */
 void install_process()
 {
-	/*
-	 * 一次为任务申请16个页面，为的是将pbc、可执行代码、栈、页目录
-	 * 和页表内容都存放到一个内存区域，这样在初始化页表时方便为其指定页面号
-	 * pages:
-	 * 	0.pcb
-	 * 	1.run
-	 * 	2.esp
-	 * 	3.esp0
-	 * 	4.cr3
-	 * 	5.page_dir
-	 * 	6.page_tbl [0, 4)M
-	 * 	7.page_tbl [4, 8)M
-	 * 	8.page_tbl [8, 12)M
-	 * 	9.page_tbl [12, 16)M
-	 */
-	int pages = 16;
-
-	//任务ID号
-	u32 process_id = 1;
-
+	int pages = sizeof(s_pcb) / MM_PAGE_SIZE;
+	if (sizeof(s_pcb) % MM_PAGE_SIZE != 0)
+	{
+		pages++;
+	}
 	//空任务
-	s_pcb *pcb_empty = NULL;
-	void* mm_pcb = alloc_page(process_id, pages, 0, 0);
-	pcb_empty = (s_pcb *) mm_pcb;
-	init_process(mm_pcb, pcb_empty, process_id, NULL);
-	process_id++;
-
-	//任务A
-	void* mm_pcb_A = alloc_page(process_id, pages, 0, 0);
-	pcb_A = (s_pcb *) mm_pcb_A;
-	init_process(mm_pcb_A, pcb_A, process_id, &run_A);
-	process_id++;
-
-	//任务B
-	void* mm_pcb_B = alloc_page(process_id, pages, 0, 0);
-	pcb_B = (s_pcb *) mm_pcb_B;
-	init_process(mm_pcb_B, pcb_B, process_id, &run_B);
+	s_pcb *pcb_empty = alloc_page(process_id, pages, 0, 0);
+	init_process(pcb_empty, process_id, NULL);
+	pcb_insert(pcb_empty);
 	process_id++;
 
 	//载入TSS
@@ -113,13 +43,24 @@ void install_process()
 	load_ldt(GDT_INDEX_LDT);
 }
 
+void install_system()
+{
+	load_process(PCB_TYPE_SYSTEM, "/usr/bin/system", "");
+}
+
 /*
  * create_task : 创建tts任务
  *  - int type : tts任务类型TASK_TYPE_NOR、TASK_TYPE_SPE
  * return : void
  */
-void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
+void init_process(s_pcb *pcb, u32 process_id, void *run)
 {
+	int pages = sizeof(s_pcb) / MM_PAGE_SIZE;
+	if (sizeof(s_pcb) % MM_PAGE_SIZE != 0)
+	{
+		pages++;
+	}
+
 	//s_tss
 	pcb->tss.back_link = 0;
 	pcb->tss.ss0 = GDT_INDEX_KERNEL_DS;
@@ -154,17 +95,11 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 
 	//设置pcb相关值
 	pcb->process_id = process_id;
-	pcb->tss.eip = (u32) mm_pcb + 0x1000;
-	pcb->tss.esp = (u32) mm_pcb + 0x2000;
-	pcb->tss.esp0 = (u32) mm_pcb + 0x3000;
-	pcb->tss.cr3 = (u32) mm_pcb + 0x4000;
-	//copy可执代码到eip位置
-	mmcopy(run_addr, (void *) (pcb->tss.eip), 0x1000);
-
-	//页目录
-	u32 *page_dir = (u32 *) (pcb->tss.cr3);
-	//页表
-	u32 *page_tbl = (u32 *) ((u32) mm_pcb + 0x5000);
+	pcb->tss.eip = (u32) run;
+	//永远为4G
+	pcb->tss.esp = 0xfffffff0;
+	pcb->tss.esp0 = (u32) pcb->stack0 + 0x400;
+	pcb->tss.cr3 = (u32) pcb->page_dir;
 	//地址
 	u32 address = 0;
 	/*
@@ -172,97 +107,192 @@ void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr)
 	 * 实际上16M系统内存是不应该让普通程序可写的
 	 * 但为了能让普通程序直接操作0xb8000显示缓冲区
 	 */
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 1024; i++)
 	{
 		for (int j = 0; j < 1024; j++)
 		{
-			page_tbl[j] = address | 7;
-			address += 0x1000;
+			if (i < 4)
+			{
+				pcb->page_tbl[i * 1024 + j] = address | 7;
+				address += 0x1000;
+			}
+			else
+			{
+				pcb->page_tbl[i * 1024 + j] = 6;
+			}
 		}
-		page_dir[i] = ((u32) page_tbl | 7);
-		page_tbl += 1024;
+		pcb->page_dir[i] = ((u32) &pcb->page_tbl[i * 1024] | 7);
 	}
 
 	//mm_pcb所在内存
-	address = (u32) mm_pcb;
+	address = (u32) pcb;
 	//mm_pcb所在内存页目录索引
 	u32 page_dir_index = (address >> 22) & 0x3ff;
 	//mm_pcb所在内存页表索引
 	u32 page_table_index = (address >> 12) & 0x3ff;
 	//mm_pcb所在内存页表
-	page_tbl = (u32 *) alloc_page(process_id, 1, 0, 0);
 	for (int i = 0; i < 1024; i++)
 	{
 		//设置mm_pcb所在内存的页表
 		if (i >= page_table_index && i <= (page_table_index + 16))
 		{
-			page_tbl[i] = address | 7;
+			pcb->page_tbl[page_dir_index * 1024 + i] = address | 7;
 			address += 0x1000;
 		}
 		else
 		{
-			page_tbl[i] = 6;
+			pcb->page_tbl[page_dir_index * 1024 + i] = 6;
 		}
 	}
 	//设置mm_pcb所在内存的页目录
-	page_dir[page_dir_index] = ((u32) page_tbl | 7);
-	//设置16个页面剩余页
-	if (page_table_index + 16 >= 1024)
+	pcb->page_dir[page_dir_index] = ((u32) &pcb->page_tbl[page_dir_index * 1024] | 7);
+	//设置pages个页面剩余页
+	if (page_table_index + pages >= 1024)
 	{
-		page_tbl = (u32 *) alloc_page(process_id, 1, 0, 0);
+		page_dir_index++;
 		for (int i = 0; i < 1024; i++)
 		{
-			if (i < (10 - (1024 - page_table_index)))
+			if (i < (pages - (1024 - page_table_index)))
 			{
-				page_tbl[i] = address | 7;
+				pcb->page_tbl[page_dir_index * 1024 + i] = address | 7;
 				address += 0x1000;
 			}
 			else
 			{
-				page_tbl[i] = 6;
+				pcb->page_tbl[page_dir_index * 1024 + i] = 6;
 			}
 		}
-		page_dir[page_dir_index + 1] = ((u32) page_tbl | 7);
+		pcb->page_dir[page_dir_index] = ((u32) &pcb->page_tbl[page_dir_index * 1024] | 7);
+	}
+}
+
+s_pcb* load_process(int pcb_type, char *file_name, char *params)
+{
+	//从文件系统读入程序
+	s_file *fp = f_open(file_name, FS_MODE_READ, 0, 0);
+	int pages = fp->fs.size / MM_PAGE_SIZE;
+	if (fp->fs.size % MM_PAGE_SIZE != 0)
+	{
+		pages++;
+	}
+	void *run = alloc_page(process_id, pages, 0, 0);
+	f_read(fp, fp->fs.size, (u8 *) run);
+	//关闭文件
+	f_close(fp);
+	//对elf可执行程序进行重定位
+	relocation_elf(run);
+
+	//取得程序运行开始位置shell_run + phdr.p_offset
+	Elf32_Ehdr ehdr;
+	mmcopy_with(run, (void *) &ehdr, 0, sizeof(Elf32_Ehdr));
+	Elf32_Phdr phdr;
+	mmcopy_with(run, (void *) &phdr, ehdr.e_phoff, sizeof(Elf32_Phdr));
+
+	pages = sizeof(s_pcb) / MM_PAGE_SIZE;
+	if (sizeof(s_pcb) % MM_PAGE_SIZE != 0)
+	{
+		pages++;
+	}
+	//任务
+	s_pcb *pcb = alloc_page(process_id, pages, 0, 0);
+	init_process(pcb, process_id, run);
+	pcb_insert(pcb);
+
+	process_id++;
+
+	return pcb;
+}
+
+/*
+ * relocation_elf :  elf可执行文件重定位
+ *  - void *addr : 可执行程序地址
+ * return : void
+ */
+void relocation_elf(void *addr)
+{
+	//elf文件头
+	Elf32_Ehdr ehdr;
+	mmcopy_with((char *) addr, (char *) &ehdr, 0, sizeof(Elf32_Ehdr));
+
+	//程序头
+	Elf32_Phdr phdr;
+	mmcopy_with((char *) addr, (char *) &phdr, ehdr.e_phoff, sizeof(Elf32_Phdr));
+
+	Elf32_Shdr shdrs[ehdr.e_shnum];
+	Elf32_Shdr shdr_rel;
+	//循环程序头
+	for (int i = 0; i < ehdr.e_shnum; ++i)
+	{
+		mmcopy_with((char *) addr, (char *) &shdrs[i], ehdr.e_shoff + (i * sizeof(Elf32_Shdr)), sizeof(Elf32_Shdr));
+		//如果需要重定位
+		if (shdrs[i].sh_type == 9)
+		{
+			//加入需要重定位的列表
+			mmcopy_with((char *) addr, (char *) &shdr_rel, ehdr.e_shoff + (i * sizeof(Elf32_Shdr)), sizeof(Elf32_Shdr));
+		}
+	}
+	u32 rels_count = shdr_rel.sh_size / sizeof(Elf32_Rel);
+	Elf32_Rel rels[rels_count];
+
+	//计算重定位后的物理地址
+	u32 p_offset = (u32) addr + phdr.p_offset;
+
+	//循环重定位列表
+	for (int i = 0; i < rels_count; ++i)
+	{
+		//取得重定位项
+		mmcopy_with((char *) addr, (char *) &rels[i], shdr_rel.sh_offset + (i * sizeof(Elf32_Rel)), sizeof(Elf32_Rel));
+		if (rels[i].r_info == 1)
+		{
+			//重定位
+			u32 *p = (u32*) (p_offset + rels[i].r_offset);
+			*p += p_offset;
+		}
 	}
 }
 
 u32* pcb_page_dir(u32 pid)
 {
-	s_pcb *pcb = NULL;
-	if (pid == 0)
-	{
-		return (u32*) PAGE_DIR;
-	}
-
-	if (pid == 2)
-	{
-		pcb = pcb_A;
-	}
-	else if (pid == 3)
-	{
-		pcb = pcb_B;
-	}
+	s_pcb* pcb = (s_pcb*) pcb_current->node;
 	return (u32 *) (pcb->tss.cr3);
 }
 
-void schedule()
+/*
+ * get_current_task_id : 取得当前运行的任务ID
+ * return : int任务ID
+ */
+u32 get_current_process_id()
 {
-	if (timer++ % 2 == 0)
-	{
-		pcb_current = pcb_A;
-	}
-	else
-	{
-		pcb_current = pcb_B;
-	}
-
-	addr_to_gdt(GDT_TYPE_TSS, (u32) &(pcb_current->tss), &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
-	addr_to_gdt(GDT_TYPE_LDT, (u32) (pcb_current->ldt), &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
-	//在时钟中断时并没有切换ds和cr3寄存器
-	//但是在call tss时cr3会被修改为tss中的cr3
-	set_ds(0xf);
-
-	call_tss();
+	return get_current_process()->process_id;
 }
+
+/*
+ * get_current_task : 取得当前运行的任务指针
+ * return : s_task*任务指针
+ */
+s_pcb* get_current_process()
+{
+	return (s_pcb*) pcb_current->node;
+}
+
+//void schedule()
+//{
+//	if (timer++ % 2 == 0)
+//	{
+//		pcb_current = pcb_A;
+//	}
+//	else
+//	{
+//		pcb_current = pcb_B;
+//	}
+//
+//	addr_to_gdt(GDT_TYPE_TSS, (u32) &(pcb_current->tss), &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
+//	addr_to_gdt(GDT_TYPE_LDT, (u32) (pcb_current->ldt), &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
+//	//在时钟中断时并没有切换ds和cr3寄存器
+//	//但是在call tss时cr3会被修改为tss中的cr3
+//	set_ds(0xf);
+//
+//	call_tss();
+//}
 
 #endif

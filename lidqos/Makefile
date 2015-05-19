@@ -16,6 +16,8 @@ ECC					= ecc
 #命令
 #编译c程序
 CC = gcc
+#编译c++程序
+CK = g++
 #连接oject文件到elf可执行文件
 LD = ld
 #将elf可执行文件转为纯机器码的bin文件
@@ -73,8 +75,8 @@ DD_PARAMS_END		= 8192
 
 ##################################################################################################################
 
-#					创建文件夹	光盘iso文件		启动程序		系统内核		shell程序
-all:				$(MKDIR)	$(MKISO)		$(BOOT)		$(KERNEL)	$(PSHELL)
+#					创建文件夹	光盘iso文件	ecc文件		启动程序		系统内核		shell程序
+all:				$(MKDIR)	$(MKISO)	$(ECC)		$(BOOT)		$(KERNEL)	$(PSHELL)
 
 ##################################################################################################################
 
@@ -83,7 +85,8 @@ $(MKDIR):
 	mkdir -p $(BUILD_PATH)/$(MKISO)		\
 	$(BUILD_PATH)/$(BOOT) 				\
 	$(BUILD_PATH)/$(KERNEL) 			\
-	$(BUILD_PATH)/$(PSHELL)
+	$(BUILD_PATH)/$(PSHELL)				\
+	$(BUILD_PATH)/$(ECC)
 
 ##################################################################################################################
 
@@ -164,7 +167,9 @@ $(KERNEL)_elfs:		$(KERNEL)_objs
 		$(BUILD_PATH)/$(KERNEL)/fs.o			\
 		$(BUILD_PATH)/$(KERNEL)/string.o		\
 		$(BUILD_PATH)/$(KERNEL)/mount.o			\
-		$(BUILD_PATH)/$(KERNEL)/tree.o
+		$(BUILD_PATH)/$(KERNEL)/tree.o			\
+		$(BUILD_PATH)/$(KERNEL)/sche.o			\
+		$(BUILD_PATH)/$(KERNEL)/list.o
 
 #内核程序的obj文件
 $(KERNEL)_objs:
@@ -185,25 +190,49 @@ $(KERNEL)_objs:
 	$(CC) $(GC_K_PARAMS) driver/hd/osiso.c 				-o $(BUILD_PATH)/$(KERNEL)/osiso.o
 	$(CC) $(GC_K_PARAMS) driver/fs/mount.c 				-o $(BUILD_PATH)/$(KERNEL)/mount.o
 	$(CC) $(GC_K_PARAMS) $(KERNEL)/tree.c 				-o $(BUILD_PATH)/$(KERNEL)/tree.o
+	$(CC) $(GC_K_PARAMS) $(KERNEL)/list.c 				-o $(BUILD_PATH)/$(KERNEL)/list.o
+	$(CC) $(GC_K_PARAMS) $(KERNEL)/sche.c 				-o $(BUILD_PATH)/$(KERNEL)/sche.o
 	
 ##################################################################################################################
+
+SYSTEM		= system
 
 #外壳程序
 $(PSHELL):			$(PSHELL)_elfs	$(PSHELL)_S
 
 #外壳程序反汇编文件
 $(PSHELL)_S:			$(PSHELL)_elfs
+	#system
+	$(OD) $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) > $(BUILD_PATH)/$(PSHELL)/$(SYSTEM)_att.S
+	$(OD) $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) > $(BUILD_PATH)/$(PSHELL)/$(SYSTEM)_intel.S
 	
 #外壳程序的elf可执行文件
 $(PSHELL)_elfs:		$(PSHELL)_ecc
-
+	#system
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/$(SYSTEM)_ecc -e start_main $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).ecc
+	$(BUILD_PATH)/$(ECC)/$(ECC) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).ecc $(BUILD_PATH)/$(PSHELL)/$(SYSTEM)_ecc $(BUILD_PATH)/$(PSHELL)/$(SYSTEM)
+	
 #外壳程序的ecc可重定向文件
 $(PSHELL)_ecc:		$(PSHELL)_objs
-		
+	#system
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).ecc -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
+		$(BUILD_PATH)/$(PSHELL)/$(SYSTEM).o		\
 #外壳程序的obj文件
 $(PSHELL)_objs:
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/start_main.c 	-o $(BUILD_PATH)/$(PSHELL)/start_main.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/$(SYSTEM).c		-o $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).o	
 
+##################################################################################################################
 
+#ecc
+$(ECC):				$(ECC)_run
+
+#ecc程序	
+$(ECC)_run:
+	$(CK) -m32 $(TOOL)/$(ECC)/$(ECC).cpp -o $(BUILD_PATH)/$(ECC)/$(ECC)
+	
+##################################################################################################################
+	
 clean:
 	rm -rvf $(BUILD_PATH)
 	mkdir $(BUILD_PATH)

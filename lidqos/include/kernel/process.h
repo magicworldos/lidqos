@@ -12,23 +12,47 @@
 #include <kernel/alloc.h>
 #include <kernel/mm.h>
 #include <kernel/io.h>
+#include <kernel/elf.h>
 #include <kernel/page.h>
 #include <kernel/sys_var.h>
+#include <kernel/list.h>
+#include <kernel/sche.h>
 
 /*
- * map_process中存放process的ID为u32类型，
- * 所以在以后的process数据结构中process_id也要是u32类型
+ * install_task : 安装多任务
+ * return : void
  */
-void run_A();
-
-void run_B();
-
 void install_process();
 
-void init_process(void *mm_pcb, s_pcb *pcb, u32 process_id, void *run_addr);
+void install_system();
+
+/*
+ * create_task : 创建tts任务
+ *  - int type : tts任务类型TASK_TYPE_NOR、TASK_TYPE_SPE
+ * return : void
+ */
+void init_process(s_pcb *pcb, u32 process_id, void *run);
+
+s_pcb* load_process(int pcb_type, char *file_name, char *params);
+
+/*
+ * relocation_elf :  elf可执行文件重定位
+ *  - void *addr : 可执行程序地址
+ * return : void
+ */
+void relocation_elf(void *addr);
 
 u32* pcb_page_dir(u32 pid);
 
-void schedule();
+/*
+ * get_current_task_id : 取得当前运行的任务ID
+ * return : int任务ID
+ */
+u32 get_current_process_id();
+/*
+ * get_current_task : 取得当前运行的任务指针
+ * return : s_task*任务指针
+ */
+s_pcb* get_current_process();
 
 #endif

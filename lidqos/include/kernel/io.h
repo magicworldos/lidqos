@@ -120,6 +120,31 @@ static inline void outb_p(u8 val, u16 port)
 		__asm__ ("cld;rep;outsl\n\t"		\
 		::"d"(port), "S" (buf), "c" (nr))
 
+//open FPU
+#define open_fpu()	\
+	({__asm__ volatile( "movl    %cr0, %eax			\n\t"	\
+						"andl    $0xfffffff1, %eax	\n\t"	\
+						"movl    %eax, %cr0			\n\t"	\
+	);})
+
+//close FPU
+#define close_fpu()	\
+	({__asm__ volatile( "movl    %cr0, %eax		\n\t"	\
+						"orl     $0x6, %eax		\n\t"	\
+						"movl    %eax, %cr0		\n\t"	\
+	);})
+
+//save FPU
+#define save_fpu(fpu_addr)	\
+	({__asm__ volatile( "fxsave	%0;"					\
+						"finit;" :: "m"(fpu_addr)		\
+	);})
+
+//restore FPU
+#define restore_fpu(fpu_addr)	\
+	({__asm__ volatile("finit;fxrstor	%0;" ::"m"(fpu_addr)		\
+	);})
+
 /**
  * 从端口中读入一个字节
  */

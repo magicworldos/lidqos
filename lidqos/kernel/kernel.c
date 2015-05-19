@@ -51,15 +51,8 @@ int start_kernel(int argc, char **args)
 	//安装交换空间
 	install_swap();
 
-	s_file *fp = f_open("/home/lidq/Documents/welcome", FS_MODE_READ, 0, 0);
-	char *temp = alloc_mm(fp->fs.size);
-	f_read(fp, fp->fs.size, (char *) temp);
-	for (int i = 0; i < fp->fs.size; i++)
-	{
-		putchar(temp[i]);
-	}
-	putchar('\n');
-	f_close(fp);
+	//安装系统首行任务
+	install_system();
 
 	//开中断，在进入保护模式前已经关闭了中断这时需要将其打开
 	sti();

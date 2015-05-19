@@ -6,6 +6,7 @@ all:
 		../../lidqos/mm/string.c			\
 	-o build/filesys
 	cp -rvf ../../lidqos/fs/ ../../lidqos/build/	
+	cp ../../lidqos/build/shell/system ../../lidqos/build/fs/usr/bin/
 	./build/filesys
 
 clean:

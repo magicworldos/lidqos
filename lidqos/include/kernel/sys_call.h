@@ -14,6 +14,7 @@
 #include <kernel/process.h>
 #include <kernel/page.h>
 #include <kernel/printf.h>
+#include <kernel/sche.h>
 
 void int_div_error();
 
