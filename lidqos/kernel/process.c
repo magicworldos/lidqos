@@ -29,8 +29,8 @@ void install_process()
 	}
 	//空任务
 	s_pcb *pcb_empty = alloc_page(process_id, pages, 0, 0);
-	init_process(pcb_empty, process_id, NULL);
-	pcb_insert(pcb_empty);
+	init_process(pcb_empty, process_id, NULL, 0);
+	//pcb_insert(pcb_empty);
 	process_id++;
 
 	//载入TSS
@@ -45,7 +45,7 @@ void install_process()
 
 void install_system()
 {
-	load_process(PCB_TYPE_SYSTEM, "/usr/bin/system", "");
+	load_process("/usr/bin/system", "");
 }
 
 /*
@@ -53,7 +53,7 @@ void install_system()
  *  - int type : tts任务类型TASK_TYPE_NOR、TASK_TYPE_SPE
  * return : void
  */
-void init_process(s_pcb *pcb, u32 process_id, void *run)
+void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset)
 {
 	int pages = sizeof(s_pcb) / MM_PAGE_SIZE;
 	if (sizeof(s_pcb) % MM_PAGE_SIZE != 0)
@@ -93,13 +93,16 @@ void init_process(s_pcb *pcb, u32 process_id, void *run)
 	addr_to_gdt(LDT_TYPE_CS, 0, &(pcb->ldt[0]), GDT_G_KB, 0xfffff);
 	addr_to_gdt(LDT_TYPE_DS, 0, &(pcb->ldt[1]), GDT_G_KB, 0xfffff);
 
+	pcb->run = run;
 	//设置pcb相关值
-	pcb->process_id = process_id;
-	pcb->tss.eip = (u32) run;
+	pcb->process_id = pid;
+	pcb->tss.eip = (u32) run + run_offset;
 	//永远为4G
-	pcb->tss.esp = 0xfffffff0;
+	//pcb->tss.esp = 0xfffffff0;
+	pcb->tss.esp = (u32) pcb->stack + 0x400;
 	pcb->tss.esp0 = (u32) pcb->stack0 + 0x400;
 	pcb->tss.cr3 = (u32) pcb->page_dir;
+
 	//地址
 	u32 address = 0;
 	/*
@@ -111,62 +114,62 @@ void init_process(s_pcb *pcb, u32 process_id, void *run)
 	{
 		for (int j = 0; j < 1024; j++)
 		{
-			if (i < 4)
+			if (i < 1000)
 			{
-				pcb->page_tbl[i * 1024 + j] = address | 7;
+				pcb->page_tbl[i][j] = address | 7;
 				address += 0x1000;
 			}
 			else
 			{
-				pcb->page_tbl[i * 1024 + j] = 6;
+				pcb->page_tbl[i][j] = 6;
 			}
 		}
-		pcb->page_dir[i] = ((u32) &pcb->page_tbl[i * 1024] | 7);
+		pcb->page_dir[i] = (u32) &pcb->page_tbl[i][0] | 7;
 	}
-
-	//mm_pcb所在内存
-	address = (u32) pcb;
-	//mm_pcb所在内存页目录索引
-	u32 page_dir_index = (address >> 22) & 0x3ff;
-	//mm_pcb所在内存页表索引
-	u32 page_table_index = (address >> 12) & 0x3ff;
-	//mm_pcb所在内存页表
-	for (int i = 0; i < 1024; i++)
-	{
-		//设置mm_pcb所在内存的页表
-		if (i >= page_table_index && i <= (page_table_index + 16))
-		{
-			pcb->page_tbl[page_dir_index * 1024 + i] = address | 7;
-			address += 0x1000;
-		}
-		else
-		{
-			pcb->page_tbl[page_dir_index * 1024 + i] = 6;
-		}
-	}
-	//设置mm_pcb所在内存的页目录
-	pcb->page_dir[page_dir_index] = ((u32) &pcb->page_tbl[page_dir_index * 1024] | 7);
-	//设置pages个页面剩余页
-	if (page_table_index + pages >= 1024)
-	{
-		page_dir_index++;
-		for (int i = 0; i < 1024; i++)
-		{
-			if (i < (pages - (1024 - page_table_index)))
-			{
-				pcb->page_tbl[page_dir_index * 1024 + i] = address | 7;
-				address += 0x1000;
-			}
-			else
-			{
-				pcb->page_tbl[page_dir_index * 1024 + i] = 6;
-			}
-		}
-		pcb->page_dir[page_dir_index] = ((u32) &pcb->page_tbl[page_dir_index * 1024] | 7);
-	}
+//
+//	//mm_pcb所在内存
+//	address = (u32) pcb;
+//	//mm_pcb所在内存页目录索引
+//	u32 page_dir_index = (address >> 22) & 0x3ff;
+//	//mm_pcb所在内存页表索引
+//	u32 page_table_index = (address >> 12) & 0x3ff;
+//	//mm_pcb所在内存页表
+//	for (int i = 0; i < 1024; i++)
+//	{
+//		//设置mm_pcb所在内存的页表
+//		if (i >= page_table_index && i <= (page_table_index + 16))
+//		{
+//			pcb->page_tbl[page_dir_index * 1024 + i] = address | 7;
+//			address += 0x1000;
+//		}
+//		else
+//		{
+//			pcb->page_tbl[page_dir_index * 1024 + i] = 6;
+//		}
+//	}
+//	//设置mm_pcb所在内存的页目录
+//	pcb->page_dir[page_dir_index] = ((u32) &pcb->page_tbl[page_dir_index * 1024] | 7);
+//	//设置pages个页面剩余页
+//	if (page_table_index + pages >= 1024)
+//	{
+//		page_dir_index++;
+//		for (int i = 0; i < 1024; i++)
+//		{
+//			if (i < (pages - (1024 - page_table_index)))
+//			{
+//				pcb->page_tbl[page_dir_index * 1024 + i] = address | 7;
+//				address += 0x1000;
+//			}
+//			else
+//			{
+//				pcb->page_tbl[page_dir_index * 1024 + i] = 6;
+//			}
+//		}
+//		pcb->page_dir[page_dir_index] = ((u32) &pcb->page_tbl[page_dir_index * 1024] | 7);
+//	}
 }
 
-s_pcb* load_process(int pcb_type, char *file_name, char *params)
+s_pcb* load_process(char *file_name, char *params)
 {
 	//从文件系统读入程序
 	s_file *fp = f_open(file_name, FS_MODE_READ, 0, 0);
@@ -193,11 +196,11 @@ s_pcb* load_process(int pcb_type, char *file_name, char *params)
 	{
 		pages++;
 	}
+
 	//任务
 	s_pcb *pcb = alloc_page(process_id, pages, 0, 0);
-	init_process(pcb, process_id, run);
+	init_process(pcb, process_id, run, phdr.p_offset);
 	pcb_insert(pcb);
-
 	process_id++;
 
 	return pcb;

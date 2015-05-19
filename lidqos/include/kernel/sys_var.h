@@ -10,13 +10,6 @@
 
 #include <kernel/typedef.h>
 
-//默认的不需要执行的任务
-#define pcb_TYPE_SPE			(0x0)
-//普通可执行任务
-#define PCB_TYPE_SYSTEM			(0x1)
-#define PCB_TYPE_SERVICE		(0x2)
-#define PCB_TYPE_USER			(0x4)
-
 //任务状态：运行
 #define T_S_RUNNING		(0)
 //任务状态：就绪
@@ -61,15 +54,13 @@ typedef struct process_control_block
 	u32 process_id;
 	s_tss tss;
 	s_gdt ldt[2];
-	int type;
-	int status;
-	//浮点寄存器数据保存区
-	u8 fpu_data[512];
+	void* run;
+	u8 stack[0x400];
 	u8 stack0[0x400];
 	//页目录
 	u32 page_dir[0x400];
 	//全部页表
-	u32 page_tbl[0x400 * 0x400];
+	u32 page_tbl[0x40][0x400];
 } s_pcb;
 
 typedef struct

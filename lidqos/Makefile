@@ -216,7 +216,8 @@ $(PSHELL)_elfs:		$(PSHELL)_ecc
 $(PSHELL)_ecc:		$(PSHELL)_objs
 	#system
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).ecc -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
-		$(BUILD_PATH)/$(PSHELL)/$(SYSTEM).o		\
+		$(BUILD_PATH)/$(PSHELL)/$(SYSTEM).o
+
 #外壳程序的obj文件
 $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/start_main.c 	-o $(BUILD_PATH)/$(PSHELL)/start_main.o

@@ -35,28 +35,7 @@ s_list *list_pcb_all = NULL;
 
 void schedule()
 {
-	s_list *list_header = NULL;
-	int type = timer % 6;
-	//system 1/10
-	if (type == 0)
-	{
-		list_header = list_system;
-	}
-	//service 3/10
-	else if (type == 3)
-	{
-		list_header = list_service;
-	}
-	//user 4/10
-	else
-	{
-		list_header = list_user;
-	}
-
-	if (timer++ >= 6000)
-	{
-		timer = 0;
-	}
+	s_list *list_header = list_user;
 
 	if (list_header == NULL)
 	{
@@ -66,27 +45,10 @@ void schedule()
 	s_list *list_run = list_header;
 	s_pcb *pcb = (s_pcb *) (list_run->node);
 
-	//打开浮点运算器
-	open_fpu();
-	//保存当前浮点寄存器内容到内存
-	save_fpu(fpu_d);
-	mmcopy(fpu_d, pcb->fpu_data, FPU_SIZE);
-
 	if (list_header != last_run)
 	{
-		//system
-		if (pcb->type == PCB_TYPE_SYSTEM)
-		{
-			list_system = list_header2footer(list_system);
-		}
-		else if (pcb->type == PCB_TYPE_SERVICE)
-		{
-			list_service = list_header2footer(list_service);
-		}
-		else if (pcb->type == PCB_TYPE_USER)
-		{
-			list_user = list_header2footer(list_user);
-		}
+
+		list_user = list_header2footer(list_user);
 
 		addr_to_gdt(GDT_TYPE_TSS, (u32) &(pcb->tss), &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
 		addr_to_gdt(GDT_TYPE_LDT, (u32) (pcb->ldt), &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
@@ -111,225 +73,154 @@ void pcb_insert(s_pcb *pcb)
 	s_list *p_list = alloc_mm(sizeof(s_list));
 	p_list->node = pcb;
 
-	if (pcb->type == PCB_TYPE_SYSTEM)
-	{
-		list_system = list_insert_node(list_system, p_list);
-	}
-	else if (pcb->type == PCB_TYPE_SERVICE)
-	{
-		list_service = list_insert_node(list_service, p_list);
-	}
-	else if (pcb->type == PCB_TYPE_USER)
-	{
-		list_user = list_insert_node(list_user, p_list);
-	}
+	list_user = list_insert_node(list_user, p_list);
 
 	s_list *pn_list = alloc_mm(sizeof(s_list));
 	pn_list->node = pcb;
 	list_pcb_all = list_insert_node(list_pcb_all, pn_list);
 }
-
-void set_process_ready(s_pcb *pcb)
-{
-	if (pcb == NULL)
-	{
-		return;
-	}
-
-	pcb->status = T_S_READY;
-
-	s_list* p_list = get_process(pcb->process_id);
-
-	if (p_list == NULL)
-	{
-		return;
-	}
-
-	list_wait = list_remove_node(list_wait, p_list);
-
-	if (pcb->type == PCB_TYPE_SYSTEM)
-	{
-		list_system = list_insert_node(list_system, p_list);
-	}
-	else if (pcb->type == PCB_TYPE_SERVICE)
-	{
-		list_service = list_insert_node(list_service, p_list);
-	}
-	else if (pcb->type == PCB_TYPE_USER)
-	{
-		list_user = list_insert_node(list_user, p_list);
-	}
-}
-
-void set_process_wait(s_pcb *pcb)
-{
-	if (pcb == NULL)
-	{
-		return;
-	}
-	pcb->status = T_S_WAIT;
-
-	s_list* p_list = get_process(pcb->process_id);
-
-	if (p_list == NULL)
-	{
-		return;
-	}
-
-	if (pcb->type == PCB_TYPE_SYSTEM)
-	{
-		list_system = list_remove_node(list_system, p_list);
-	}
-	else if (pcb->type == PCB_TYPE_SERVICE)
-	{
-		list_service = list_remove_node(list_service, p_list);
-	}
-	else if (pcb->type == PCB_TYPE_USER)
-	{
-		list_user = list_remove_node(list_user, p_list);
-	}
-
-	list_wait = list_insert_node(list_wait, p_list);
-}
-
-void set_process_stop(s_list *p_list)
-{
-	if (p_list == NULL)
-	{
-		return;
-	}
-
-	s_pcb *pcb = p_list->node;
-	pcb->status = T_S_STOP;
-
-	if (pcb->type == PCB_TYPE_SYSTEM)
-	{
-		list_system = list_remove_node(list_system, p_list);
-	}
-	else if (pcb->type == PCB_TYPE_SERVICE)
-	{
-		list_service = list_remove_node(list_service, p_list);
-	}
-	else if (pcb->type == PCB_TYPE_USER)
-	{
-		list_user = list_remove_node(list_user, p_list);
-	}
-
-	list_stop = list_insert_node(list_stop, p_list);
-}
-
-s_list* get_process(int process_id)
-{
-	s_list *p = list_system;
-
-	while (p != NULL)
-	{
-		s_pcb *pcb = p->node;
-		if (pcb->process_id == process_id)
-		{
-			return p;
-		}
-		p = p->next;
-	}
-
-	p = list_service;
-	while (p != NULL)
-	{
-		s_pcb *pcb = p->node;
-		if (pcb->process_id == process_id)
-		{
-			return p;
-		}
-		p = p->next;
-	}
-
-	p = list_user;
-	while (p != NULL)
-	{
-		s_pcb *pcb = p->node;
-		if (pcb->process_id == process_id)
-		{
-			return p;
-		}
-		p = p->next;
-	}
-
-	p = list_wait;
-	while (p != NULL)
-	{
-		s_pcb *pcb = p->node;
-		if (pcb->process_id == process_id)
-		{
-			return p;
-		}
-		p = p->next;
-	}
-
-	p = list_stop;
-	while (p != NULL)
-	{
-		s_pcb *pcb = p->node;
-		if (pcb->process_id == process_id)
-		{
-			return p;
-		}
-		p = p->next;
-	}
-	return NULL;
-}
-
-void free_process()
-{
-	while (list_stop != NULL)
-	{
-		s_list *p_list = list_stop;
-		s_pcb *pcb = p_list->node;
-		list_stop = list_stop->next;
-
-//		free_mm((void*) pcb->program_addr, pcb->program_size);
-//		free_mm((void*) pcb->stack_esp0, pcb->stack_size);
-//		free_mm((void*) pcb->stack_esp, pcb->stack_size);
-//		free_mm((void*) pcb->params, SHELL_CMD_LEN);
-//		free_mm((void*) pcb->task, sizeof(s_task));
-//		free_mm((void*) pcb, sizeof(s_pcb));
-		free_mm((void*) p_list, sizeof(s_list));
-	}
-}
-
-/*
- * kill_task : 杀死任务
- *  - int task_id : 任务号
- * return : void
- */
-void kill_process(int process_id)
-{
-	s_list* pn = list_pcb_all;
-	s_list* fpn = pn;
-	while (pn != NULL)
-	{
-		s_pcb *pcb = (s_pcb *) (pn->node);
-		if (pcb->process_id == process_id)
-		{
-			//需要重新实现
-			//pcb_free_all(pcb->process_id);
-			list_pcb_all = list_remove_node(list_pcb_all, pn);
-			free_mm(pn, sizeof(s_list));
-			break;
-		}
-
-		if (fpn == pn)
-		{
-			pn = pn->next;
-		}
-		else
-		{
-			pn = pn->next;
-			fpn = fpn->next;
-		}
-	}
-
-	s_list* p = get_process(process_id);
-	set_process_stop(p);
-}
+//
+//void set_process_ready(s_pcb *pcb)
+//{
+//	if (pcb == NULL)
+//	{
+//		return;
+//	}
+//
+//	s_list* p_list = get_process(pcb->process_id);
+//
+//	if (p_list == NULL)
+//	{
+//		return;
+//	}
+//
+//	list_wait = list_remove_node(list_wait, p_list);
+//
+//	list_user = list_insert_node(list_user, p_list);
+//}
+//
+//void set_process_wait(s_pcb *pcb)
+//{
+//	if (pcb == NULL)
+//	{
+//		return;
+//	}
+//
+//	s_list* p_list = get_process(pcb->process_id);
+//
+//	if (p_list == NULL)
+//	{
+//		return;
+//	}
+//
+//	list_user = list_remove_node(list_user, p_list);
+//
+//	list_wait = list_insert_node(list_wait, p_list);
+//}
+//
+//void set_process_stop(s_list *p_list)
+//{
+//	if (p_list == NULL)
+//	{
+//		return;
+//	}
+//
+//	s_pcb *pcb = p_list->node;
+//
+//	list_user = list_remove_node(list_user, p_list);
+//
+//	list_stop = list_insert_node(list_stop, p_list);
+//}
+//
+//s_list* get_process(int process_id)
+//{
+//	s_list *p = list_user;
+//	while (p != NULL)
+//	{
+//		s_pcb *pcb = p->node;
+//		if (pcb->process_id == process_id)
+//		{
+//			return p;
+//		}
+//		p = p->next;
+//	}
+//
+//	p = list_wait;
+//	while (p != NULL)
+//	{
+//		s_pcb *pcb = p->node;
+//		if (pcb->process_id == process_id)
+//		{
+//			return p;
+//		}
+//		p = p->next;
+//	}
+//
+//	p = list_stop;
+//	while (p != NULL)
+//	{
+//		s_pcb *pcb = p->node;
+//		if (pcb->process_id == process_id)
+//		{
+//			return p;
+//		}
+//		p = p->next;
+//	}
+//	return NULL;
+//}
+//
+//void free_process()
+//{
+//	while (list_stop != NULL)
+//	{
+//		s_list *p_list = list_stop;
+//		s_pcb *pcb = p_list->node;
+//		list_stop = list_stop->next;
+//
+////		free_mm((void*) pcb->program_addr, pcb->program_size);
+////		free_mm((void*) pcb->stack_esp0, pcb->stack_size);
+////		free_mm((void*) pcb->stack_esp, pcb->stack_size);
+////		free_mm((void*) pcb->params, SHELL_CMD_LEN);
+////		free_mm((void*) pcb->task, sizeof(s_task));
+////		free_mm((void*) pcb, sizeof(s_pcb));
+//		free_mm((void*) p_list, sizeof(s_list));
+//	}
+//}
+//
+///*
+// * kill_task : 杀死任务
+// *  - int task_id : 任务号
+// * return : void
+// */
+//void kill_process(int process_id)
+//{
+//	s_list* pn = list_pcb_all;
+//	s_list* fpn = pn;
+//	while (pn != NULL)
+//	{
+//		s_pcb *pcb = (s_pcb *) (pn->node);
+//		if (pcb->process_id == process_id)
+//		{
+//			//需要重新实现
+//			//pcb_free_all(pcb->process_id);
+//			list_pcb_all = list_remove_node(list_pcb_all, pn);
+//			free_mm(pn, sizeof(s_list));
+//			break;
+//		}
+//
+//		if (fpn == pn)
+//		{
+//			pn = pn->next;
+//		}
+//		else
+//		{
+//			pn = pn->next;
+//			fpn = fpn->next;
+//		}
+//	}
+//
+//	s_list* p = get_process(process_id);
+//	set_process_stop(p);
+//}
 
 #endif

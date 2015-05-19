@@ -43,7 +43,8 @@ void page_error(u32 pid, u32 error_code)
 
 //	if (error_addr % 0x100000 == 0)
 //	{
-//		printf("Missing Page: %x\n", error_addr);
+		printf("Missing Page: %x\n", error_addr);
+		hlt();
 //	}
 
 //	if (error_addr >= 0x20000000)

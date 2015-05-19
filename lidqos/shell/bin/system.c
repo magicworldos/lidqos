@@ -12,6 +12,8 @@
 
 int main(int argc, char **args)
 {
+//	char *p = (char *)0xb8000;
+//	p[0] = 'A';
 	for (;;)
 	{
 		__asm__ volatile ("int $0x80");

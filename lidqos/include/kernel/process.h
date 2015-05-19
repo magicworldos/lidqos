@@ -31,9 +31,9 @@ void install_system();
  *  - int type : tts任务类型TASK_TYPE_NOR、TASK_TYPE_SPE
  * return : void
  */
-void init_process(s_pcb *pcb, u32 process_id, void *run);
+void init_process(s_pcb *pcb, u32 process_id, void *run, u32 run_offset);
 
-s_pcb* load_process(int pcb_type, char *file_name, char *params);
+s_pcb* load_process(char *file_name, char *params);
 
 /*
  * relocation_elf :  elf可执行文件重定位

@@ -23,16 +23,16 @@ void schedule();
 
 void pcb_insert(s_pcb *pcb);
 
-void set_process_ready(s_pcb *pcb);
-
-void set_process_wait(s_pcb *pcb);
-
-void set_process_stop(s_list *p_list);
-
-s_list* get_process(int process_id);
-
-void free_process();
-
-void kill_process(int process_id);
+//void set_process_ready(s_pcb *pcb);
+//
+//void set_process_wait(s_pcb *pcb);
+//
+//void set_process_stop(s_list *p_list);
+//
+//s_list* get_process(int process_id);
+//
+//void free_process();
+//
+//void kill_process(int process_id);
 
 #endif /* SCHE_H_ */
