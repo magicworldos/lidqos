@@ -44,51 +44,46 @@ void osiso_read_block(u32 bus, u32 drive, u32 lba, char *data)
 	u8 read_status = 0;
 	do
 	{
-		/* 0xA8 is READ SECTORS command byte. */
+		//0xA8为读取扇区数据的命令
 		u8 read_cmd[12] =
 		{ 0xA8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-
+		//设置设备号为IDE0从设备
 		outb_p(drive & (1 << 4), ATA_DRIVE_SELECT(bus));
-
 		outb_p(ATAPI_SECTOR_SIZE & 0xFF, ATA_ADDRESS2(bus));
 		outb_p(ATAPI_SECTOR_SIZE >> 8, ATA_ADDRESS3(bus));
-
-		outb_p(0xa0, ATA_COMMAND(bus)); /* ATA PACKET command */
-
-		while ((read_status = inb_p(ATA_STATUS(bus))) & 0x80) /* BUSY */
+		outb_p(0xa0, ATA_COMMAND(bus));
+		//等待设备空闲
+		while ((read_status = inb_p(ATA_STATUS(bus))) & 0x80)
 		{
-
 		}
 		while (!((read_status = inb_p(ATA_STATUS(bus))) & 0x8) && !(read_status & 0x1))
 		{
 
 		}
-		/* DRQ or ERROR set */
+		//设备异常
 		if (read_status & 0x1)
 		{
 			return;
 		}
-		read_cmd[9] = 1; /* 1 sector */
-		read_cmd[2] = (lba >> 0x18) & 0xFF; /* most sig. byte of LBA */
+		//读取1个扇区
+		read_cmd[9] = 1;
+		//设置扇区号
+		read_cmd[2] = (lba >> 0x18) & 0xFF;
 		read_cmd[3] = (lba >> 0x10) & 0xFF;
 		read_cmd[4] = (lba >> 0x08) & 0xFF;
-		read_cmd[5] = (lba >> 0x00) & 0xFF; /* least sig. byte of LBA */
-
-		/* Send ATAPI/SCSI command */
+		read_cmd[5] = (lba >> 0x00) & 0xFF;
+		//发送命令
 		send_atapi_command((u16 *) read_cmd, ATA_DATA(bus));
-
-		/* Wait for IRQ that says the data is ready. */
-		//schedule();
+		//等待设备就绪
 		while (inb_p(ATA_STATUS(bus)) < 0)
 		{
 		}
-
 		while ((inb_p(ATA_STATUS(bus)) & 0xc0) != 0x40)
 		{
 		}
-
+		//读取数据
 		insl_p((u32)buff, ATA_DATA(bus), 1);
-
+		//读取操作状态
 		read_status = inb_p(ATA_STATUS(bus));
 		if (read_status != 0x50)
 		{

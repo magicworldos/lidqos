@@ -75,12 +75,19 @@ typedef struct s_hda_rw
 
 typedef struct s_partition_table
 {
+	//设备号
 	u8 device;
+	//是否可以启动
 	u8 boot;
+	//分区ID号
 	u8 id;
+	//分区类型
 	u8 type;
+	//位图开启扇区号
 	u32 bitmap_start;
+	//数据开启扇区号
 	u32 start;
+	//分区扇区数
 	u32 size;
 } s_pt;
 

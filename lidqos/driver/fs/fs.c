@@ -74,6 +74,9 @@ int fs_find_path_by_user(char *path_name, u32 uid, u32 gid, u32 *ret_dev_id, s_f
 	return status;
 }
 
+/*
+ * 查找文件，根据文件路径名查找文件，并取得文件内容
+ */
 int fs_find_path(char *path_name, u32 *ret_dev_id, s_fs **fs)
 {
 	char dev_path[FS_NAME_LENGTH];
@@ -115,48 +118,6 @@ int fs_find_path(char *path_name, u32 *ret_dev_id, s_fs **fs)
 
 	return FS_STATUS_OK;
 }
-
-///*
-// * fs_create_path : 根据路径创建多级文件目录
-// *  - char *path_name : 待创建的路径
-// * return : void
-// */
-//void fs_create_path(char *path_name)
-//{
-//	char dev_path[FS_NAME_LENGTH];
-//	u32 dev_id = find_dev_id_fullpath(path_name, dev_path);
-//
-//	//临时保存文件夹名称
-//	char *folder_name = alloc_mm(FS_NAME_LENGTH);
-//	//父级文件块编号
-//	u32 parent_no = 0;
-//	for (int i = 0, j = 0; dev_path[i] != '\0'; ++i)
-//	{
-//		//以'/'为分割符取得文件夹名称
-//		if (dev_path[i] != '/')
-//		{
-//			folder_name[j++] = dev_path[i];
-//		}
-//		else
-//		{
-//			folder_name[j++] = '/';
-//			folder_name[j++] = '\0';
-//			j = 0;
-//
-//			//根据父级文件块编号查找其下的直属子文件
-//			int child_no = fs_find_sub_fs(dev_id, parent_no, folder_name);
-//			//没有找到此文件
-//			if (child_no == 0)
-//			{
-//				//创建此文件夹
-//				child_no = fs_create_fs(dev_id, parent_no, folder_name, FS_FOLDER_MODE);
-//			}
-//			//找到子文件块，将其设定为下一级父文件块编号
-//			parent_no = child_no;
-//		}
-//	}
-//	free_mm(folder_name, FS_NAME_LENGTH);
-//}
 
 void fs_find_sno(u32 dev_id, u32 s_no, s_fs **fs)
 {
@@ -248,131 +209,6 @@ u32 fs_find_sub_fs(u32 dev_id, u32 parent_no, char *folder_name)
 	free_mm(fs, sizeof(s_fs));
 	return 0;
 }
-
-///*
-// * fs_create_fs : 根据父级文件编号创建子文件（夹）
-// *  - u32 parent_no : 低级文件块编号
-// *  - char *fs_name : 待创建的文件（夹）名称
-// *  - u32 fs_mode : FS_FOLDER_MODE为文件夹，FS_FILE_MODE为文件
-// * return : u32 返回新创建的子文件（夹—）编号，0代表创建失败
-// */
-//u32 fs_create_fs(u32 dev_id, u32 parent_no, char *fs_name, u32 fs_mode)
-//{
-//	//根据父级编号读入文件块
-//	s_fs *fs_parent = alloc_mm(sizeof(s_fs));
-//	s_fs *fs = alloc_mm(sizeof(s_fs));
-//	read_block(dev_id, parent_no, fs_parent);
-//	//清空文件块内容
-//	fs_empty_data(fs);
-//	//文件模式
-//	fs->mode = fs_mode;
-//	//申请一块未使用的文件块，给本文件块
-//	fs->dot = alloc_sec(dev_id);
-//	if (fs->dot == 0)
-//	{
-//		free_mm(fs, sizeof(s_fs));
-//		free_mm(fs_parent, sizeof(s_fs));
-//
-//		return 0;
-//	}
-//	//设定父级文件块编号
-//	fs->dotdot = fs_parent->dot;
-//	//root
-//	if (fs_parent->is_root)
-//	{
-//		fs->root = fs_parent->dot;
-//	}
-//	else
-//	{
-//		fs->root = fs_parent->root;
-//	}
-//	//文件大小
-//	fs->size = 0;
-//	//设定文件名称
-//	str_copy(fs_name, fs->name);
-//	//定入此新的文件块
-//	write_block(dev_id, fs->dot, fs);
-//
-//	/*
-//	 * 以下是将此文件块挂入其父级文件块中
-//	 */
-//
-//	//父级子项地址
-//	s_fs *fst_addrs = alloc_mm(sizeof(s_fs));
-//	if (fs_parent->address == 0)
-//	{
-//		//创建一级磁盘指针
-//		fs_parent->address = alloc_sec(dev_id);
-//		fs_empty_data(fst_addrs);
-//		//保存地址项
-//		write_block(dev_id, fs_parent->address, fst_addrs);
-//		//保存父级文件块
-//		write_block(dev_id, fs_parent->dot, fs_parent);
-//	}
-//
-//	//一级地址列表
-//	read_block(dev_id, fs_parent->address, fst_addrs);
-//	for (int i = 0; i < FS_ADDR_COUNT; ++i)
-//	{
-//		s_fs *sec_addrs = alloc_mm(sizeof(s_fs));
-//		if (fst_addrs->addr_no[i] == 0)
-//		{
-//			//创建二级磁盘指针
-//			fst_addrs->addr_no[i] = alloc_sec(dev_id);
-//			fs_empty_data(sec_addrs);
-//			//保存地址项
-//			write_block(dev_id, fst_addrs->addr_no[i], sec_addrs);
-//			//保存父级文件块
-//			write_block(dev_id, fs_parent->address, fst_addrs);
-//		}
-//
-//		//二级地址列表
-//		read_block(dev_id, fst_addrs->addr_no[i], sec_addrs);
-//		for (int j = 0; j < FS_ADDR_COUNT; ++j)
-//		{
-//			s_fs *thrid_addrs = alloc_mm(sizeof(s_fs));
-//			if (sec_addrs->addr_no[j] == 0)
-//			{
-//				//创建三级磁盘指针
-//				sec_addrs->addr_no[j] = alloc_sec(dev_id);
-//				fs_empty_data(thrid_addrs);
-//				//保存地址项
-//				write_block(dev_id, sec_addrs->addr_no[j], thrid_addrs);
-//				//保存父级文件块
-//				write_block(dev_id, fst_addrs->addr_no[i], sec_addrs);
-//			}
-//
-//			//三级地址列表
-//			read_block(dev_id, sec_addrs->addr_no[j], thrid_addrs);
-//			for (int k = 0; k < FS_ADDR_COUNT; ++k)
-//			{
-//				if (thrid_addrs->addr_no[k] == 0)
-//				{
-//					//挂入文件块
-//					thrid_addrs->addr_no[k] = fs->dot;
-//					//保存三级文件块内容
-//					write_block(dev_id, sec_addrs->addr_no[j], thrid_addrs);
-//					//返回新的文件块编号
-//					u32 sno = fs->dot;
-//					free_mm(thrid_addrs, sizeof(s_fs));
-//					free_mm(sec_addrs, sizeof(s_fs));
-//					free_mm(fst_addrs, sizeof(s_fs));
-//					free_mm(fs, sizeof(s_fs));
-//					free_mm(fs_parent, sizeof(s_fs));
-//					return sno;
-//				}
-//			}
-//			free_mm(thrid_addrs, sizeof(s_fs));
-//		}
-//		free_mm(sec_addrs, sizeof(s_fs));
-//	}
-//	free_mm(fst_addrs, sizeof(s_fs));
-//	free_mm(fs, sizeof(s_fs));
-//	free_mm(fs_parent, sizeof(s_fs));
-//
-//	//创建失败，返回0
-//	return 0;
-//}
 
 /*
  * fs_create_fs : 根据父级文件编号创建子文件（夹）
@@ -667,65 +503,6 @@ int fs_del_fs_path(char *path, u32 uid, u32 gid)
 
 	return 0;
 }
-
-///*
-// * fs_create_file : 创建文件
-// *  - char *file_name : 文件名
-// * return : int -1代表失败
-// */
-//int fs_create_file(char *file_name)
-//{
-//	char dev_path[FS_NAME_LENGTH];
-//	u32 dev_id = find_dev_id_fullpath(file_name, dev_path);
-//
-//	//文件名临时变量
-//	char *fs_name = alloc_mm(FS_NAME_LENGTH);
-//	//父级文件块编号
-//	u32 parent_no = 0;
-//	for (int i = 0, j = 0; dev_path[i] != '\0'; ++i)
-//	{
-//		//以'/'为分割符取得文件夹名称
-//		if (dev_path[i] != '/')
-//		{
-//			fs_name[j++] = dev_path[i];
-//		}
-//		else
-//		{
-//			//取得文件夹名称
-//			fs_name[j++] = '/';
-//			fs_name[j++] = '\0';
-//			j = 0;
-//
-//			//根据父级文件块编号查找其下的直属子文件
-//			int child_no = fs_find_sub_fs(dev_id, parent_no, fs_name);
-//			if (child_no == 0)
-//			{
-//				//创建文件
-//				child_no = fs_create_fs(dev_id, parent_no, fs_name, FS_FOLDER_MODE);
-//			}
-//			//找到子文件块，将其设定为下一级父文件块编号
-//			parent_no = child_no;
-//		}
-//		if (dev_path[i + 1] == '\0')
-//		{
-//			fs_name[j++] = '\0';
-//			//创建文件
-//			fs_create_fs(dev_id, parent_no, fs_name, FS_FILE_MODE);
-//		}
-//	}
-//	free_mm(fs_name, FS_NAME_LENGTH);
-//	return -1;
-//}
-//
-///*
-// * f_create : 创建文件
-// *  - char *file_name : 文件名
-// * return : int -1代表失败
-// */
-//int f_create(char *file_name)
-//{
-//	return fs_create_file(file_name);
-//}
 
 /*
  * f_open : 打开文件
