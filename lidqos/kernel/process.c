@@ -14,7 +14,7 @@
 extern s_gdt gdts[GDT_MAX_SIZE];
 
 u32 process_id = 0;
-extern s_list* pcb_current;
+extern s_list* pcb_cur;
 
 /*
  * install_task : 安装多任务
@@ -114,7 +114,8 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	//设置pcb相关值
 	pcb->process_id = pid;
 	pcb->tss.eip = (u32) run + run_offset;
-	pcb->tss.esp = (u32) pcb->stack + 0x400;
+//	pcb->tss.esp = (u32) pcb->stack + 0x400;
+	pcb->tss.esp = 0x20000000;
 	pcb->tss.esp0 = (u32) pcb->stack0 + 0x400;
 	pcb->tss.cr3 = (u32) pcb->page_dir;
 
@@ -155,6 +156,7 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 		pages++;
 	}
 	init_process_page((u32) pcb->run, pages, pcb->page_dir);
+	init_process_page(0x1fff0000, 16, pcb->page_dir);
 }
 
 void init_process_page(u32 address, u32 pages, u32 *page_dir)
@@ -286,7 +288,7 @@ void relocation_elf(void *addr)
 
 u32* pcb_page_dir(u32 pid)
 {
-	s_pcb* pcb = (s_pcb*) pcb_current->node;
+	s_pcb* pcb = (s_pcb*) pcb_cur->node;
 	return (u32 *) (pcb->tss.cr3);
 }
 
@@ -305,7 +307,7 @@ u32 get_current_process_id()
  */
 s_pcb* get_current_process()
 {
-	return (s_pcb*) pcb_current->node;
+	return (s_pcb*) pcb_cur->node;
 }
 
 //void schedule()

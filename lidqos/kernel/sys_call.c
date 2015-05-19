@@ -12,7 +12,7 @@
 
 #include <kernel/sys_call.h>
 
-extern s_pcb *pcb_current;
+extern s_pcb *pcb_cur;
 //可显字符
 extern u8 keys[0x53][2];
 //shift键按下状态
@@ -166,7 +166,7 @@ void int_protection_error()
 void int_page_error(u32 error_code)
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	page_error(pcb_current->process_id, error_code);
+	page_error(pcb_cur->process_id, error_code);
 	set_ds(0xf);
 }
 
@@ -235,6 +235,7 @@ void int_0x80()
 //	char *p = (char *) 0xb8000;
 //	*p = 'A';
 	putchar('A');
+//	printf("ggg\n");
 }
 
 #endif

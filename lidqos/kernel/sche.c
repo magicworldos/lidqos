@@ -33,6 +33,8 @@ s_list *last_run = NULL;
 
 s_list *list_pcb_all = NULL;
 
+s_pcb *pcb_cur = NULL;
+
 void schedule()
 {
 	s_list *list_header = list_user;
@@ -44,7 +46,7 @@ void schedule()
 
 	s_list *list_run = list_header;
 	s_pcb *pcb = (s_pcb *) (list_run->node);
-
+	pcb_cur = pcb;
 	if (list_header != last_run)
 	{
 
