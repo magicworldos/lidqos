@@ -29,7 +29,7 @@ void install_process()
 	}
 	//空任务
 	s_pcb *pcb_empty = alloc_page(process_id, pages, 0, 0);
-	init_process(pcb_empty, process_id, NULL, 0);
+	init_process(pcb_empty, process_id, NULL, 0, 0);
 	//pcb_insert(pcb_empty);
 	process_id++;
 
@@ -46,6 +46,23 @@ void install_process()
 void install_system()
 {
 	load_process("/usr/bin/system", "");
+	load_process("/usr/bin/system", "");
+
+//	u32 *page_dir = ((u32 *) pcb->page_dir);
+//	//页表1开始于0x600000 + 0x1000 = 0x601000
+//	u32 *page_table = ((u32 *) pcb->page_tbl);
+//	//处理所有页目录
+//	//页表开始于 [0x601000, 0xa01000) ，大小为4M
+//	for (int i = 0; i < 1024; i++)
+//	{
+//		for (int j = 0; j < 1024; j++)
+//		{
+//			printf("%x\n", page_table[j]);
+//		}
+//		page_table += 1024;
+//	}
+//
+//	hlt();
 }
 
 /*
@@ -53,7 +70,7 @@ void install_system()
  *  - int type : tts任务类型TASK_TYPE_NOR、TASK_TYPE_SPE
  * return : void
  */
-void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset)
+void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 {
 	int pages = sizeof(s_pcb) / MM_PAGE_SIZE;
 	if (sizeof(s_pcb) % MM_PAGE_SIZE != 0)
@@ -97,14 +114,16 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset)
 	//设置pcb相关值
 	pcb->process_id = pid;
 	pcb->tss.eip = (u32) run + run_offset;
-	//永远为4G
-	//pcb->tss.esp = 0xfffffff0;
 	pcb->tss.esp = (u32) pcb->stack + 0x400;
 	pcb->tss.esp0 = (u32) pcb->stack0 + 0x400;
 	pcb->tss.cr3 = (u32) pcb->page_dir;
 
 	//地址
 	u32 address = 0;
+
+	u32 *page_dir = ((u32 *) pcb->page_dir);
+	u32 *page_tbl = ((u32 *) pcb->page_tbl);
+
 	/*
 	 * 前16M系统内存为已使用
 	 * 实际上16M系统内存是不应该让普通程序可写的
@@ -114,59 +133,68 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset)
 	{
 		for (int j = 0; j < 1024; j++)
 		{
-			if (i < 1000)
+			if (i < 4)
 			{
-				pcb->page_tbl[i][j] = address | 7;
-				address += 0x1000;
+				page_tbl[j] = address | 7;
 			}
 			else
 			{
-				pcb->page_tbl[i][j] = 6;
+				page_tbl[j] = 6;
 			}
+			address += 0x1000;
 		}
-		pcb->page_dir[i] = (u32) &pcb->page_tbl[i][0] | 7;
+		page_dir[i] = (u32) page_tbl | 7;
+		page_tbl += 1024;
 	}
-//
-//	//mm_pcb所在内存
-//	address = (u32) pcb;
-//	//mm_pcb所在内存页目录索引
-//	u32 page_dir_index = (address >> 22) & 0x3ff;
-//	//mm_pcb所在内存页表索引
-//	u32 page_table_index = (address >> 12) & 0x3ff;
-//	//mm_pcb所在内存页表
-//	for (int i = 0; i < 1024; i++)
-//	{
-//		//设置mm_pcb所在内存的页表
-//		if (i >= page_table_index && i <= (page_table_index + 16))
-//		{
-//			pcb->page_tbl[page_dir_index * 1024 + i] = address | 7;
-//			address += 0x1000;
-//		}
-//		else
-//		{
-//			pcb->page_tbl[page_dir_index * 1024 + i] = 6;
-//		}
-//	}
-//	//设置mm_pcb所在内存的页目录
-//	pcb->page_dir[page_dir_index] = ((u32) &pcb->page_tbl[page_dir_index * 1024] | 7);
-//	//设置pages个页面剩余页
-//	if (page_table_index + pages >= 1024)
-//	{
-//		page_dir_index++;
-//		for (int i = 0; i < 1024; i++)
-//		{
-//			if (i < (pages - (1024 - page_table_index)))
-//			{
-//				pcb->page_tbl[page_dir_index * 1024 + i] = address | 7;
-//				address += 0x1000;
-//			}
-//			else
-//			{
-//				pcb->page_tbl[page_dir_index * 1024 + i] = 6;
-//			}
-//		}
-//		pcb->page_dir[page_dir_index] = ((u32) &pcb->page_tbl[page_dir_index * 1024] | 7);
-//	}
+
+	init_process_page((u32) pcb, pages, pcb->page_dir);
+
+	pages = run_size / MM_PAGE_SIZE;
+	if (run_size % MM_PAGE_SIZE != 0)
+	{
+		pages++;
+	}
+	init_process_page((u32) pcb->run, pages, pcb->page_dir);
+}
+
+void init_process_page(u32 address, u32 pages, u32 *page_dir)
+{
+	//mm_pcb所在内存页目录索引
+	u32 page_dir_index = (address >> 22) & 0x3ff;
+	//mm_pcb所在内存页表索引
+	u32 page_table_index = (address >> 12) & 0x3ff;
+	address &= 0xFFC00000;
+	u32 *page_tbl = (u32 *) (page_dir[page_dir_index] & 0xfffff000);
+
+	//mm_pcb所在内存页表
+	for (int i = 0; i < 1024; i++)
+	{
+		//设置mm_pcb所在内存的页表
+		if (i >= page_table_index && i <= (page_table_index + 16))
+		{
+			page_tbl[i] = address | 7;
+		}
+		address += 0x1000;
+	}
+	//设置mm_pcb所在内存的页目录
+	page_dir[page_dir_index] = (u32) page_tbl | 7;
+
+	//设置pages个页面剩余页
+	if (page_table_index + pages >= 1024)
+	{
+		page_dir_index++;
+		page_tbl += 1024;
+		for (int i = 0; i < 1024; i++)
+		{
+			if (i < (pages - (1024 - page_table_index)))
+			{
+				page_tbl[i] = address | 7;
+
+			}
+			address += 0x1000;
+		}
+		page_dir[page_dir_index] = (u32) page_tbl | 7;
+	}
 }
 
 s_pcb* load_process(char *file_name, char *params)
@@ -180,6 +208,7 @@ s_pcb* load_process(char *file_name, char *params)
 	}
 	void *run = alloc_page(process_id, pages, 0, 0);
 	f_read(fp, fp->fs.size, (u8 *) run);
+	u32 run_size = fp->fs.size;
 	//关闭文件
 	f_close(fp);
 	//对elf可执行程序进行重定位
@@ -196,10 +225,11 @@ s_pcb* load_process(char *file_name, char *params)
 	{
 		pages++;
 	}
-
 	//任务
 	s_pcb *pcb = alloc_page(process_id, pages, 0, 0);
-	init_process(pcb, process_id, run, phdr.p_offset);
+	pcb->page_dir = alloc_page(process_id, 1, 0, 0);
+	pcb->page_tbl = alloc_page(process_id, 0x400, 0, 0);
+	init_process(pcb, process_id, run, phdr.p_offset, run_size);
 	pcb_insert(pcb);
 	process_id++;
 

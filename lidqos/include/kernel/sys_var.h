@@ -50,17 +50,16 @@ typedef struct alloc_list_s
 
 typedef struct process_control_block
 {
+	void *page_dir;
+	void *page_tbl;
 	//pcb id
 	u32 process_id;
 	s_tss tss;
 	s_gdt ldt[2];
 	void* run;
-	u8 stack[0x400];
 	u8 stack0[0x400];
-	//页目录
-	u32 page_dir[0x400];
-	//全部页表
-	u32 page_tbl[0x40][0x400];
+	u8 stack[0x400];
+
 } s_pcb;
 
 typedef struct

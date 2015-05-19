@@ -68,12 +68,12 @@ void install_used_map()
  *  - int count : 页数
  * return : void*返回申请地址，NULL代表申请失败
  */
-void* alloc_page(u32 process_id, int count, int can_swap, int is_dynamic)
+void* alloc_page(u32 process_id, u32 count, u32 can_swap, u32 is_dynamic)
 {
 	//查找内存申请地址
 	void *ret = NULL;
 	//找到空闲内存页计数
-	int num = 0;
+	u32 num = 0;
 	//开始编号
 	u32 start_with = 0;
 	//从未被分配内存页的地方开始查找
@@ -107,12 +107,13 @@ void* alloc_page(u32 process_id, int count, int can_swap, int is_dynamic)
 	//设置map的各个内存页的状态为已使用
 	for (u32 i = 0; i < count; i++)
 	{
-		mmap[start_with + i] = (MM_USED | ((u32) can_swap << 1) | ((u32) is_dynamic << 1));
+		mmap[start_with + i] = MM_USED;//(MM_USED | ((u32) can_swap << 1) | ((u32) is_dynamic << 2));
 		map_process[i] = process_id;
 	}
 
 	if (ret == NULL)
 	{
+		printf("alloc not found\n");
 		u32 page_no = alloc_page_ph(process_id);
 		if (page_no != 0)
 		{
@@ -130,10 +131,10 @@ void* alloc_page(u32 process_id, int count, int can_swap, int is_dynamic)
  *  - int count : 释放页数
  * return : void
  */
-void free_page(void *addr, int count)
+void free_page(void *addr, u32 count)
 {
 	//释放内存页
-	for (int i = 0; i < count; i++)
+	for (u32 i = 0; i < count; i++)
 	{
 		//更新map中这些页的状态
 		mmap[(u32) (addr + (i * MM_PAGE_SIZE)) / MM_PAGE_SIZE] = (MM_FREE | MM_CAN_SWAP | MM_NO_DYNAMIC);
@@ -282,7 +283,6 @@ void* alloc_mm(int size)
 								mmap[i] = MM_USED | MM_NO_SWAP | MM_DYNAMIC;
 
 								u32 ret = (is * MM_PAGE_SIZE + (js * 8 * 4) + (ks * 4));
-
 								//返回申请内存地址
 								return (void*) ret;
 							}

@@ -31,7 +31,9 @@ void install_system();
  *  - int type : tts任务类型TASK_TYPE_NOR、TASK_TYPE_SPE
  * return : void
  */
-void init_process(s_pcb *pcb, u32 process_id, void *run, u32 run_offset);
+void init_process(s_pcb *pcb, u32 process_id, void *run, u32 run_offset, u32 run_size);
+
+void init_process_page(u32 address,u32 pages, u32 *page_dir);
 
 s_pcb* load_process(char *file_name, char *params);
 

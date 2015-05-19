@@ -64,7 +64,7 @@ void install_used_map();
  *  - int count : 页数
  * return : void*返回申请地址，NULL代表申请失败
  */
-void* alloc_page(u32 process_id, int count, int can_swap, int is_dynamic);
+void* alloc_page(u32 process_id, u32 count, u32 can_swap, u32 is_dynamic);
 
 /*
  * alloc_page : 释放内存页，每页为4KB大小
@@ -72,7 +72,7 @@ void* alloc_page(u32 process_id, int count, int can_swap, int is_dynamic);
  *  - int count : 释放页数
  * return : void
  */
-void free_page(void *addr, int count);
+void free_page(void *addr, u32 count);
 
 /*
  * alloc_mm : 申请内存

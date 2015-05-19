@@ -13,7 +13,7 @@ int start_kernel(int argc, char **args)
 	printf("Welcome to LidqOS.\n");
 
 	//安装内核程序
-	//install_kernel();
+	install_kernel();
 
 	//安装内存申请模块
 	install_alloc();
