@@ -43,7 +43,7 @@ void page_error(u32 pid, u32 error_code)
 
 //	if (error_addr % 0x100000 == 0)
 //	{
-		printf("Missing Page: %x\n", error_addr);
+	printf("Missing Page: %x\n", error_addr);
 //		hlt();
 //	}
 
@@ -76,8 +76,19 @@ void page_error(u32 pid, u32 error_code)
 		//如果申请失败
 		if (tbl == NULL)
 		{
-			printf("Segmentation fault.\n");
-			hlt();
+			//申请一个可用的物理页面
+			u32 ph_page_no = alloc_page_ph(pid);
+			//如果申请成功
+			if (ph_page_no != 0)
+			{
+				tbl = (u32 *) (ph_page_no * 0x1000);
+			}
+			//如果申请失败
+			else
+			{
+				printf("Segmentation fault.\n");
+				hlt();
+			}
 		}
 		//处理新分配的页表所表示的页面均不在内存中
 		for (int i = 0; i < 1024; i++)
@@ -108,6 +119,7 @@ void page_error(u32 pid, u32 error_code)
 		}
 		else
 		{
+			printf("%x %x\n", ph_page_no, shared);
 			u32 address = ph_page_no * 0x1000;
 			if (shared == 1)
 			{
@@ -167,6 +179,7 @@ int alloc_page_no(u32 pid, u32 page_no, u32 *page_no_ret, u32 *shared, u32 *shar
 	//如果第0位为0,说明页面未使用
 	if ((status & 0x1) == 0)
 	{
+		printf("aapp\n");
 		//设置此页为“已使用”、“可换出”
 		set_mmap_status(page_no, MM_USED | MM_CAN_SWAP);
 		//设置此页的使用者id，即pid
@@ -189,6 +202,7 @@ int alloc_page_no(u32 pid, u32 page_no, u32 *page_no_ret, u32 *shared, u32 *shar
 	//如果第0位为1,说明页面已使用
 	else
 	{
+		printf("345\n");
 		//尝试将此页面换出到外存
 		if (page_swap_out(page_no) == 0)
 		{

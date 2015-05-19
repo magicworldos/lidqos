@@ -188,7 +188,6 @@ void int_timer()
 	//在时钟中断时并没有切换ds和cr3寄存器
 	set_ds(GDT_INDEX_KERNEL_DS);
 	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
-
 	//通知PIC可以接受新中断
 	outb_p(0x20, 0x20);
 
@@ -201,8 +200,8 @@ void int_timer()
  */
 void int_keyboard()
 {
-	//set_ds(GDT_INDEX_KERNEL_DS);
-
+	set_ds(GDT_INDEX_KERNEL_DS);
+	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
 	//取得扫描码
 	u8 scan_code = inb_p(0x60);
 	//取得按下、抬起状态
@@ -232,10 +231,9 @@ void int_keyboard()
 
 void int_0x80()
 {
-//	char *p = (char *) 0xb8000;
-//	*p = 'A';
-	putchar('A');
-//	printf("ggg\n");
+	set_ds(GDT_INDEX_KERNEL_DS);
+	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
+	//printf("%x\n", pcb_cur->tss.esp);
 }
 
 #endif

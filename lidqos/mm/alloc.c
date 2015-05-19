@@ -111,17 +111,7 @@ void* alloc_page(u32 process_id, u32 count, u32 can_swap, u32 is_dynamic)
 		map_process[i] = process_id;
 	}
 
-	if (ret == NULL)
-	{
-		printf("alloc not found\n");
-		u32 page_no = alloc_page_ph(process_id);
-		if (page_no != 0)
-		{
-			ret = (void *)(0x1000 * page_no);
-		}
-	}
-
-//返回查找到内存地址
+	//返回查找到内存地址
 	return ret;
 }
 
