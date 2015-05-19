@@ -61,11 +61,15 @@ typedef struct
 
 typedef struct s_hda_rw
 {
+	//扇区号
 	u32 lba;
+	//读写命令
 	u8 com;
+	//数据缓冲区
 	u8* buff;
+	//操作状态
 	int* status;
-
+	//队列的下一个节点
 	struct s_hda_rw *next;
 } s_hda_rw;
 

@@ -89,6 +89,9 @@ u32 alloc_sec(u32 hd_dev_id)
 	return 0;
 }
 
+/*
+ * 向hda申请一个可用扇区
+ */
 u32 hda_alloc_sec(u32 dev_id)
 {
 	u8 bitmap[0x200];
@@ -119,6 +122,9 @@ u32 hda_alloc_sec(u32 dev_id)
 	return 0;
 }
 
+/*
+ * 释放一个扇区
+ */
 void free_sec(u32 hd_dev_id, u32 lba)
 {
 	if (hd_dev_id >= HD_DEV_ID_HDA_MIN && hd_dev_id <= HD_DEV_ID_HDA_MAX)
@@ -127,6 +133,9 @@ void free_sec(u32 hd_dev_id, u32 lba)
 	}
 }
 
+/*
+ * hda释放扇区号
+ */
 void hda_free_sec(u32 hd_dev_id, u32 lba)
 {
 	u8 bitmap[0x200];
@@ -144,12 +153,17 @@ void hda_free_sec(u32 hd_dev_id, u32 lba)
 	}
 }
 
+/*
+ * 读写命令
+ */
 void hd_rw_cmd(u32 lba, u8 com, u8* buff)
 {
 	u8 lba0 = (u8) (lba & 0xff);
 	u8 lba1 = (u8) (lba >> 8 & 0xff);
 	u8 lba2 = (u8) (lba >> 16 & 0xff);
 	u8 lba3 = (u8) (lba >> 24 & 0xf);
+
+	//IDE0主设备
 	lba3 |= 0xe0; // 1110 0000
 	u16 sects_to_access = 1;
 	outb_p(sects_to_access, HD_PORT_SECT_COUNT);
@@ -158,15 +172,21 @@ void hd_rw_cmd(u32 lba, u8 com, u8* buff)
 	outb_p(lba2, HD_PORT_LBA2);
 	outb_p(lba3, HD_PORT_LBA3);
 	outb_p(com, HD_PORT_COMMAND);
+
+	//如果是写命令可以直接写入数据
 	if (com == HD_WRITE)
 	{
 		outsl(buff, HD_PORT_DATA, sects_to_access << 7);
 	}
 }
 
+/*
+ * 读写数据
+ */
 void hd_rw_data(u8 com, u8* buff)
 {
 	u16 sects_to_access = 1;
+	//如果是读命令，读数据
 	if (com == HD_READ)
 	{
 		insl(buff, HD_PORT_DATA, sects_to_access << 7);
@@ -174,6 +194,9 @@ void hd_rw_data(u8 com, u8* buff)
 	inb_p(HD_PORT_STATUS);
 }
 
+/*
+ * 加入读写命令操作队列
+ */
 void hd_rw_insert_queue(s_hda_info *hda_info, u32 lba, u8 com, u8 *buff, int *status)
 {
 	s_hda_rw *p = alloc_mm(sizeof(s_hda_rw));
@@ -196,6 +219,9 @@ void hd_rw_insert_queue(s_hda_info *hda_info, u32 lba, u8 com, u8 *buff, int *st
 	}
 }
 
+/*
+ * 执行IDE设备读写命令
+ */
 void hd_rw_execute(s_hda_info *hda_info)
 {
 	s_hda_rw *header = hda_info->hda_rw_header;
@@ -210,6 +236,9 @@ void hd_rw_execute(s_hda_info *hda_info)
 	}
 }
 
+/*
+ * 读写完成处理读写的相关数据
+ */
 void hd_rw_finished(s_hda_info *hda_info)
 {
 	s_hda_rw *header = hda_info->hda_rw_header;
@@ -230,28 +259,38 @@ void hd_rw_finished(s_hda_info *hda_info)
 	}
 }
 
+/*
+ * 读写IDE硬盘
+ */
 void hd_rw(u32 lba, u8 com, void *buf)
 {
+	//操作的扇区数
 	u16 sects_to_access = 1;
 	u8 s = 0;
 	u16 try_times = 0x10;
 	do
 	{
+		//数据缓冲区
 		void *buf2 = buf;
+
+		//计算扇区号
 		u8 lba0 = (u8) (lba & 0xff);
 		u8 lba1 = (u8) (lba >> 8 & 0xff);
 		u8 lba2 = (u8) (lba >> 16 & 0xff);
 		u8 lba3 = (u8) (lba >> 24 & 0xf);
+
+		//IDE0主设备
 		lba3 |= 0xe0; // 1110 0000
 
+		//等待设备空闲
 		while (inb_p(HD_PORT_STATUS) < 0)
 		{
 		}
-
 		while ((inb_p(HD_PORT_STATUS) & 0xc0) != 0x40)
 		{
 		}
 
+		//发送读写命令
 		outb_p(sects_to_access, HD_PORT_SECT_COUNT);
 		outb_p(lba0, HD_PORT_LBA0);
 		outb_p(lba1, HD_PORT_LBA1);
@@ -259,32 +298,35 @@ void hd_rw(u32 lba, u8 com, void *buf)
 		outb_p(lba3, HD_PORT_LBA3);
 		outb_p(com, HD_PORT_COMMAND);
 
+		//等待设备就绪
 		while (inb_p(HD_PORT_STATUS) < 0)
 		{
 		}
-
 		while ((inb_p(HD_PORT_STATUS) & 0xc0) != 0x40)
 		{
 		}
 
+		//读取数据
 		if (com == HD_READ)
 		{
 			insl(buf2, HD_PORT_DATA, sects_to_access << 7);
 		}
+		//写入数据
 		else if (com == HD_WRITE)
 		{
 			outsl(buf2, HD_PORT_DATA, sects_to_access << 7);
 		}
+		//取得操作后的设备状态
 		s = inb_p(HD_PORT_STATUS);
 		if (((com == HD_READ) && (s != 0x50)) || ((com == HD_WRITE) && (s != 0x90)))
 		{
-			//printf(0, "\n%x", s);
 		}
-
+		//尝试try_times次后跳出
 		if (try_times-- == 0)
 		{
 			break;
 		}
 	}
+	//如果操作成功，退出
 	while (((com == HD_READ) && (s != 0x50)) || ((com == HD_WRITE) && (s != 0x90)));
 }
