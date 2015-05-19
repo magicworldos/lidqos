@@ -46,7 +46,7 @@ void install_process()
 void install_system()
 {
 	load_process("/usr/bin/system", "");
-	load_process("/usr/bin/system", "");
+//	load_process("/usr/bin/system", "");
 
 //	u32 *page_dir = ((u32 *) pcb->page_dir);
 //	//页表1开始于0x600000 + 0x1000 = 0x601000
@@ -115,7 +115,7 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	pcb->process_id = pid;
 	pcb->tss.eip = (u32) run + run_offset;
 //	pcb->tss.esp = (u32) pcb->stack + 0x400;
-	pcb->tss.esp = 0x20000000;
+	pcb->tss.esp = 0xffffff00;
 	pcb->tss.esp0 = (u32) pcb->stack0 + 0x400;
 	pcb->tss.cr3 = (u32) pcb->page_dir;
 
