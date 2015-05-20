@@ -55,12 +55,6 @@ void install_system()
  */
 void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 {
-	int pages = sizeof(s_pcb) / MM_PAGE_SIZE;
-	if (sizeof(s_pcb) % MM_PAGE_SIZE != 0)
-	{
-		pages++;
-	}
-
 	//s_tss
 	pcb->tss.back_link = 0;
 	pcb->tss.ss0 = GDT_INDEX_KERNEL_DS;
@@ -100,6 +94,7 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	//永远是4G，但为了4K对齐保留了最后一个0x1000
 	pcb->tss.esp = 0xfffff000;
 	pcb->tss.esp0 = (u32) pcb->stack0 + 0x400;
+//	pcb->tss.esp0 = (u32) pcb->stack0 + 0x1000;
 	pcb->tss.cr3 = (u32) pcb->page_dir;
 
 	//地址
@@ -129,6 +124,12 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 		}
 		page_dir[i] = (u32) page_tbl | 7;
 		page_tbl += 1024;
+	}
+
+	int pages = sizeof(s_pcb) / MM_PAGE_SIZE;
+	if (sizeof(s_pcb) % MM_PAGE_SIZE != 0)
+	{
+		pages++;
 	}
 	init_process_page((u32) pcb, pages, pcb->page_dir);
 }
@@ -203,6 +204,7 @@ s_pcb* load_process(char *file_name, char *params)
 	}
 	//任务
 	s_pcb *pcb = alloc_page(process_id, pages, 0, 0);
+//	pcb->stack0 = alloc_page(process_id, 1, 0, 0);
 	pcb->page_dir = alloc_page(process_id, 1, 0, 0);
 	pcb->page_tbl = alloc_page(process_id, 0x400, 0, 0);
 	init_process(pcb, process_id, run, phdr.p_offset, run_size);
@@ -283,25 +285,5 @@ s_pcb* get_current_process()
 {
 	return (s_pcb*) pcb_cur->node;
 }
-
-//void schedule()
-//{
-//	if (timer++ % 2 == 0)
-//	{
-//		pcb_current = pcb_A;
-//	}
-//	else
-//	{
-//		pcb_current = pcb_B;
-//	}
-//
-//	addr_to_gdt(GDT_TYPE_TSS, (u32) &(pcb_current->tss), &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
-//	addr_to_gdt(GDT_TYPE_LDT, (u32) (pcb_current->ldt), &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
-//	//在时钟中断时并没有切换ds和cr3寄存器
-//	//但是在call tss时cr3会被修改为tss中的cr3
-//	set_ds(0xf);
-//
-//	call_tss();
-//}
 
 #endif
