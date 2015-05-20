@@ -46,23 +46,6 @@ void install_process()
 void install_system()
 {
 	load_process("/usr/bin/system", "");
-	load_process("/usr/bin/system", "");
-
-//	u32 *page_dir = ((u32 *) pcb->page_dir);
-//	//页表1开始于0x600000 + 0x1000 = 0x601000
-//	u32 *page_table = ((u32 *) pcb->page_tbl);
-//	//处理所有页目录
-//	//页表开始于 [0x601000, 0xa01000) ，大小为4M
-//	for (int i = 0; i < 1024; i++)
-//	{
-//		for (int j = 0; j < 1024; j++)
-//		{
-//			printf("%x\n", page_table[j]);
-//		}
-//		page_table += 1024;
-//	}
-//
-//	hlt();
 }
 
 /*
@@ -114,9 +97,8 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	//设置pcb相关值
 	pcb->process_id = pid;
 	pcb->tss.eip = (u32) run + run_offset;
-//	pcb->tss.esp = (u32) pcb->stack + 0x400;
-	pcb->tss.esp = 0xffffff00;
-//	pcb->tss.esp = 0x10000000;
+	//永远是4G，但为了4K对齐保留了最后一个0x1000
+	pcb->tss.esp = 0xfffff000;
 	pcb->tss.esp0 = (u32) pcb->stack0 + 0x400;
 	pcb->tss.cr3 = (u32) pcb->page_dir;
 
@@ -137,7 +119,7 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 		{
 			if (i < 4)
 			{
-				page_tbl[j] = address | 7;
+				page_tbl[j] = address | 5;
 			}
 			else
 			{
@@ -149,14 +131,6 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 		page_tbl += 1024;
 	}
 	init_process_page((u32) pcb, pages, pcb->page_dir);
-
-//	pages = run_size / MM_PAGE_SIZE;
-//	if (run_size % MM_PAGE_SIZE != 0)
-//	{
-//		pages++;
-//	}
-//	init_process_page((u32) pcb->run, pages, pcb->page_dir);
-//	init_process_page(0x1fff0000, 16, pcb->page_dir);
 }
 
 void init_process_page(u32 address, u32 pages, u32 *page_dir)
@@ -174,7 +148,7 @@ void init_process_page(u32 address, u32 pages, u32 *page_dir)
 		//设置mm_pcb所在内存的页表
 		if (i >= page_table_index && i <= (page_table_index + 16))
 		{
-			page_tbl[i] = address | 7;
+			page_tbl[i] = address | 5;
 		}
 		address += 0x1000;
 	}
@@ -190,7 +164,7 @@ void init_process_page(u32 address, u32 pages, u32 *page_dir)
 		{
 			if (i < (pages - (1024 - page_table_index)))
 			{
-				page_tbl[i] = address | 7;
+				page_tbl[i] = address | 5;
 
 			}
 			address += 0x1000;

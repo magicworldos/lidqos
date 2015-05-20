@@ -123,10 +123,14 @@ void page_error(u32 pid, u32 error_code)
 			u32 address = ph_page_no * 0x1000;
 			if (shared == 1)
 			{
-				//printf("share: %x\n", share_addr);
 				address = share_addr;
+				//共享时页面为只读
+				tbl[page_table_index] = address | 5;
 			}
-			tbl[page_table_index] = address | 7;
+			else
+			{
+				tbl[page_table_index] = address | 7;
+			}
 		}
 	}
 	//如果此页面被已经换出则要从外存换回此页面到内存
@@ -415,6 +419,5 @@ int page_share(u32 page_no, u32 *share_addr)
 	//取得页面地址4k对齐
 	*share_addr = (u32) (tbl[t_ind] & 0xfffff000);
 
-	return 0;
-//	return 1;
+	return 1;
 }

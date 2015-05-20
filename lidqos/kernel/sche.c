@@ -49,7 +49,6 @@ void schedule()
 	pcb_cur = pcb;
 	if (list_header != last_run)
 	{
-
 		list_user = list_header2footer(list_user);
 
 		addr_to_gdt(GDT_TYPE_TSS, (u32) &(pcb->tss), &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
@@ -61,7 +60,6 @@ void schedule()
 		//在时钟中断时并没有切换ds和cr3寄存器
 		//但是在call tss时cr3会被修改为tss中的cr3
 		set_ds(0xf);
-
 		call_tss();
 	}
 }
