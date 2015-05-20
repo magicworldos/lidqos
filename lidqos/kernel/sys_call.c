@@ -229,11 +229,25 @@ void int_keyboard()
 	outb_p(0x20, 0x20);
 }
 
-void int_0x80()
+void *addr_parse(u32 cr3, void *p)
+{
+	u32 addr = (u32) p;
+	u32 *page_dir = (u32 *) cr3;
+	//页目录索引
+	u32 page_dir_index = (addr >> 22) & 0x3ff;
+	//页表索引
+	u32 page_table_index = (addr >> 12) & 0x3ff;
+	u32 *page_tbl = (u32 *) (page_dir[page_dir_index] & 0xfffff000);
+	void *p_addr = (void *) ((page_tbl[page_table_index] & 0xfffff000) | (addr & 0xfff));
+	return p_addr;
+}
+
+void int_0x80(void *params)
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
 	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
-	//printf("%x\n", pcb_cur->tss.esp);
+	params = addr_parse(pcb_cur->tss.cr3, params);
+	printf("%d\n", *(int *) params);
 }
 
 #endif

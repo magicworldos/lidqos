@@ -43,7 +43,7 @@ void page_error(u32 pid, u32 error_code)
 
 //	if (error_addr % 0x100000 == 0)
 //	{
-	printf("Missing Page: %x\n", error_addr);
+//	printf("Missing Page: %x\n", error_addr);
 //		hlt();
 //	}
 
@@ -119,7 +119,7 @@ void page_error(u32 pid, u32 error_code)
 		}
 		else
 		{
-			printf("%x %x\n", ph_page_no, shared);
+
 			u32 address = ph_page_no * 0x1000;
 			if (shared == 1)
 			{
@@ -179,7 +179,6 @@ int alloc_page_no(u32 pid, u32 page_no, u32 *page_no_ret, u32 *shared, u32 *shar
 	//如果第0位为0,说明页面未使用
 	if ((status & 0x1) == 0)
 	{
-		printf("aapp\n");
 		//设置此页为“已使用”、“可换出”
 		set_mmap_status(page_no, MM_USED | MM_CAN_SWAP);
 		//设置此页的使用者id，即pid
@@ -202,7 +201,6 @@ int alloc_page_no(u32 pid, u32 page_no, u32 *page_no_ret, u32 *shared, u32 *shar
 	//如果第0位为1,说明页面已使用
 	else
 	{
-		printf("345\n");
 		//尝试将此页面换出到外存
 		if (page_swap_out(page_no) == 0)
 		{
@@ -417,5 +415,6 @@ int page_share(u32 page_no, u32 *share_addr)
 	//取得页面地址4k对齐
 	*share_addr = (u32) (tbl[t_ind] & 0xfffff000);
 
-	return 1;
+	return 0;
+//	return 1;
 }

@@ -438,13 +438,16 @@ _int_0x2f:
 	iret
 
 _int_0x80:
-	pushal
-	pushfl
 	cli
+	push	%ebp
+	mov 	%esp, %ebp
+
+	sub		$0x4, %esp
+    movl	%eax, (%esp)
 	call	int_0x80
+
+	leave
 	sti
-	popfl
-	popal
 	iret
 
 _int_0x81:

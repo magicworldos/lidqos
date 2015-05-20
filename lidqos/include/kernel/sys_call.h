@@ -26,6 +26,8 @@ void int_timer();
 
 void int_keyboard();
 
-void int_0x80();
+void *addr_parse(u32 cr3, void *addr);
+
+void int_0x80(void *params);
 
 #endif
