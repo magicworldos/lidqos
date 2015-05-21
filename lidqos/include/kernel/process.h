@@ -18,6 +18,8 @@
 #include <kernel/list.h>
 #include <kernel/sche.h>
 
+int pages_of_pcb();
+
 /*
  * install_task : 安装多任务
  * return : void

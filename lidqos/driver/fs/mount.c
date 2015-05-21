@@ -13,6 +13,9 @@
 s_tree *root = NULL;
 int mount_next_id = 0;
 
+/*
+ * 载入根节点
+ */
 void mount_root()
 {
 	//默认为系统光盘

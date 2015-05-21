@@ -12,26 +12,28 @@
 #include <kernel/process.h>
 
 extern s_gdt gdts[GDT_MAX_SIZE];
+extern s_pcb *pcb_cur;
 
-u32 process_id = 0;
-extern s_list* pcb_cur;
+u32 process_id = 1;
 
-/*
- * install_task : 安装多任务
- * return : void
- */
-void install_process()
+int pages_of_pcb()
 {
 	int pages = sizeof(s_pcb) / MM_PAGE_SIZE;
 	if (sizeof(s_pcb) % MM_PAGE_SIZE != 0)
 	{
 		pages++;
 	}
+	return pages;
+}
+/*
+ * install_task : 安装多任务
+ * return : void
+ */
+void install_process()
+{
 	//空任务
-	s_pcb *pcb_empty = alloc_page(process_id, pages, 0, 0);
-	init_process(pcb_empty, process_id, NULL, 0, 0);
-	//pcb_insert(pcb_empty);
-	process_id++;
+	s_pcb *pcb_empty = alloc_page(0, pages_of_pcb(), 0, 0);
+	init_process(pcb_empty, 0, NULL, 0, 0);
 
 	//载入TSS
 	addr_to_gdt(GDT_TYPE_TSS, (u32) &(pcb_empty->tss), &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
@@ -126,14 +128,12 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 		page_tbl += 1024;
 	}
 
-	int pages = sizeof(s_pcb) / MM_PAGE_SIZE;
-	if (sizeof(s_pcb) % MM_PAGE_SIZE != 0)
-	{
-		pages++;
-	}
-	init_process_page((u32) pcb, pages, pcb->page_dir);
+	init_process_page((u32) pcb, pages_of_pcb(), pcb->page_dir);
 }
 
+/*
+ * 将pcb所在的内存加入到页表中
+ */
 void init_process_page(u32 address, u32 pages, u32 *page_dir)
 {
 	//mm_pcb所在内存页目录索引
@@ -149,7 +149,7 @@ void init_process_page(u32 address, u32 pages, u32 *page_dir)
 		//设置mm_pcb所在内存的页表
 		if (i >= page_table_index && i <= (page_table_index + 16))
 		{
-			page_tbl[i] = address | 5;
+			page_tbl[i] = address | 7;
 		}
 		address += 0x1000;
 	}
@@ -165,7 +165,7 @@ void init_process_page(u32 address, u32 pages, u32 *page_dir)
 		{
 			if (i < (pages - (1024 - page_table_index)))
 			{
-				page_tbl[i] = address | 5;
+				page_tbl[i] = address | 7;
 
 			}
 			address += 0x1000;
@@ -174,6 +174,9 @@ void init_process_page(u32 address, u32 pages, u32 *page_dir)
 	}
 }
 
+/*
+ * 载入文件系统中的可执行程序
+ */
 s_pcb* load_process(char *file_name, char *params)
 {
 	//从文件系统读入程序
@@ -204,13 +207,15 @@ s_pcb* load_process(char *file_name, char *params)
 	}
 	//任务
 	s_pcb *pcb = alloc_page(process_id, pages, 0, 0);
-//	pcb->stack0 = alloc_page(process_id, 1, 0, 0);
+	//pcb->stack0 = alloc_page(process_id, 1, 0, 0);
 	pcb->page_dir = alloc_page(process_id, 1, 0, 0);
 	pcb->page_tbl = alloc_page(process_id, 0x400, 0, 0);
 	init_process(pcb, process_id, run, phdr.p_offset, run_size);
+
 	pcb_insert(pcb);
+
 	process_id++;
-	alloc_page(process_id, 1, 0, 0);
+
 	return pcb;
 }
 
@@ -232,6 +237,7 @@ void relocation_elf(void *addr)
 	Elf32_Shdr shdrs[ehdr.e_shnum];
 	Elf32_Shdr shdr_rel;
 	//循环程序头
+
 	for (int i = 0; i < ehdr.e_shnum; ++i)
 	{
 		mmcopy_with((char *) addr, (char *) &shdrs[i], ehdr.e_shoff + (i * sizeof(Elf32_Shdr)), sizeof(Elf32_Shdr));
@@ -240,12 +246,12 @@ void relocation_elf(void *addr)
 		{
 			//加入需要重定位的列表
 			mmcopy_with((char *) addr, (char *) &shdr_rel, ehdr.e_shoff + (i * sizeof(Elf32_Shdr)), sizeof(Elf32_Shdr));
+			break;
 		}
 	}
 	u32 rels_count = shdr_rel.sh_size / sizeof(Elf32_Rel);
 	Elf32_Rel rels[rels_count];
 
-	//计算重定位后的物理地址
 	u32 p_offset = (u32) addr + phdr.p_offset;
 
 	//循环重定位列表
@@ -253,19 +259,27 @@ void relocation_elf(void *addr)
 	{
 		//取得重定位项
 		mmcopy_with((char *) addr, (char *) &rels[i], shdr_rel.sh_offset + (i * sizeof(Elf32_Rel)), sizeof(Elf32_Rel));
-		if (rels[i].r_info == 1)
+		if ((rels[i].r_info & 0xff) == 1 && rels[i].r_offset != 8)
 		{
+
 			//重定位
 			u32 *p = (u32*) (p_offset + rels[i].r_offset);
-			*p += p_offset;
+			if ((*p) < 0x2000)
+			{
+				*p += (u32) addr + phdr.p_offset;
+			}
+			else
+			{
+				*p += (u32) addr;
+			}
 		}
+
 	}
 }
 
 u32* pcb_page_dir(u32 pid)
 {
-	s_pcb* pcb = (s_pcb*) pcb_cur->node;
-	return (u32 *) (pcb->tss.cr3);
+	return (u32 *) (pcb_cur->tss.cr3);
 }
 
 /*
@@ -283,7 +297,7 @@ u32 get_current_process_id()
  */
 s_pcb* get_current_process()
 {
-	return (s_pcb*) pcb_cur->node;
+	return pcb_cur;
 }
 
 #endif

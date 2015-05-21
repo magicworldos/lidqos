@@ -11,7 +11,6 @@ PSHELL				= pshell
 TOOL				= ../tool
 FS					= fs
 PSHELL				= shell
-ECC					= ecc
 
 #命令
 #编译c程序
@@ -26,6 +25,7 @@ OC = objcopy
 OD = objdump
 #制作iso光盘文件
 DD = dd
+ELF = readelf
 
 #gcc参数，编译32位代码
 #-mpreferred-stack-boundary=2
@@ -85,8 +85,7 @@ $(MKDIR):
 	mkdir -p $(BUILD_PATH)/$(MKISO)		\
 	$(BUILD_PATH)/$(BOOT) 				\
 	$(BUILD_PATH)/$(KERNEL) 			\
-	$(BUILD_PATH)/$(PSHELL)				\
-	$(BUILD_PATH)/$(ECC)
+	$(BUILD_PATH)/$(PSHELL)
 
 ##################################################################################################################
 
@@ -198,24 +197,22 @@ $(KERNEL)_objs:
 SYSTEM		= system
 
 #外壳程序
-$(PSHELL):			$(PSHELL)_elfs	$(PSHELL)_S
+$(PSHELL):			$(PSHELL)_S
 
 #外壳程序反汇编文件
-$(PSHELL)_S:			$(PSHELL)_elfs
+$(PSHELL)_S:			$(PSHELL)_elf
 	#system
-	$(OD) $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) > $(BUILD_PATH)/$(PSHELL)/$(SYSTEM)_att.S
-	$(OD) $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) > $(BUILD_PATH)/$(PSHELL)/$(SYSTEM)_intel.S
-	
-#外壳程序的elf可执行文件
-$(PSHELL)_elfs:		$(PSHELL)_ecc
-	#system
-	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/$(SYSTEM)_ecc -e start_main $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).ecc
-	$(BUILD_PATH)/$(ECC)/$(ECC) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).ecc $(BUILD_PATH)/$(PSHELL)/$(SYSTEM)_ecc $(BUILD_PATH)/$(PSHELL)/$(SYSTEM)
+	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) > $(BUILD_PATH)/$(PSHELL)/$(SYSTEM)_att.S
+	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) > $(BUILD_PATH)/$(PSHELL)/$(SYSTEM)_intel.S
+	$(ELF) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -h > $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).elf
+	$(ELF) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -S >> $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).elf
+	$(ELF) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -s >> $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).elf
+	$(ELF) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -r >> $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).elf
 	
 #外壳程序的ecc可重定向文件
-$(PSHELL)_ecc:		$(PSHELL)_objs
+$(PSHELL)_elf:		$(PSHELL)_objs
 	#system
-	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).ecc -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
 		$(BUILD_PATH)/$(PSHELL)/$(SYSTEM).o
 
 #外壳程序的obj文件
@@ -223,15 +220,6 @@ $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/start_main.c 	-o $(BUILD_PATH)/$(PSHELL)/start_main.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/$(SYSTEM).c		-o $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).o	
 
-##################################################################################################################
-
-#ecc
-$(ECC):				$(ECC)_run
-
-#ecc程序	
-$(ECC)_run:
-	$(CK) -m32 $(TOOL)/$(ECC)/$(ECC).cpp -o $(BUILD_PATH)/$(ECC)/$(ECC)
-	
 ##################################################################################################################
 	
 clean:
