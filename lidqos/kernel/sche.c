@@ -65,7 +65,7 @@ void schedule()
 }
 
 /*
- * 将进程加入到链表中
+ * 将进程加入到队列中
  */
 void pcb_insert(s_pcb *pcb)
 {
