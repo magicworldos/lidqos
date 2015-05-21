@@ -42,7 +42,7 @@ s_pcb* load_process(char *file_name, char *params);
 /*
  * relocation_elf :  elf可执行文件重定位
  *  - void *addr : 可执行程序地址
- * return : void
+ * return : u32 程序入口地址
  */
 u32 relocation_elf(void *addr);
 

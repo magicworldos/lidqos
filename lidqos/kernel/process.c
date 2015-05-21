@@ -215,7 +215,7 @@ s_pcb* load_process(char *file_name, char *params)
 /*
  * relocation_elf :  elf可执行文件重定位
  *  - void *addr : 可执行程序地址
- * return : void
+ * return : u32 程序入口地址
  */
 u32 relocation_elf(void *addr)
 {
@@ -277,10 +277,16 @@ u32 relocation_elf(void *addr)
 	{
 		mmcopy_with(symtab, &syms[i], i * sizeof(Elf32_Sym), sizeof(Elf32_Sym));
 	}
-	u32 sh_text_offset = 0;
-	u32 sh_data_offset = 0;
+
+	//重定位.rel.text
 	Elf32_Shdr sh_rel_text;
+	//重定位.rel.data
 	Elf32_Shdr sh_rel_data;
+	//重定位.rel.text偏移地址
+	u32 sh_text_offset = 0;
+	//重定位.rel.data偏移地址
+	u32 sh_data_offset = 0;
+
 	//取得重定位段
 	for (u32 i = 0; i < ehdr.e_shnum; ++i)
 	{
@@ -294,12 +300,12 @@ u32 relocation_elf(void *addr)
 		{
 			sh_data_offset = shdrs[i].sh_offset;
 		}
-		//如果需要重定位
+		//如果需要重定位text段
 		if (str_compare(".rel.text", (char *) &shstrtab[shdrs[i].sh_name]) == 0)
 		{
 			mmcopy_with(&shdrs[i], &sh_rel_text, 0, sizeof(Elf32_Shdr));
 		}
-		//如果需要重定位
+		//如果需要重定位data段
 		if (str_compare(".rel.data", (char *) &shstrtab[shdrs[i].sh_name]) == 0)
 		{
 			mmcopy_with(&shdrs[i], &sh_rel_data, 0, sizeof(Elf32_Shdr));
@@ -309,7 +315,9 @@ u32 relocation_elf(void *addr)
 	u32 rel_text_num = sh_rel_text.sh_size / sizeof(Elf32_Rel);
 	u32 rel_data_num = sh_rel_data.sh_size / sizeof(Elf32_Rel);
 
+	//对.text段重定位
 	relocation_elf_text_data(addr, sh_rel_text, rel_text_num, sh_text_offset, syms, symtab_num, shdrs);
+	//对.data段重定位
 	relocation_elf_text_data(addr, sh_rel_data, rel_data_num, sh_data_offset, syms, symtab_num, shdrs);
 
 	if (shstrtab != NULL)
@@ -325,9 +333,13 @@ u32 relocation_elf(void *addr)
 		free_mm(symtab, symtab_size);
 	}
 
+	//返回程序入口地址
 	return sh_text_offset;
 }
 
+/*
+ * 对.text段或.data段进程重定位
+ */
 void relocation_elf_text_data(void *addr, Elf32_Shdr sh_rel, u32 rel_num, u32 sh_offset, Elf32_Sym *syms, u32 syms_num, Elf32_Shdr *shdrs)
 {
 	//取得text段重定位项
@@ -337,16 +349,18 @@ void relocation_elf_text_data(void *addr, Elf32_Shdr sh_rel, u32 rel_num, u32 sh
 		Elf32_Rel e_rel;
 		//取得重定位项
 		mmcopy_with((char *) addr, &e_rel, sh_rel.sh_offset + (i * sizeof(Elf32_Rel)), sizeof(Elf32_Rel));
-
+		//取得重定位符号
 		u32 sym = (e_rel.r_info >> 8) & 0xff;
+		//计算重定位地址
 		u32 relocation_val = relocation_elf_sym(sym, syms, syms_num, shdrs);
+		//取得需要重定位内容的地址
 		u32 *rel = (u32 *) (addr + sh_offset + e_rel.r_offset);
-		//R_386_32: S + A
+		//如果重定位类型为1，则按R_386_32方式重定位: S + A
 		if ((e_rel.r_info & 0xff) == 1)
 		{
 			*rel += (u32) addr + relocation_val;
 		}
-		//R_386_PC32: S + A - P
+		//如果重定位类型为2，则按R_386_PC32方式重定位: S + A - P
 		else if ((e_rel.r_info & 0xff) == 2)
 		{
 			//减4的原因是要跳过当前4字节的数据项从下一个命令的开始算起
@@ -355,15 +369,22 @@ void relocation_elf_text_data(void *addr, Elf32_Shdr sh_rel, u32 rel_num, u32 sh
 	}
 }
 
+/*
+ * 计算符号重定位地址
+ */
 u32 relocation_elf_sym(u32 sym, Elf32_Sym *syms, u32 syms_num, Elf32_Shdr *shdrs)
 {
+	//循环符号表
 	for (int i = 0; i < syms_num; i++)
 	{
+		//找到需要重定位的符号项
 		if (sym == i)
 		{
+			//计算重定位地址
 			return shdrs[syms[i].st_shndx].sh_offset + syms[i].st_value;
 		}
 	}
+
 	return 0;
 }
 
