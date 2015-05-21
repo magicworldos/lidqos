@@ -62,4 +62,14 @@ typedef struct elf32_rel
 	u32 r_info;
 } Elf32_Rel;
 
+typedef struct elf32_sym
+{
+	u32 st_name;
+	u32 st_value;
+	u32 st_size;
+	u8 st_info;
+	u8 st_other;
+	u16 st_shndx;
+} Elf32_Sym;
+
 #endif

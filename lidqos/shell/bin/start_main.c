@@ -14,27 +14,9 @@
 
 extern int main(int argc, char *args[]);
 
-unsigned int gg1 = 0x1111;
-unsigned int gg2 = 0x2222;
-unsigned int gg3 = 0x3333;
-unsigned int gg4 = 0x4444;
-
-char *stra1 = "aaaa";
-char *stra2 = "bbbb";
-
-void testff(char *p);
-
 void start_main()
 {
-	gg1 = 0x5555;
-	gg2 = 0x6666;
-	gg3 = 0x7777;
-	gg4 = 0x8888;
-
-	testff(stra1);
-	testff(stra2);
-
-	main(1, 0);
+	main(1, NULL);
 
 	for (;;)
 	{

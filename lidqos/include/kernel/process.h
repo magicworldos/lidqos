@@ -44,7 +44,11 @@ s_pcb* load_process(char *file_name, char *params);
  *  - void *addr : 可执行程序地址
  * return : void
  */
-void relocation_elf(void *addr);
+u32 relocation_elf(void *addr);
+
+void relocation_elf_text_data(void *addr, Elf32_Shdr sh_rel, u32 rel_num, u32 sh_offset, Elf32_Sym *syms, u32 syms_num, Elf32_Shdr *shdrs);
+
+u32 relocation_elf_sym(u32 sym, Elf32_Sym *syms, u32 syms_num, Elf32_Shdr *shdrs);
 
 u32* pcb_page_dir(u32 pid);
 

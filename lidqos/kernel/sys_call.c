@@ -246,9 +246,13 @@ void int_0x80(void *params)
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
 	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
-	params = addr_parse(pcb_cur->tss.cr3, params);
-	printf("%x\n", (u32)params);
+	u32 cr3 = pcb_cur->tss.cr3;
+	params = addr_parse(cr3, params);
+
 	printf("%s\n", (char *)(params));
+
+	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(cr3));
+	set_ds(0xf);
 }
 
 #endif

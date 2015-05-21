@@ -192,14 +192,7 @@ s_pcb* load_process(char *file_name, char *params)
 	//关闭文件
 	f_close(fp);
 	//对elf可执行程序进行重定位
-	relocation_elf(run);
-
-	//取得程序运行开始位置shell_run + phdr.p_offset
-	Elf32_Ehdr ehdr;
-	mmcopy_with(run, (void *) &ehdr, 0, sizeof(Elf32_Ehdr));
-	Elf32_Phdr phdr;
-	mmcopy_with(run, (void *) &phdr, ehdr.e_phoff, sizeof(Elf32_Phdr));
-
+	u32 entry_point = relocation_elf(run);
 	pages = sizeof(s_pcb) / MM_PAGE_SIZE;
 	if (sizeof(s_pcb) % MM_PAGE_SIZE != 0)
 	{
@@ -210,7 +203,7 @@ s_pcb* load_process(char *file_name, char *params)
 	//pcb->stack0 = alloc_page(process_id, 1, 0, 0);
 	pcb->page_dir = alloc_page(process_id, 1, 0, 0);
 	pcb->page_tbl = alloc_page(process_id, 0x400, 0, 0);
-	init_process(pcb, process_id, run, phdr.p_offset, run_size);
+	init_process(pcb, process_id, run, entry_point, run_size);
 
 	pcb_insert(pcb);
 
@@ -224,7 +217,7 @@ s_pcb* load_process(char *file_name, char *params)
  *  - void *addr : 可执行程序地址
  * return : void
  */
-void relocation_elf(void *addr)
+u32 relocation_elf(void *addr)
 {
 	//elf文件头
 	Elf32_Ehdr ehdr;
@@ -234,47 +227,144 @@ void relocation_elf(void *addr)
 	Elf32_Phdr phdr;
 	mmcopy_with((char *) addr, (char *) &phdr, ehdr.e_phoff, sizeof(Elf32_Phdr));
 
+	//段头
 	Elf32_Shdr shdrs[ehdr.e_shnum];
-	Elf32_Shdr shdr_rel;
-	//循环程序头
 
-	for (int i = 0; i < ehdr.e_shnum; ++i)
+	//循环程序头
+	u32 shstrtab_size = 0;
+	u32 strtab_size = 0;
+	u32 symtab_size = 0;
+	char *shstrtab = NULL;
+	char *symtab = NULL;
+	char *strtab = NULL;
+	for (u32 i = 0; i < ehdr.e_shnum; ++i)
 	{
 		mmcopy_with((char *) addr, (char *) &shdrs[i], ehdr.e_shoff + (i * sizeof(Elf32_Shdr)), sizeof(Elf32_Shdr));
-		//如果需要重定位
-		if (shdrs[i].sh_type == 9)
+		//符号段
+		if (shdrs[i].sh_type == 2)
 		{
-			//加入需要重定位的列表
-			mmcopy_with((char *) addr, (char *) &shdr_rel, ehdr.e_shoff + (i * sizeof(Elf32_Shdr)), sizeof(Elf32_Shdr));
-			break;
+			symtab_size = shdrs[i].sh_size;
+			symtab = alloc_mm(symtab_size);
+			mmcopy_with((char *) addr, symtab, shdrs[i].sh_offset, symtab_size);
 		}
-	}
-	u32 rels_count = shdr_rel.sh_size / sizeof(Elf32_Rel);
-	Elf32_Rel rels[rels_count];
-
-	u32 p_offset = (u32) addr + phdr.p_offset;
-
-	//循环重定位列表
-	for (int i = 0; i < rels_count; ++i)
-	{
-		//取得重定位项
-		mmcopy_with((char *) addr, (char *) &rels[i], shdr_rel.sh_offset + (i * sizeof(Elf32_Rel)), sizeof(Elf32_Rel));
-		if ((rels[i].r_info & 0xff) == 1 && rels[i].r_offset != 8)
+		//符号段
+		else if (shdrs[i].sh_type == 3)
 		{
+			char *buff = alloc_mm(shdrs[i].sh_size);
+			mmcopy_with((char *) addr, buff, shdrs[i].sh_offset, shdrs[i].sh_size);
 
-			//重定位
-			u32 *p = (u32*) (p_offset + rels[i].r_offset);
-			if ((*p) < 0x2000)
+			//取得段符号
+			if (str_compare(".shstrtab", (char *) &buff[shdrs[i].sh_name]) == 0)
 			{
-				*p += (u32) addr + phdr.p_offset;
+				shstrtab_size = shdrs[i].sh_size;
+				shstrtab = alloc_mm(shstrtab_size);
+				mmcopy_with(buff, shstrtab, 0, shstrtab_size);
 			}
+			//取得普通符号
 			else
 			{
-				*p += (u32) addr;
+				strtab_size = shdrs[i].sh_size;
+				strtab = alloc_mm(strtab_size);
+				mmcopy_with(buff, strtab, 0, strtab_size);
 			}
+			free_mm(buff, shdrs[i].sh_size);
 		}
-
 	}
+
+	u32 symtab_num = symtab_size / sizeof(Elf32_Sym);
+	Elf32_Sym syms[symtab_num];
+	for (u32 i = 0; i < symtab_num; i++)
+	{
+		mmcopy_with(symtab, &syms[i], i * sizeof(Elf32_Sym), sizeof(Elf32_Sym));
+	}
+	u32 sh_text_offset = 0;
+	u32 sh_data_offset = 0;
+	Elf32_Shdr sh_rel_text;
+	Elf32_Shdr sh_rel_data;
+	//取得重定位段
+	for (u32 i = 0; i < ehdr.e_shnum; ++i)
+	{
+		//如果需要重定位
+		if (str_compare(".text", (char *) &shstrtab[shdrs[i].sh_name]) == 0)
+		{
+			sh_text_offset = shdrs[i].sh_offset;
+		}
+		//如果需要重定位
+		if (str_compare(".data", (char *) &shstrtab[shdrs[i].sh_name]) == 0)
+		{
+			sh_data_offset = shdrs[i].sh_offset;
+		}
+		//如果需要重定位
+		if (str_compare(".rel.text", (char *) &shstrtab[shdrs[i].sh_name]) == 0)
+		{
+			mmcopy_with(&shdrs[i], &sh_rel_text, 0, sizeof(Elf32_Shdr));
+		}
+		//如果需要重定位
+		if (str_compare(".rel.data", (char *) &shstrtab[shdrs[i].sh_name]) == 0)
+		{
+			mmcopy_with(&shdrs[i], &sh_rel_data, 0, sizeof(Elf32_Shdr));
+		}
+	}
+	//取得重定位项个数
+	u32 rel_text_num = sh_rel_text.sh_size / sizeof(Elf32_Rel);
+	u32 rel_data_num = sh_rel_data.sh_size / sizeof(Elf32_Rel);
+
+	relocation_elf_text_data(addr, sh_rel_text, rel_text_num, sh_text_offset, syms, symtab_num, shdrs);
+	relocation_elf_text_data(addr, sh_rel_data, rel_data_num, sh_data_offset, syms, symtab_num, shdrs);
+
+	if (shstrtab != NULL)
+	{
+		free_mm(shstrtab, shstrtab_size);
+	}
+	if (strtab != NULL)
+	{
+		free_mm(strtab, strtab_size);
+	}
+	if (symtab != NULL)
+	{
+		free_mm(symtab, symtab_size);
+	}
+
+	return sh_text_offset;
+}
+
+void relocation_elf_text_data(void *addr, Elf32_Shdr sh_rel, u32 rel_num, u32 sh_offset, Elf32_Sym *syms, u32 syms_num, Elf32_Shdr *shdrs)
+{
+	//取得text段重定位项
+	for (u32 i = 0; i < rel_num; i++)
+	{
+		//重定位项
+		Elf32_Rel e_rel;
+		//取得重定位项
+		mmcopy_with((char *) addr, &e_rel, sh_rel.sh_offset + (i * sizeof(Elf32_Rel)), sizeof(Elf32_Rel));
+
+		u32 sym = (e_rel.r_info >> 8) & 0xff;
+		u32 relocation_val = relocation_elf_sym(sym, syms, syms_num, shdrs);
+		u32 *rel = (u32 *) (addr + sh_offset + e_rel.r_offset);
+		//R_386_32: S + A
+		if ((e_rel.r_info & 0xff) == 1)
+		{
+			*rel += (u32) addr + relocation_val;
+		}
+		//R_386_PC32: S + A - P
+		else if ((e_rel.r_info & 0xff) == 2)
+		{
+			//减4的原因是要跳过当前4字节的数据项从下一个命令的开始算起
+			*rel = (u32) addr + relocation_val - (u32) rel - 4;
+		}
+	}
+}
+
+u32 relocation_elf_sym(u32 sym, Elf32_Sym *syms, u32 syms_num, Elf32_Shdr *shdrs)
+{
+	for (int i = 0; i < syms_num; i++)
+	{
+		if (sym == i)
+		{
+			return shdrs[syms[i].st_shndx].sh_offset + syms[i].st_value;
+		}
+	}
+	return 0;
 }
 
 u32* pcb_page_dir(u32 pid)

@@ -17,7 +17,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 
-#define CONFIG_INIT_OPERA			(0)
+#define CONFIG_INIT_OPERA			(1)
 
 #define FS_OSISO_START_SNO			(1024)
 //map大小为256KB，可表示1GB容量使用情况
