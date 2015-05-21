@@ -16,6 +16,9 @@ extern s_pcb *pcb_cur;
 
 u32 process_id = 1;
 
+/*
+ * 计算pcb所占用的
+ */
 int pages_of_pcb()
 {
 	int pages = sizeof(s_pcb) / MM_PAGE_SIZE;
@@ -48,6 +51,69 @@ void install_process()
 void install_system()
 {
 	load_process("/usr/bin/system", "");
+}
+
+/*
+ * 载入文件系统中的可执行程序
+ */
+s_pcb* load_process(char *file_name, char *params)
+{
+	//从文件系统读入程序
+	s_file *fp = f_open(file_name, FS_MODE_READ, 0, 0);
+	if (fp == NULL)
+	{
+		return NULL;
+	}
+
+	int run_pages = fp->fs.size / MM_PAGE_SIZE;
+	if (fp->fs.size % MM_PAGE_SIZE != 0)
+	{
+		run_pages++;
+	}
+	void *run = alloc_page(process_id, run_pages, 0, 0);
+	if (run == NULL)
+	{
+		f_close(fp);
+		return NULL;
+	}
+
+	f_read(fp, fp->fs.size, (u8 *) run);
+	u32 run_size = fp->fs.size;
+	//关闭文件
+	f_close(fp);
+	//对elf可执行程序进行重定位
+	u32 entry_point = relocation_elf(run);
+	int pcb_pages = sizeof(s_pcb) / MM_PAGE_SIZE;
+	if (sizeof(s_pcb) % MM_PAGE_SIZE != 0)
+	{
+		pcb_pages++;
+	}
+	//任务
+	s_pcb *pcb = alloc_page(process_id, pcb_pages, 0, 0);
+	if (pcb == NULL)
+	{
+		free_mm(run, run_pages);
+		return NULL;
+	}
+	//pcb->stack0 = alloc_page(process_id, 1, 0, 0);
+	if (pcb->stack0 == NULL)
+	{
+		free_mm(run, run_pages);
+		free_mm(pcb, pcb_pages);
+		return NULL;
+	}
+
+	pcb->page_dir = alloc_page(process_id, 1, 0, 0);
+	pcb->page_tbl = alloc_page(process_id, 0x400, 0, 0);
+	init_process(pcb, process_id, run, entry_point, run_size);
+
+	//将此进程加入循环队列
+	pcb_insert(pcb);
+	//进程号加一
+	process_id++;
+
+	//返回创建的新进程
+	return pcb;
 }
 
 /*
@@ -128,6 +194,7 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 		page_tbl += 1024;
 	}
 
+	//初始化pcb所在的内存页
 	init_process_page((u32) pcb, pages_of_pcb(), pcb->page_dir);
 }
 
@@ -172,69 +239,6 @@ void init_process_page(u32 address, u32 pages, u32 *page_dir)
 		}
 		page_dir[page_dir_index] = (u32) page_tbl | 7;
 	}
-}
-
-/*
- * 载入文件系统中的可执行程序
- */
-s_pcb* load_process(char *file_name, char *params)
-{
-	//从文件系统读入程序
-	s_file *fp = f_open(file_name, FS_MODE_READ, 0, 0);
-	if (fp == NULL)
-	{
-		return NULL;
-	}
-
-	int run_pages = fp->fs.size / MM_PAGE_SIZE;
-	if (fp->fs.size % MM_PAGE_SIZE != 0)
-	{
-		run_pages++;
-	}
-	void *run = alloc_page(process_id, run_pages, 0, 0);
-	if (run == NULL)
-	{
-		f_close(fp);
-		return NULL;
-	}
-
-	f_read(fp, fp->fs.size, (u8 *) run);
-	u32 run_size = fp->fs.size;
-	//关闭文件
-	f_close(fp);
-	//对elf可执行程序进行重定位
-	u32 entry_point = relocation_elf(run);
-	int pcb_pages = sizeof(s_pcb) / MM_PAGE_SIZE;
-	if (sizeof(s_pcb) % MM_PAGE_SIZE != 0)
-	{
-		pcb_pages++;
-	}
-	//任务
-	s_pcb *pcb = alloc_page(process_id, pcb_pages, 0, 0);
-	if (pcb == NULL)
-	{
-		free_mm(run, run_pages);
-		return NULL;
-	}
-	//pcb->stack0 = alloc_page(process_id, 1, 0, 0);
-	if (pcb->stack0 == NULL)
-	{
-		free_mm(run, run_pages);
-		free_mm(pcb, pcb_pages);
-		return NULL;
-	}
-
-	pcb->page_dir = alloc_page(process_id, 1, 0, 0);
-	pcb->page_tbl = alloc_page(process_id, 0x400, 0, 0);
-	init_process(pcb, process_id, run, entry_point, run_size);
-
-	//将此进程加入循环队列
-	pcb_insert(pcb);
-	//进程号加一
-	process_id++;
-
-	//返回创建的新进程
-	return pcb;
 }
 
 /*
