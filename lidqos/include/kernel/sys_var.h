@@ -58,7 +58,6 @@ typedef struct process_control_block
 	void *run;
 	void *page_dir;
 	void *page_tbl;
-//	void *stack0;
 } s_pcb;
 
 typedef struct

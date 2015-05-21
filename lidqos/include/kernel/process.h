@@ -18,47 +18,67 @@
 #include <kernel/list.h>
 #include <kernel/sche.h>
 
+/*
+ * 计算pcb所占用的页面数
+ */
 int pages_of_pcb();
 
 /*
- * install_task : 安装多任务
- * return : void
+ * 安装多任务
  */
 void install_process();
 
+/*
+ * 安装system程序
+ */
 void install_system();
 
 /*
- * create_task : 创建tts任务
- *  - int type : tts任务类型TASK_TYPE_NOR、TASK_TYPE_SPE
- * return : void
+ * 载入文件系统中的可执行程序
  */
-void init_process(s_pcb *pcb, u32 process_id, void *run, u32 run_offset, u32 run_size);
-
-void init_process_page(u32 address,u32 pages, u32 *page_dir);
-
 s_pcb* load_process(char *file_name, char *params);
 
 /*
- * relocation_elf :  elf可执行文件重定位
+ * 创建tts任务
+ *  - int type : tts任务类型TASK_TYPE_NOR、TASK_TYPE_SPE
+ */
+void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size);
+
+/*
+ * 将pcb所在的内存加入到页表中
+ */
+void init_process_page(u32 address, u32 pages, u32 *page_dir);
+
+/*
+ * elf可执行文件重定位
  *  - void *addr : 可执行程序地址
  * return : u32 程序入口地址
  */
 u32 relocation_elf(void *addr);
 
+/*
+ * 对.text段或.data段进程重定位
+ */
 void relocation_elf_text_data(void *addr, Elf32_Shdr sh_rel, u32 rel_num, u32 sh_offset, Elf32_Sym *syms, u32 syms_num, Elf32_Shdr *shdrs);
 
+/*
+ * 计算符号重定位地址
+ */
 u32 relocation_elf_sym(u32 sym, Elf32_Sym *syms, u32 syms_num, Elf32_Shdr *shdrs);
 
+/*
+ * 取得当前进程的cr3
+ */
 u32* pcb_page_dir(u32 pid);
 
 /*
- * get_current_task_id : 取得当前运行的任务ID
+ * 取得当前运行的任务ID
  * return : int任务ID
  */
 u32 get_current_process_id();
+
 /*
- * get_current_task : 取得当前运行的任务指针
+ * 取得当前运行的任务指针
  * return : s_task*任务指针
  */
 s_pcb* get_current_process();

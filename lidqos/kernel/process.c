@@ -14,10 +14,11 @@
 extern s_gdt gdts[GDT_MAX_SIZE];
 extern s_pcb *pcb_cur;
 
+//进程号从1开始，0代表的是系统内核
 u32 process_id = 1;
 
 /*
- * 计算pcb所占用的
+ * 计算pcb所占用的页面数
  */
 int pages_of_pcb()
 {
@@ -28,9 +29,9 @@ int pages_of_pcb()
 	}
 	return pages;
 }
+
 /*
- * install_task : 安装多任务
- * return : void
+ * 安装多任务
  */
 void install_process()
 {
@@ -48,8 +49,12 @@ void install_process()
 	load_ldt(GDT_INDEX_LDT);
 }
 
+/*
+ * 安装system程序
+ */
 void install_system()
 {
+	//载入并运行system程序
 	load_process("/usr/bin/system", "");
 }
 
@@ -65,11 +70,14 @@ s_pcb* load_process(char *file_name, char *params)
 		return NULL;
 	}
 
+	//计算程序占用的页面数量
 	int run_pages = fp->fs.size / MM_PAGE_SIZE;
 	if (fp->fs.size % MM_PAGE_SIZE != 0)
 	{
 		run_pages++;
 	}
+
+	//申请页面用于存放程序代码
 	void *run = alloc_page(process_id, run_pages, 0, 0);
 	if (run == NULL)
 	{
@@ -77,34 +85,45 @@ s_pcb* load_process(char *file_name, char *params)
 		return NULL;
 	}
 
+	//读入程序
 	f_read(fp, fp->fs.size, (u8 *) run);
+	//程序大小
 	u32 run_size = fp->fs.size;
+
 	//关闭文件
 	f_close(fp);
+
 	//对elf可执行程序进行重定位
 	u32 entry_point = relocation_elf(run);
-	int pcb_pages = sizeof(s_pcb) / MM_PAGE_SIZE;
-	if (sizeof(s_pcb) % MM_PAGE_SIZE != 0)
-	{
-		pcb_pages++;
-	}
+
 	//任务
-	s_pcb *pcb = alloc_page(process_id, pcb_pages, 0, 0);
+	s_pcb *pcb = alloc_page(process_id, pages_of_pcb(), 0, 0);
 	if (pcb == NULL)
 	{
 		free_mm(run, run_pages);
 		return NULL;
 	}
-	//pcb->stack0 = alloc_page(process_id, 1, 0, 0);
-	if (pcb->stack0 == NULL)
+
+	//申请页目录
+	pcb->page_dir = alloc_page(process_id, 1, 0, 0);
+	if (pcb->page_dir == NULL)
 	{
+		free_mm(pcb, pages_of_pcb());
 		free_mm(run, run_pages);
-		free_mm(pcb, pcb_pages);
 		return NULL;
 	}
 
-	pcb->page_dir = alloc_page(process_id, 1, 0, 0);
+	//申请页表
 	pcb->page_tbl = alloc_page(process_id, 0x400, 0, 0);
+	if (pcb->page_tbl == NULL)
+	{
+		free_mm(pcb->page_dir, 1);
+		free_mm(pcb, pages_of_pcb());
+		free_mm(run, run_pages);
+		return NULL;
+	}
+
+	//初始化pcb
 	init_process(pcb, process_id, run, entry_point, run_size);
 
 	//将此进程加入循环队列
@@ -117,9 +136,8 @@ s_pcb* load_process(char *file_name, char *params)
 }
 
 /*
- * create_task : 创建tts任务
+ * 创建tts任务
  *  - int type : tts任务类型TASK_TYPE_NOR、TASK_TYPE_SPE
- * return : void
  */
 void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 {
@@ -162,7 +180,6 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	//永远是4G，但为了4K对齐保留了最后一个0x1000
 	pcb->tss.esp = 0xfffff000;
 	pcb->tss.esp0 = (u32) pcb->stack0 + 0x400;
-//	pcb->tss.esp0 = (u32) pcb->stack0 + 0x1000;
 	pcb->tss.cr3 = (u32) pcb->page_dir;
 
 	//地址
@@ -242,7 +259,7 @@ void init_process_page(u32 address, u32 pages, u32 *page_dir)
 }
 
 /*
- * relocation_elf :  elf可执行文件重定位
+ * elf可执行文件重定位
  *  - void *addr : 可执行程序地址
  * return : u32 程序入口地址
  */
@@ -417,13 +434,16 @@ u32 relocation_elf_sym(u32 sym, Elf32_Sym *syms, u32 syms_num, Elf32_Shdr *shdrs
 	return 0;
 }
 
+/*
+ * 取得当前进程的cr3
+ */
 u32* pcb_page_dir(u32 pid)
 {
 	return (u32 *) (pcb_cur->tss.cr3);
 }
 
 /*
- * get_current_task_id : 取得当前运行的任务ID
+ * 取得当前运行的任务ID
  * return : int任务ID
  */
 u32 get_current_process_id()
@@ -432,7 +452,7 @@ u32 get_current_process_id()
 }
 
 /*
- * get_current_task : 取得当前运行的任务指针
+ * 取得当前运行的任务指针
  * return : s_task*任务指针
  */
 s_pcb* get_current_process()
