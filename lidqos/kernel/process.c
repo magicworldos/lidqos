@@ -93,7 +93,7 @@ s_pcb* load_process(char *file_name, char *params)
 	//对elf可重定位文件进行重定位，并取得程序入口偏移地址
 	u32 entry_point = relocation_elf(run);
 
-	//任务
+	//进程控制块
 	s_pcb *pcb = alloc_page(process_id, pages_of_pcb(), 0, 0);
 	if (pcb == NULL)
 	{
@@ -117,6 +117,7 @@ s_pcb* load_process(char *file_name, char *params)
 		free_mm(run, run_pages);
 		return NULL;
 	}
+	//申请0级栈
 	pcb->stack0 = alloc_page(process_id, P_STACK0_P_NUM, 0, 0);
 	if (pcb->stack0 == NULL)
 	{
@@ -205,9 +206,7 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	u32 *page_tbl = ((u32 *) pcb->page_tbl);
 
 	/*
-	 * 前16M系统内存为已使用
-	 * 实际上16M系统内存是不应该让普通程序可写的
-	 * 但为了能让普通程序直接操作0xb8000显示缓冲区
+	 * 前16M系统内存为已使用并且为只读
 	 */
 	for (int i = 0; i < 1024; i++)
 	{
@@ -229,11 +228,12 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 
 	//初始化pcb所在的内存页
 	init_process_page((u32) pcb, pages_of_pcb(), pcb->page_dir);
+	//初始化pcb->stack0所在的内存页
 	init_process_page((u32) pcb->stack0, pages_of_pcb(), pcb->page_dir);
 }
 
 /*
- * 将pcb所在的内存加入到页表中
+ * 将address地址加入到页表中
  */
 void init_process_page(u32 address, u32 pages, u32 *page_dir)
 {
@@ -267,7 +267,6 @@ void init_process_page(u32 address, u32 pages, u32 *page_dir)
 			if (i < (pages - (1024 - page_table_index)))
 			{
 				page_tbl[i] = address | 7;
-
 			}
 			address += 0x1000;
 		}

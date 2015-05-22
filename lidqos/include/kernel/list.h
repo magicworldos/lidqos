@@ -8,6 +8,8 @@
 #ifndef _LIST_H_
 #define _LIST_H_
 
+#include <kernel/typedef.h>
+
 typedef struct list_s
 {
 	void *node;

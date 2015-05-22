@@ -5,9 +5,11 @@
  *      Author: lidq
  */
 
-#include <kernel/typedef.h>
 #include <kernel/list.h>
 
+/*
+ * 为列表插入一个新节点
+ */
 s_list* list_insert_node(s_list *list, s_list *p_list)
 {
 	if (p_list == NULL)
@@ -30,6 +32,9 @@ s_list* list_insert_node(s_list *list, s_list *p_list)
 	return header;
 }
 
+/*
+ * 移除一个节点
+ */
 s_list* list_remove_node(s_list *list, s_list *p_list)
 {
 	if (p_list == NULL)
@@ -79,6 +84,9 @@ s_list* list_remove_node(s_list *list, s_list *p_list)
 	return header;
 }
 
+/*
+ * 将链表的头节点移动到尾部，即循环队列
+ */
 s_list* list_header2footer(s_list *list)
 {
 	s_list* header = list;

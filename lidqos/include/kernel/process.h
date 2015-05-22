@@ -45,7 +45,7 @@ s_pcb* load_process(char *file_name, char *params);
 void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size);
 
 /*
- * 将pcb所在的内存加入到页表中
+ * 将address地址加入到页表中
  */
 void init_process_page(u32 address, u32 pages, u32 *page_dir);
 

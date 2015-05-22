@@ -54,6 +54,9 @@ typedef struct alloc_list_s
 
 } s_alloc_list;
 
+/*
+ * 进程控制块
+ */
 typedef struct process_control_block
 {
 	//进程号
@@ -72,7 +75,6 @@ typedef struct process_control_block
 	void *page_tbl;
 	//程序0级栈
 	void *stack0;
-
 } s_pcb;
 
 typedef struct s_hda_rw
