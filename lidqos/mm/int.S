@@ -440,11 +440,7 @@ _int_0x2f:
 _int_0x80:
 	cli
 	push	%ebp
-	mov 	%esp, %ebp
-
-	sub		$0x4, %esp
-    movl	%eax, (%esp)
-	call	int_0x80
+	mov		%esp, %ebp
 
 	leave
 	sti
@@ -456,7 +452,11 @@ _int_0x81:
 _int_0x82:
 	cli
 	push	%ebp
-	mov		%esp, %ebp
+	mov 	%esp, %ebp
+
+	sub		$0x4, %esp
+    movl	%eax, (%esp)
+	call	sys_stdio
 
 	leave
 	sti

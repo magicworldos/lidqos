@@ -239,15 +239,15 @@ void *addr_parse(u32 cr3, void *p)
 	return p_addr;
 }
 
-void int_0x80(void *params)
+void sys_stdio(void *params)
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
+	set_cr3(PAGE_DIR);
 	u32 cr3 = pcb_cur->tss.cr3;
 	params = addr_parse(cr3, params);
 
 	printf("%s\n", (char *)(params));
 
-	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(cr3));
+	set_cr3(cr3);
 	set_ds(0xf);
 }
