@@ -19,8 +19,14 @@
 //任务状态：停止
 #define T_S_STOP		(3)
 
-//浮点数据缓冲区大小
-#define FPU_SIZE				(0x200)
+//进程0级栈页面数
+#define P_STACK0_P_NUM	(0x1)
+//进程0级栈大小
+#define P_STACK0_SIZE	(0x1000)
+//进程页目录数
+#define P_PAGE_DIR_NUM	(0x1)
+//进程页表数
+#define P_PAGE_TBL_NUM	(0x400)
 
 //tss数据结构
 typedef struct tss_s
@@ -50,27 +56,24 @@ typedef struct alloc_list_s
 
 typedef struct process_control_block
 {
-	//pcb id
+	//进程号
 	u32 process_id;
+	//任务描述段
 	s_tss tss;
+	//代码段和数据段的局部描述符
 	s_gdt ldt[2];
-	u8 stack0[0x400];
+	//程序地址
 	void *run;
+	//程序大小
+	u32 run_size;
+	//页目录
 	void *page_dir;
+	//页表
 	void *page_tbl;
-} s_pcb;
+	//程序0级栈
+	void *stack0;
 
-typedef struct
-{
-	//header
-	s_pcb *ph;
-	//current
-	s_pcb *pc;
-	//run
-	s_pcb *pr;
-	//last run
-	s_pcb *plr;
-} s_pcb_info;
+} s_pcb;
 
 typedef struct s_hda_rw
 {
@@ -115,7 +118,6 @@ typedef struct
 
 typedef struct
 {
-	s_pcb_info *pcb_info;
 	s_hda_info *hda_info;
 
 } s_sys_var;

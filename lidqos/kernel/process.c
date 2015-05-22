@@ -90,7 +90,7 @@ s_pcb* load_process(char *file_name, char *params)
 	//关闭文件
 	f_close(fp);
 
-	//对elf可执行程序进行重定位
+	//对elf可重定位文件进行重定位，并取得程序入口偏移地址
 	u32 entry_point = relocation_elf(run);
 
 	//任务
@@ -100,21 +100,28 @@ s_pcb* load_process(char *file_name, char *params)
 		free_mm(run, run_pages);
 		return NULL;
 	}
-
 	//申请页目录
-	pcb->page_dir = alloc_page(process_id, 1, 0, 0);
+	pcb->page_dir = alloc_page(process_id, P_PAGE_DIR_NUM, 0, 0);
 	if (pcb->page_dir == NULL)
 	{
 		free_mm(pcb, pages_of_pcb());
 		free_mm(run, run_pages);
 		return NULL;
 	}
-
 	//申请页表
-	pcb->page_tbl = alloc_page(process_id, 0x400, 0, 0);
+	pcb->page_tbl = alloc_page(process_id, P_PAGE_TBL_NUM, 0, 0);
 	if (pcb->page_tbl == NULL)
 	{
-		free_mm(pcb->page_dir, 1);
+		free_mm(pcb->page_dir, P_PAGE_DIR_NUM);
+		free_mm(pcb, pages_of_pcb());
+		free_mm(run, run_pages);
+		return NULL;
+	}
+	pcb->stack0 = alloc_page(process_id, P_STACK0_P_NUM, 0, 0);
+	if (pcb->stack0 == NULL)
+	{
+		free_mm(pcb->page_tbl, P_PAGE_TBL_NUM);
+		free_mm(pcb->page_dir, P_PAGE_DIR_NUM);
 		free_mm(pcb, pages_of_pcb());
 		free_mm(run, run_pages);
 		return NULL;
@@ -170,13 +177,25 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	addr_to_gdt(LDT_TYPE_CS, 0, &(pcb->ldt[0]), GDT_G_KB, 0xffffffff);
 	addr_to_gdt(LDT_TYPE_DS, 0, &(pcb->ldt[1]), GDT_G_KB, 0xffffffff);
 
-	pcb->run = run;
-	//设置pcb相关值
+	//不处理空任务
+	if (pid == 0)
+	{
+		return;
+	}
+
+	//进程号
 	pcb->process_id = pid;
+	//程序地址
+	pcb->run = run;
+	//程序大小
+	pcb->run_size = run_size;
+	//程序入口地址
 	pcb->tss.eip = (u32) run + run_offset;
 	//永远是4G，但为了4K对齐保留了最后一个0x1000
 	pcb->tss.esp = 0xfffff000;
-	pcb->tss.esp0 = (u32) pcb->stack0 + 0x400;
+	//程序0级栈
+	pcb->tss.esp0 = (u32) pcb->stack0 + P_STACK0_SIZE;
+	//页目录存入到cr3中
 	pcb->tss.cr3 = (u32) pcb->page_dir;
 
 	//地址
@@ -210,6 +229,7 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 
 	//初始化pcb所在的内存页
 	init_process_page((u32) pcb, pages_of_pcb(), pcb->page_dir);
+	init_process_page((u32) pcb->stack0, pages_of_pcb(), pcb->page_dir);
 }
 
 /*
