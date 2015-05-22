@@ -64,6 +64,10 @@ void schedule()
 	}
 }
 
+/*
+ * 在每个时间片中都执行此函数，将等待链表中的每一个进程的等待时间都减少一个时间片周期
+ * 并判断每个进程是否已“时间到”，如果时间已到，则将其移出等待链表并加入运行链表
+ */
 void list_sleep_change()
 {
 	s_list* p = list_pcb_sleep;
@@ -77,7 +81,7 @@ void list_sleep_change()
 		{
 			pcb->sleep_ms = 0;
 		}
-
+		//如果“时间到”
 		if (pcb->sleep_ms == 0)
 		{
 			s_list *list_node = NULL;
@@ -104,6 +108,9 @@ void pcb_insert(s_pcb *pcb)
 	list_pcb = list_insert_node(list_pcb, p_list);
 }
 
+/*
+ * 将pcb移出到等待链表中
+ */
 void pcb_sleep(s_pcb *pcb, int ms)
 {
 	if (pcb == NULL)
