@@ -6,9 +6,6 @@
  *  - 主要处理系统光盘的读写操作
  */
 
-#ifndef _OSISO_C_
-#define _OSISO_C_
-
 #include <kernel/osiso.h>
 
 /*
@@ -191,5 +188,3 @@ u32 osiso_alloc_sec()
 	//光盘不能写，所以返回0
 	return 0;
 }
-
-#endif

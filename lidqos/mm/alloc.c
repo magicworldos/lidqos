@@ -7,9 +7,6 @@
  *  - 内存释放
  */
 
-#ifndef _ALLOC_C_
-#define _ALLOC_C_
-
 #include <kernel/alloc.h>
 
 //内存使用位图
@@ -442,5 +439,3 @@ u32 alloc_page_ph(u32 pid)
 
 	return ret;
 }
-
-#endif

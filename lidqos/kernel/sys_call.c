@@ -7,9 +7,6 @@
  *  - 处理系统中断
  */
 
-#ifndef _SYS_CALL_C_
-#define _SYS_CALL_C_
-
 #include <kernel/sys_call.h>
 
 extern s_pcb *pcb_cur;
@@ -254,5 +251,3 @@ void int_0x80(void *params)
 	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(cr3));
 	set_ds(0xf);
 }
-
-#endif

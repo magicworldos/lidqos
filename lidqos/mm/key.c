@@ -1,6 +1,3 @@
-#ifndef _KEY_C_
-#define _KEY_C_
-
 #include<kernel/key.h>
 
 u8 keys[0x53][2] =
@@ -90,4 +87,3 @@ u8 keys[0x53][2] =
         { 0x0, 0x0 }	// DEL
 };
 
-#endif

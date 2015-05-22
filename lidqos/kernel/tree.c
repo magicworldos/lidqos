@@ -5,9 +5,6 @@
  *      Author: lidq
  */
 
-#ifndef _SOURCE_KERNEL_TREE_C_
-#define _SOURCE_KERNEL_TREE_C_
-
 #include <kernel/tree.h>
 
 void tree_init_node(s_tree *tree, int id)
@@ -219,5 +216,3 @@ void tree_depth_display(s_tree *tree)
 //
 //	return 0;
 //}
-
-#endif

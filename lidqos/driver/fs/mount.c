@@ -5,9 +5,6 @@
  *      Author: lidq
  */
 
-#ifndef _SOURCE_FS_MOUNT_C_
-#define _SOURCE_FS_MOUNT_C_
-
 #include <kernel/mount.h>
 
 s_tree *root = NULL;
@@ -137,5 +134,3 @@ void mount_hda(s_pt *pts, char *mount_point)
 	int mount_id = find_mount_id_fullpath(mount_point);
 	tree_insert_node(root, mount_id, mp);
 }
-
-#endif

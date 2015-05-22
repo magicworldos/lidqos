@@ -6,9 +6,6 @@
  *  - 用于向标准设备显示字符内容
  */
 
-#ifndef _KPRINTF_C_
-#define _KPRINTF_C_
-
 #include <kernel/printf.h>
 
 /***
@@ -279,6 +276,3 @@ int printf(char *fmt, ...)
 	}
 	return count;
 }
-
-#endif
-

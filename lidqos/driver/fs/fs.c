@@ -6,9 +6,6 @@
  *  - 构建文件系统，为其它程序的文件操作提供相关功能函数
  */
 
-#ifndef _FS_C_
-#define _FS_C_
-
 #include <kernel/fs.h>
 
 //int mount_id = 0;
@@ -1129,5 +1126,3 @@ void f_closedir(s_file* fp)
 		free_mm(p, sizeof(s_file));
 	}
 }
-
-#endif

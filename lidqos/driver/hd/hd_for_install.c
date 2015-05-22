@@ -6,9 +6,6 @@
  *  - 磁盘、光盘等盲区块设备的读写驱动程序
  */
 
-#ifndef _HD_C_
-#define _HD_C_
-
 #include <kernel/hd_for_install.h>
 #include <kernel/sys_var.h>
 
@@ -56,5 +53,3 @@ u32 alloc_sec(u32 hd_dev_id)
 {
 	return osiso_alloc_sec();
 }
-
-#endif

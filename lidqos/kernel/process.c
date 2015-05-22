@@ -6,9 +6,6 @@
  *  - CPU的tts多任务切换功能
  */
 
-#ifndef _PROCESS_C_
-#define _PROCESS_C_
-
 #include <kernel/process.h>
 
 extern s_gdt gdts[GDT_MAX_SIZE];
@@ -460,4 +457,3 @@ s_pcb* get_current_process()
 	return pcb_cur;
 }
 
-#endif

@@ -1,6 +1,3 @@
-#ifndef _FILESYS_C_
-#define _FILESYS_C_
-
 #define MK_ISO_FS				(1)
 
 #include <stdio.h>
@@ -510,5 +507,3 @@ void read_tfile(char *file)
 //}
 
 //=================================================================================================
-
-#endif

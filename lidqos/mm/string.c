@@ -5,9 +5,6 @@
  * 字符串操作
  */
 
-#ifndef _STRING_C_
-#define _STRING_C_
-
 #include <kernel/string.h>
 
 /*
@@ -193,4 +190,3 @@ int str_last_indexof(char *str, char ch)
 	}
 	return -1;
 }
-#endif

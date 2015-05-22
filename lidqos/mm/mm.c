@@ -6,9 +6,6 @@
  *  - 处理内存初始化和管理内存操作
  */
 
-#ifndef _MM_C_
-#define _MM_C_
-
 #include <kernel/typedef.h>
 #include <kernel/io.h>
 #include <kernel/mm.h>
@@ -339,4 +336,3 @@ void mmcopy_with(void *from, void *to, int offset, int size)
 	}
 }
 
-#endif

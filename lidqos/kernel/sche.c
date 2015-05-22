@@ -8,9 +8,6 @@
  *  - bug : 还没有解决关于tty切换时shell的阻塞时显示错误的问题
  */
 
-#ifndef _SCHE_C_
-#define _SCHE_C_
-
 #include <kernel/sche.h>
 
 //全局描述符
@@ -78,5 +75,3 @@ void pcb_insert(s_pcb *pcb)
 	p_list->node = pcb;
 	list_pcb = list_insert_node(list_pcb, p_list);
 }
-
-#endif

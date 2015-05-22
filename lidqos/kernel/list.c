@@ -5,9 +5,6 @@
  *      Author: lidq
  */
 
-#ifndef _LIST_C_
-#define _LIST_C_
-
 #include <kernel/typedef.h>
 #include <kernel/list.h>
 
@@ -109,5 +106,3 @@ s_list* list_header2footer(s_list *list)
 
 	return header;
 }
-
-#endif

@@ -6,9 +6,6 @@
  *  - 构建文件系统，为其它程序的文件操作提供相关功能函数
  */
 
-#ifndef _FS_C_
-#define _FS_C_
-
 #include <kernel/typedef.h>
 #include <kernel/hd_for_install.h>
 #include <kernel/fs_for_install.h>
@@ -973,4 +970,3 @@ void f_closedir(s_file* fp)
 	}
 }
 
-#endif

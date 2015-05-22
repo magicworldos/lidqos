@@ -7,9 +7,6 @@
  *  - 程序运行结束之后再调用中断停止此程序
  */
 
-#ifndef _START_MAIN_C_
-#define _START_MAIN_C_
-
 #include <shell/start_main.h>
 
 extern int main(int argc, char *args[]);
@@ -22,5 +19,3 @@ void start_main()
 	{
 	}
 }
-
-#endif

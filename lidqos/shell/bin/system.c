@@ -5,9 +5,6 @@
  *      Author: lidq
  */
 
-#ifndef _SYSTEM_C_
-#define _SYSTEM_C_
-
 #include <shell/system.h>
 
 int main(int argc, char **args)
@@ -21,5 +18,3 @@ int main(int argc, char **args)
 
 	return 0;
 }
-
-#endif
