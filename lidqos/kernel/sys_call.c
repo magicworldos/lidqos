@@ -226,7 +226,7 @@ void int_keyboard()
 	outb_p(0x20, 0x20);
 }
 
-void *addr_parse(u32 cr3, void *p)
+void* addr_parse(u32 cr3, void *p)
 {
 	u32 addr = (u32) p;
 	u32 *page_dir = (u32 *) cr3;
