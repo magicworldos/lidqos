@@ -27,6 +27,8 @@
 #define P_PAGE_DIR_NUM	(0x1)
 //进程页表数
 #define P_PAGE_TBL_NUM	(0x400)
+//时钟周期10ms
+#define CLOCK_TIMER		(10)
 
 //tss数据结构
 typedef struct tss_s
@@ -75,6 +77,8 @@ typedef struct process_control_block
 	void *page_tbl;
 	//程序0级栈
 	void *stack0;
+	//等待毫秒数（剩余）
+	int sleep_ms;
 } s_pcb;
 
 typedef struct s_hda_rw
@@ -87,7 +91,7 @@ typedef struct s_hda_rw
 	u8* buff;
 	//操作状态
 	int* status;
-	//队列的下一个节点
+	//链表的下一个节点
 	struct s_hda_rw *next;
 } s_hda_rw;
 

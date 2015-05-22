@@ -25,8 +25,12 @@
 void schedule();
 
 /*
- * 将进程加入到队列中
+ * 将进程加入到链表中
  */
 void pcb_insert(s_pcb *pcb);
+
+void list_sleep_change();
+
+void pcb_sleep(s_pcb *pcb, int ms);
 
 #endif /* SCHE_H_ */

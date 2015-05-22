@@ -28,6 +28,8 @@ void int_keyboard();
 
 void* addr_parse(u32 cr3, void *addr);
 
-void sys_stdio(void *params);
+void sys_process(int *params);
+
+void sys_stdio(int *params);
 
 #endif

@@ -35,24 +35,20 @@ s_list* list_insert_node(s_list *list, s_list *p_list)
 /*
  * 移除一个节点
  */
-s_list* list_remove_node(s_list *list, s_list *p_list)
+s_list* list_remove_node(s_list *list, void *p_node, s_list **list_out)
 {
-	if (p_list == NULL)
-	{
-		return list;
-	}
-
 	s_list* header = list;
 	s_list* p = header;
 	s_list* fp = p;
 	while (p != NULL)
 	{
-		if (p == p_list)
+		if (p->node == p_node)
 		{
 			if (p == fp)
 			{
 				header = p->next;
 				p->next = NULL;
+				*list_out = p;
 				return header;
 			}
 			else
@@ -60,12 +56,14 @@ s_list* list_remove_node(s_list *list, s_list *p_list)
 				if (p->next == NULL)
 				{
 					fp->next = NULL;
+					*list_out = p;
 					return header;
 				}
 				else
 				{
 					fp->next = p->next;
 					p->next = NULL;
+					*list_out = p;
 					return header;
 				}
 			}
@@ -85,7 +83,7 @@ s_list* list_remove_node(s_list *list, s_list *p_list)
 }
 
 /*
- * 将链表的头节点移动到尾部，即循环队列
+ * 将链表的头节点移动到尾部，即链表
  */
 s_list* list_header2footer(s_list *list)
 {

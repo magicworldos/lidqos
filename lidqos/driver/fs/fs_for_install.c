@@ -960,7 +960,7 @@ s_file* f_opendir(char *path_name)
  */
 void f_closedir(s_file* fp)
 {
-	//循环链表
+	//链表
 	while (fp != NULL)
 	{
 		//释放内存

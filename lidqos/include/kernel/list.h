@@ -9,6 +9,7 @@
 #define _LIST_H_
 
 #include <kernel/typedef.h>
+#include <kernel/alloc.h>
 
 typedef struct list_s
 {
@@ -18,7 +19,7 @@ typedef struct list_s
 
 s_list* list_insert_node(s_list *list, s_list *p_list);
 
-s_list* list_remove_node(s_list *list, s_list *p_list);
+s_list* list_remove_node(s_list *list, void *p_node, s_list **list_out);
 
 s_list* list_header2footer(s_list *list);
 

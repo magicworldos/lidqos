@@ -188,6 +188,8 @@ void int_timer()
 	//通知PIC可以接受新中断
 	outb_p(0x20, 0x20);
 
+	//处理等待链表
+	list_sleep_change();
 	//任务调度算法
 	schedule();
 }
@@ -198,7 +200,8 @@ void int_timer()
 void int_keyboard()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	__asm__ volatile("movl	%%eax, %%cr3" :: "a"(PAGE_DIR));
+	set_cr3(PAGE_DIR);
+
 	//取得扫描码
 	u8 scan_code = inb_p(0x60);
 	//取得按下、抬起状态
@@ -224,6 +227,10 @@ void int_keyboard()
 	outb_p(scan_code & 0x7f, 0x61);
 	//通知PIC1可以接受新中断
 	outb_p(0x20, 0x20);
+
+	u32 cr3 = pcb_cur->tss.cr3;
+	set_cr3(cr3);
+	set_ds(0xf);
 }
 
 void* addr_parse(u32 cr3, void *p)
@@ -239,14 +246,40 @@ void* addr_parse(u32 cr3, void *p)
 	return p_addr;
 }
 
-void sys_stdio(void *params)
+void sys_process(int *params)
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
 	set_cr3(PAGE_DIR);
 	u32 cr3 = pcb_cur->tss.cr3;
 	params = addr_parse(cr3, params);
 
-	printf("%s\n", (char *)(params));
+	//载入可执行文件并创建进程
+	if (params[0] == 0)
+	{
+	}
+	//退出或杀死进程
+	else if (params[0] == 1)
+	{
+	}
+	//msleep等待
+	else if (params[0] == 2)
+	{
+		int ms = params[1];
+		pcb_sleep(pcb_cur, ms);
+	}
+
+	set_cr3(cr3);
+	set_ds(0xf);
+}
+
+void sys_stdio(int *params)
+{
+	set_ds(GDT_INDEX_KERNEL_DS);
+	set_cr3(PAGE_DIR);
+	u32 cr3 = pcb_cur->tss.cr3;
+	params = addr_parse(cr3, params);
+
+	printf("%s\n", (char *) (params));
 
 	set_cr3(cr3);
 	set_ds(0xf);

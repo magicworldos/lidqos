@@ -90,20 +90,8 @@ int main(int argc, char **args)
 	install_fs("../../lidqos/build/fs/", "/", 0, 0, 01755);
 	save_map();
 #else
-//	install_file("../../lidqos/build/fs/usr/bin/shell", "/usr/bin/shell", 0, 0, 01755);
 	install_file("../../lidqos/build/fs/usr/bin/system", "/usr/bin/system", 0, 0, 01755);
-//	install_file("../../lidqos/build/fs/usr/bin/sys_hd", "/usr/bin/sys_hd", 0, 0, 01755);
-//	install_file("../../lidqos/build/fs/usr/bin/ls", "/usr/bin/ls", 0, 0, 01755);
-//	install_file("../../lidqos/build/fs/usr/bin/cd", "/usr/bin/cd", 0, 0, 01755);
-//	install_file("../../lidqos/build/fs/usr/bin/pwd", "/usr/bin/pwd", 0, 0, 01755);
-//	install_file("../../lidqos/build/fs/usr/bin/cat", "/usr/bin/cat", 0, 0, 01755);
-//	install_file("../../lidqos/build/fs/usr/bin/mkdir", "/usr/bin/mkdir", 0, 0, 01755);
-//	install_file("../../lidqos/build/fs/usr/bin/rm", "/usr/bin/rm", 0, 0, 01755);
-//	install_file("../../lidqos/build/fs/usr/bin/vi", "/usr/bin/vi", 0, 0, 01755);
-//	install_file("../../lidqos/build/fs/usr/bin/exam01", "/usr/bin/exam01", 0, 0, 01755);
-//	install_file("../../lidqos/build/fs/usr/bin/exam02", "/usr/bin/exam02", 0, 0, 01755);
-//	install_file("../../lidqos/build/fs/usr/bin/exam03", "/usr/bin/exam03", 0, 0, 01755);
-//	install_file("../../lidqos/build/fs/usr/bin/exam04", "/usr/bin/exam04", 0, 0, 01755);
+	install_file("../../lidqos/build/fs/usr/bin/example_sleep", "/usr/bin/example_sleep", 0, 0, 01755);
 #endif
 
 //	test_read_file();

@@ -53,6 +53,7 @@ void install_system()
 {
 	//载入并运行system程序
 	load_process("/usr/bin/system", "");
+	load_process("/usr/bin/example_sleep", "");
 }
 
 /*
@@ -131,7 +132,7 @@ s_pcb* load_process(char *file_name, char *params)
 	//初始化pcb
 	init_process(pcb, process_id, run, entry_point, run_size);
 
-	//将此进程加入循环队列
+	//将此进程加入链表
 	pcb_insert(pcb);
 	//进程号加一
 	process_id++;
@@ -183,7 +184,6 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	{
 		return;
 	}
-
 	//进程号
 	pcb->process_id = pid;
 	//程序地址
