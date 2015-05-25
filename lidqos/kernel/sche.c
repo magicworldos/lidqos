@@ -17,6 +17,8 @@ extern s_gdt gdts[GDT_MAX_SIZE];
 s_list *list_pcb = NULL;
 //等待链表sleep
 s_list *list_pcb_sleep = NULL;
+//停止链表stop
+s_list *list_pcb_stop = NULL;
 
 //当前正在运行的进程
 s_pcb *pcb_cur = NULL;
@@ -165,7 +167,7 @@ void pcb_sem_V(s_pcb *pcb, s_sem *sem)
 	{
 		return;
 	}
-
+	//信号量加1
 	sem->value++;
 	s_list *list_node = NULL;
 	for (int i = 0; i < sem->value && sem->list_block != NULL; i++)
@@ -178,5 +180,50 @@ void pcb_sem_V(s_pcb *pcb, s_sem *sem)
 		pcb_wakeup->tss.eip -= 2;
 		//加入到执行链表
 		list_pcb = list_insert_node(list_pcb, list_node);
+	}
+}
+
+/*
+ * 停止进程
+ */
+void pcb_stop(s_pcb *pcb)
+{
+	s_list *list_node = NULL;
+	//从运行链表中移出此进程
+	list_pcb = list_remove_node(list_pcb, pcb, &list_node);
+	//加入到等待链表
+	list_pcb_stop = list_insert_node(list_pcb_stop, list_node);
+	//执行一次调度，跳过当前进程
+	schedule();
+}
+
+/*
+ * 释放已停止的pcb的资源
+ */
+void pcb_free()
+{
+	s_list *p = list_pcb_stop;
+	while (p != NULL)
+	{
+		s_list *temp = p;
+		p = p->next;
+
+		s_pcb *pcb = (s_pcb *) temp->node;
+		free_mm(temp, sizeof(s_list));
+		//如果是线程
+		if (pcb->type_pt == 0)
+		{
+			free_page(pcb->stack0, P_STACK0_P_NUM);
+			free_page(pcb->page_tbl, P_PAGE_TBL_NUM);
+			free_page(pcb->page_dir, P_PAGE_DIR_NUM);
+			free_mm(pcb, pages_of_pcb());
+		}
+		else
+		{
+
+			free_page(pcb->stack, P_STACK_P_NUM);
+			free_page(pcb->stack0, P_STACK0_P_NUM);
+			free_mm(pcb, pages_of_pcb());
+		}
 	}
 }

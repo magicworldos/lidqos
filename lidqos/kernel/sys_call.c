@@ -281,6 +281,11 @@ void sys_process(int *params)
 
 		create_pthread(pcb_cur, p, function, args);
 	}
+	//停止进程
+	else if (params[0] == 4)
+	{
+		pcb_stop(pcb_cur);
+	}
 
 	set_cr3(cr3);
 	set_ds(0xf);

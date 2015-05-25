@@ -33,6 +33,10 @@ void list_sleep_change();
 
 void list_block_change();
 
+void pcb_stop(s_pcb *pcb);
+
+void pcb_free();
+
 void pcb_sleep(s_pcb *pcb, int ms);
 
 void pcb_sem_P(s_pcb *pcb, s_sem *sem);

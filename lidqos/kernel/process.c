@@ -192,6 +192,8 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	}
 	//进程号
 	pcb->process_id = pid;
+	//类型
+	pcb->type_pt = 0;
 	//程序地址
 	pcb->run = run;
 	//程序大小
@@ -533,6 +535,8 @@ void init_pthread(s_pcb *pcb, u32 pid, void *run)
 
 	//进程号
 	pcb->process_id = pid;
+	//类型
+	pcb->type_pt = 1;
 	//程序入口地址
 	pcb->tss.eip = (u32) run;
 	//程序栈
