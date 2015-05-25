@@ -10,7 +10,10 @@
 int main(int argc, char **args)
 {
 	char *str = "Start System Process.";
-	__asm__ volatile("int	$0x82" :: "a"(str));
+	int params[2];
+	params[0] = 0;
+	params[1] = (int) str;
+	__asm__ volatile("int	$0x82" :: "a"(params));
 
 	for (;;)
 	{

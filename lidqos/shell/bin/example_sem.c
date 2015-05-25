@@ -9,12 +9,13 @@
 #include <shell/unistd.h>
 #include <shell/pthread.h>
 
-#define PNUM 		(10)
+#define PNUM 		(2)
 
 s_sem sem;
 
 void sell_ticket(int num)
 {
+	//调用0x82号中断程序，显示一个数字
 	int params[2];
 	params[0] = 1;
 	params[1] = num;
