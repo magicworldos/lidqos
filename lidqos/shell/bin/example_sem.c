@@ -46,9 +46,9 @@ void myfunc(void *args)
 	}
 	//信号量V操作
 	sem_post(&sem);
-	for (;;)
-	{
-	}
+//	for (;;)
+//	{
+//	}
 }
 
 int main(int argc, char **args)

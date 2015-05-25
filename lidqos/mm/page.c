@@ -7,6 +7,8 @@
 
 #include <kernel/page.h>
 
+extern s_pcb *pcb_cur;
+
 void install_page()
 {
 	//页目录开始于 [0x600000, 0x601000) ，大小为1024个（每个4字节）共4096字节
@@ -54,8 +56,9 @@ void page_error(u32 pid, u32 error_code)
 
 	if (error_code == 7)
 	{
-		printf("Segmentation fault.\n");
-		hlt();
+		pcb_stop(pcb_cur);
+//		printf("Segmentation fault.\n");
+//		hlt();
 	}
 
 	//页号
@@ -86,8 +89,9 @@ void page_error(u32 pid, u32 error_code)
 			//如果申请失败
 			else
 			{
-				printf("Segmentation fault.\n");
-				hlt();
+				pcb_stop(pcb_cur);
+//				printf("Segmentation fault.\n");
+//				hlt();
 			}
 		}
 		//处理新分配的页表所表示的页面均不在内存中
@@ -114,8 +118,9 @@ void page_error(u32 pid, u32 error_code)
 		//如果缺页申请失败
 		if (alloc_page_no(pid, page_no, &ph_page_no, &shared, &share_addr) == 0)
 		{
-			printf("Segmentation fault.\n");
-			hlt();
+			pcb_stop(pcb_cur);
+//			printf("Segmentation fault.\n");
+//			hlt();
 		}
 		else
 		{
@@ -159,8 +164,9 @@ void page_error(u32 pid, u32 error_code)
 		//如果换回内存页失败
 		else
 		{
-			printf("Segmentation fault.\n");
-			hlt();
+			pcb_stop(pcb_cur);
+//			printf("Segmentation fault.\n");
+//			hlt();
 		}
 	}
 	//恢复cr3

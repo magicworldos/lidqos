@@ -104,7 +104,7 @@ void* alloc_page(u32 process_id, u32 count, u32 can_swap, u32 is_dynamic)
 	//设置map的各个内存页的状态为已使用
 	for (u32 i = 0; i < count; i++)
 	{
-		mmap[start_with + i] = MM_USED;//(MM_USED | ((u32) can_swap << 1) | ((u32) is_dynamic << 2));
+		mmap[start_with + i] = MM_USED; //(MM_USED | ((u32) can_swap << 1) | ((u32) is_dynamic << 2));
 		map_process[i] = process_id;
 	}
 
@@ -438,4 +438,17 @@ u32 alloc_page_ph(u32 pid)
 	}
 
 	return ret;
+}
+
+void free_page_by_pid(u32 pid)
+{
+	for (u32 i = 0; i < MAP_SIZE_LOGIC; i++)
+	{
+		if (map_process[i] == pid)
+		{
+			mmap[i] = (MM_FREE | MM_CAN_SWAP);
+			map_process[i] = 0;
+		}
+	}
+
 }

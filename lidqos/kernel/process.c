@@ -66,9 +66,9 @@ s_pcb* load_process(char *file_name, char *params)
 	s_file *fp = f_open(file_name, FS_MODE_READ, 0, 0);
 	if (fp == NULL)
 	{
+		printf("error1\n");
 		return NULL;
 	}
-
 	//计算程序占用的页面数量
 	int run_pages = fp->fs.size / MM_PAGE_SIZE;
 	if (fp->fs.size % MM_PAGE_SIZE != 0)
@@ -80,6 +80,7 @@ s_pcb* load_process(char *file_name, char *params)
 	void *run = alloc_page(process_id, run_pages, 0, 0);
 	if (run == NULL)
 	{
+		printf("error2\n");
 		f_close(fp);
 		return NULL;
 	}
@@ -91,7 +92,6 @@ s_pcb* load_process(char *file_name, char *params)
 
 	//关闭文件
 	f_close(fp);
-
 	//对elf可重定位文件进行重定位，并取得程序入口偏移地址
 	u32 entry_point = relocation_elf(run);
 
@@ -99,6 +99,7 @@ s_pcb* load_process(char *file_name, char *params)
 	s_pcb *pcb = alloc_page(process_id, pages_of_pcb(), 0, 0);
 	if (pcb == NULL)
 	{
+		printf("error3\n");
 		free_mm(run, run_pages);
 		return NULL;
 	}
@@ -106,6 +107,7 @@ s_pcb* load_process(char *file_name, char *params)
 	pcb->page_dir = alloc_page(process_id, P_PAGE_DIR_NUM, 0, 0);
 	if (pcb->page_dir == NULL)
 	{
+		printf("error4\n");
 		free_mm(pcb, pages_of_pcb());
 		free_mm(run, run_pages);
 		return NULL;
@@ -114,6 +116,7 @@ s_pcb* load_process(char *file_name, char *params)
 	pcb->page_tbl = alloc_page(process_id, P_PAGE_TBL_NUM, 0, 0);
 	if (pcb->page_tbl == NULL)
 	{
+		printf("error5\n");
 		free_mm(pcb->page_dir, P_PAGE_DIR_NUM);
 		free_mm(pcb, pages_of_pcb());
 		free_mm(run, run_pages);
@@ -123,6 +126,7 @@ s_pcb* load_process(char *file_name, char *params)
 	pcb->stack0 = alloc_page(process_id, P_STACK0_P_NUM, 0, 0);
 	if (pcb->stack0 == NULL)
 	{
+		printf("error6\n");
 		free_mm(pcb->page_tbl, P_PAGE_TBL_NUM);
 		free_mm(pcb->page_dir, P_PAGE_DIR_NUM);
 		free_mm(pcb, pages_of_pcb());
@@ -196,6 +200,8 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	pcb->type_pt = 0;
 	//程序地址
 	pcb->run = run;
+	//程序start_main偏移
+	pcb->run_offset = run_offset;
 	//程序大小
 	pcb->run_size = run_size;
 	//程序入口地址
@@ -503,12 +509,18 @@ void create_pthread(s_pcb *parent_pcb, s_pthread *p, void *run, void *args)
 		free_mm(pcb, pages_of_pcb());
 		return;
 	}
+	pcb->run = parent_pcb->run;
+	pcb->run_size = parent_pcb->run_size;
 	if (args != NULL)
 	{
 		//设置传入参数
-		u32 *args_addr = pcb->stack + P_STACK_P_NUM - 4;
+		u32 *args_addr = pcb->stack + P_STACK_P_NUM - 0x14;
 		*args_addr = (u32) args;
 	}
+	//设置iret返回到0, 停止
+//	u32 *iret_eip = (u32 *)(pcb->stack + P_STACK_P_NUM - 0x10);
+//	*iret_eip = 0;
+
 	//申请0级栈
 	pcb->stack0 = alloc_page(process_id, P_STACK0_P_NUM, 0, 0);
 	if (pcb->stack0 == NULL)
@@ -540,7 +552,7 @@ void init_pthread(s_pcb *pcb, u32 pid, void *run)
 	//程序入口地址
 	pcb->tss.eip = (u32) run;
 	//程序栈
-	pcb->tss.esp = (u32) pcb->stack + P_STACK_P_NUM - 8;
+	pcb->tss.esp = (u32) pcb->stack + P_STACK_P_NUM - 0x18;
 	//程序0级栈
 	pcb->tss.esp0 = (u32) pcb->stack0 + P_STACK0_SIZE;
 	//页目录存入到cr3中

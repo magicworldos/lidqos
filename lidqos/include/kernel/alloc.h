@@ -99,4 +99,6 @@ void set_map_process_id(u32 page_no, u32 pid);
 
 u32 alloc_page_ph(u32 pid);
 
+void free_page_by_pid(u32 pid);
+
 #endif

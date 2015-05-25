@@ -189,6 +189,8 @@ void int_timer()
 	//通知PIC可以接受新中断
 	outb_p(0x20, 0x20);
 
+	//释放已停止进程
+	pcb_free();
 	//处理等待链表
 	list_sleep_change();
 	//任务调度算法
@@ -284,6 +286,7 @@ void sys_process(int *params)
 	//停止进程
 	else if (params[0] == 4)
 	{
+		printf("stop %x\n", pcb_cur->process_id);
 		pcb_stop(pcb_cur);
 	}
 
@@ -300,16 +303,18 @@ void sys_semaphore(int *params)
 
 	s_sem *sem = (s_sem *) (params[1]);
 	sem = addr_parse(cr3, sem);
+	int *ret = (int *) (params[2]);
+	ret = addr_parse(cr3, ret);
 
 	//P
 	if (params[0] == 0)
 	{
-		pcb_sem_P(pcb_cur, sem);
+		*ret = pcb_sem_P(pcb_cur, sem);
 	}
 	//V
 	else if (params[0] == 1)
 	{
-		pcb_sem_V(pcb_cur, sem);
+		*ret = pcb_sem_V(pcb_cur, sem);
 	}
 
 	set_cr3(cr3);

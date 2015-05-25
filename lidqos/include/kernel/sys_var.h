@@ -75,6 +75,8 @@ typedef struct process_control_block
 	s_gdt ldt[2];
 	//程序地址
 	void *run;
+	//start_main函数地址偏移
+	u32 run_offset;
 	//程序大小
 	u32 run_size;
 	//页目录

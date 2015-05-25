@@ -25,6 +25,7 @@ s_pcb *pcb_cur = NULL;
 //上一次运行的进程
 s_pcb *pcb_last_run = NULL;
 
+int i = 0;
 /*
  * 进程调度，目前只使用平均时间片轮转的算法
  */
@@ -36,10 +37,16 @@ void schedule()
 	{
 		return;
 	}
-
+	//show_list();
 	//取得链表头的进程
 	pcb_cur = (s_pcb *) (list_header->node);
-
+	//将链表头移动到链表尾，链表
+	list_pcb = list_header2footer(list_pcb);
+	//show_list();
+	if (i++ > 10)
+	{
+		//hlt();
+	}
 	/*
 	 * 如果当前进程不是上一次运行的进程，说明链表中有两个或两个以上的进程
 	 * 链表中只有一个进程，不需要切换。
@@ -47,9 +54,6 @@ void schedule()
 	 */
 	if (pcb_cur != pcb_last_run)
 	{
-		//将链表头移动到链表尾，链表
-		list_pcb = list_header2footer(list_pcb);
-
 		//设置tss和ldt
 		addr_to_gdt(GDT_TYPE_TSS, (u32) &(pcb_cur->tss), &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
 		addr_to_gdt(GDT_TYPE_LDT, (u32) (pcb_cur->ldt), &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
@@ -64,6 +68,18 @@ void schedule()
 		//切换进程
 		call_tss();
 	}
+}
+
+void show_list()
+{
+	s_list *p = list_pcb;
+	while (p != NULL)
+	{
+		s_pcb * pcb = (s_pcb *) (p->node);
+		printf("%x ", pcb->process_id);
+		p = p->next;
+	}
+	printf("\n");
 }
 
 /*
@@ -138,49 +154,52 @@ void pcb_sleep(s_pcb *pcb, int ms)
 
 }
 
-void pcb_sem_P(s_pcb *pcb, s_sem *sem)
+int pcb_sem_P(s_pcb *pcb, s_sem *sem)
 {
 	if (pcb == NULL)
 	{
-		return;
+		return 0;
 	}
 
 	if (sem->value > 0)
 	{
 		sem->value--;
-		return;
+		return 1;
 	}
-
+	pcb->tss.eip -= 2;
 	//链表节点
 	s_list *list_node = NULL;
 	//从运行链表中移出此进程
 	list_pcb = list_remove_node(list_pcb, pcb, &list_node);
 	//加入到等待链表
 	sem->list_block = list_insert_node(sem->list_block, list_node);
-	//因为当前进程就是调用block中断的进程，为了让其等待要执行一次调度
-	schedule();
+
+	return 0;
 }
 
-void pcb_sem_V(s_pcb *pcb, s_sem *sem)
+int pcb_sem_V(s_pcb *pcb, s_sem *sem)
 {
 	if (pcb == NULL)
 	{
-		return;
+		return 0;
 	}
 	//信号量加1
 	sem->value++;
+	//printf("V++ %x\n", sem->value);
 	s_list *list_node = NULL;
-	for (int i = 0; i < sem->value && sem->list_block != NULL; i++)
+	//for (int i = 0; i < sem->value && sem->list_block != NULL; i++)
+	//{
+	if (sem->list_block != NULL)
 	{
+		s_list *p = (s_list *) sem->list_block;
+		s_pcb *pcb_wakeup = (s_pcb *) p->node;
 		//从运行链表中移出此进程
-		sem->list_block = list_remove_node(sem->list_block, pcb, &list_node);
-		//取得被阻塞的pcb
-		s_pcb *pcb_wakeup = (s_pcb *) list_node->node;
-		//从int 0x81开始重新执行，也就是需要重新执行P操作
-		pcb_wakeup->tss.eip -= 2;
+		sem->list_block = list_remove_node(sem->list_block, pcb_wakeup, &list_node);
 		//加入到执行链表
 		list_pcb = list_insert_node(list_pcb, list_node);
 	}
+	//}
+	return 1;
 }
 
 /*
@@ -191,7 +210,7 @@ void pcb_stop(s_pcb *pcb)
 	s_list *list_node = NULL;
 	//从运行链表中移出此进程
 	list_pcb = list_remove_node(list_pcb, pcb, &list_node);
-	//加入到等待链表
+	//加入到停止链表
 	list_pcb_stop = list_insert_node(list_pcb_stop, list_node);
 	//执行一次调度，跳过当前进程
 	schedule();
@@ -205,25 +224,13 @@ void pcb_free()
 	s_list *p = list_pcb_stop;
 	while (p != NULL)
 	{
-		s_list *temp = p;
+		s_list *pf = p;
 		p = p->next;
 
-		s_pcb *pcb = (s_pcb *) temp->node;
-		free_mm(temp, sizeof(s_list));
-		//如果是线程
-		if (pcb->type_pt == 0)
-		{
-			free_page(pcb->stack0, P_STACK0_P_NUM);
-			free_page(pcb->page_tbl, P_PAGE_TBL_NUM);
-			free_page(pcb->page_dir, P_PAGE_DIR_NUM);
-			free_mm(pcb, pages_of_pcb());
-		}
-		else
-		{
-
-			free_page(pcb->stack, P_STACK_P_NUM);
-			free_page(pcb->stack0, P_STACK0_P_NUM);
-			free_mm(pcb, pages_of_pcb());
-		}
+		s_pcb *pcb = (s_pcb *) pf->node;
+		u32 pid = pcb->process_id;
+		free_page_by_pid(pid);
+		free_mm(pf, sizeof(s_list));
 	}
+	list_pcb_stop = NULL;
 }

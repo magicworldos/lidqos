@@ -13,7 +13,13 @@ extern int main(int argc, char *args[]);
 
 void start_main()
 {
+
+
+	int params[2];
+	params[0] = 4;
+
 	main(1, NULL);
+	__asm__ volatile("int	$0x80" :: "a"(params));
 
 	for (;;)
 	{
