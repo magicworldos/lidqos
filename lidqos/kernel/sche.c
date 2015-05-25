@@ -174,6 +174,10 @@ void pcb_sem_V(s_pcb *pcb, s_sem *sem)
 		{
 			//从运行链表中移出此进程
 			sem->list_block = list_remove_node(sem->list_block, pcb, &list_node);
+			//取得被阻塞的pcb
+			s_pcb *pcb_wakeup = (s_pcb *) list_node->node;
+			//从int 0x81开始重新执行，也就是需要重新执行P操作
+			pcb_wakeup->tss.eip -= 2;
 			//加入到执行链表
 			list_pcb = list_insert_node(list_pcb, list_node);
 		}

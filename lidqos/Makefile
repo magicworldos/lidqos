@@ -209,6 +209,14 @@ $(PSHELL)_S:			$(PSHELL)_elf
 	$(ELF) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -s >> $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).elf
 	$(ELF) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -r >> $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).elf
 	
+	#example_sleep
+	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/example_sleep > $(BUILD_PATH)/$(PSHELL)/example_sleep_att.S
+	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/example_sleep > $(BUILD_PATH)/$(PSHELL)/example_sleep_intel.S
+	
+	#example_sleep
+	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/example_sem > $(BUILD_PATH)/$(PSHELL)/example_sem_att.S
+	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/example_sem > $(BUILD_PATH)/$(PSHELL)/example_sem_intel.S
+	
 #外壳程序的ecc可重定向文件
 $(PSHELL)_elf:		$(PSHELL)_objs
 	#system
