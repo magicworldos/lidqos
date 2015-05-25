@@ -8,6 +8,7 @@ all:
 	cp -rvf ../../lidqos/fs/ ../../lidqos/build/	
 	cp ../../lidqos/build/shell/system ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/example_sleep ../../lidqos/build/fs/usr/bin/
+	cp ../../lidqos/build/shell/example_sem ../../lidqos/build/fs/usr/bin/
 	./build/filesys
 
 clean:

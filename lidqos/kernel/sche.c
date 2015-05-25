@@ -117,21 +117,65 @@ void pcb_sleep(s_pcb *pcb, int ms)
 	{
 		return;
 	}
+
 	if (ms <= 0)
 	{
 		return;
 	}
-	else
+
+	//设置等待毫秒
+	pcb->sleep_ms = ms;
+	//链表节点
+	s_list *list_node = NULL;
+	//从运行链表中移出此进程
+	list_pcb = list_remove_node(list_pcb, pcb, &list_node);
+	//加入到等待链表
+	list_pcb_sleep = list_insert_node(list_pcb_sleep, list_node);
+	//因为当前进程就是调用sleep中断的进程，为了让其等待要执行一次调度
+	schedule();
+
+}
+
+void pcb_sem_P(s_pcb *pcb, s_sem *sem)
+{
+	if (pcb == NULL)
 	{
-		//设置等待毫秒
-		pcb->sleep_ms = ms;
-		//链表节点
+		return;
+	}
+
+	if (sem->value > 0)
+	{
+		sem->value--;
+		return;
+	}
+
+	//链表节点
+	s_list *list_node = NULL;
+	//从运行链表中移出此进程
+	list_pcb = list_remove_node(list_pcb, pcb, &list_node);
+	//加入到等待链表
+	sem->list_block = list_insert_node(sem->list_block, list_node);
+	//因为当前进程就是调用block中断的进程，为了让其等待要执行一次调度
+	schedule();
+}
+
+void pcb_sem_V(s_pcb *pcb, s_sem *sem)
+{
+	if (pcb == NULL)
+	{
+		return;
+	}
+
+	sem->value++;
+	if (sem->value > 0)
+	{
 		s_list *list_node = NULL;
-		//从运行链表中移出此进程
-		list_pcb = list_remove_node(list_pcb, pcb, &list_node);
-		//加入到等待链表
-		list_pcb_sleep = list_insert_node(list_pcb_sleep, list_node);
-		//因为当前进程就是调用sleep中断的进程，为了让其等待要执行一次调度
-		schedule();
+		for (int i = 0; i < sem->value && sem->list_block != NULL; i++)
+		{
+			//从运行链表中移出此进程
+			sem->list_block = list_remove_node(sem->list_block, pcb, &list_node);
+			//加入到执行链表
+			list_pcb = list_insert_node(list_pcb, list_node);
+		}
 	}
 }

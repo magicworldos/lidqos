@@ -451,6 +451,16 @@ _int_0x80:
 	iret
 
 _int_0x81:
+	cli
+	push	%ebp
+	mov 	%esp, %ebp
+
+	sub		$0x4, %esp
+    movl	%eax, (%esp)
+	call	sys_semaphore
+
+	leave
+	sti
 	iret
 
 _int_0x82:

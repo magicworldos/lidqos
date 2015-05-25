@@ -31,6 +31,12 @@ void pcb_insert(s_pcb *pcb);
 
 void list_sleep_change();
 
+void list_block_change();
+
 void pcb_sleep(s_pcb *pcb, int ms);
+
+void pcb_sem_P(s_pcb *pcb, s_sem *sem);
+
+void pcb_sem_V(s_pcb *pcb, s_sem *sem);
 
 #endif /* SCHE_H_ */

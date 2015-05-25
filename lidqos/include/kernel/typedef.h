@@ -89,5 +89,13 @@ typedef struct
 	u16 idt_addr2;
 } s_idtp;
 
+//信号量
+typedef struct semaphore
+{
+	//信号量的值
+	int value;
+	//阻塞链表block
+	void *list_block;
+} s_sem;
 
 #endif

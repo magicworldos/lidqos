@@ -273,6 +273,31 @@ void sys_process(int *params)
 	set_ds(0xf);
 }
 
+void sys_semaphore(int *params)
+{
+	set_ds(GDT_INDEX_KERNEL_DS);
+	set_cr3(PAGE_DIR);
+	u32 cr3 = pcb_cur->tss.cr3;
+	params = addr_parse(cr3, params);
+
+	s_sem *sem = (s_sem *) (params[1]);
+	sem = addr_parse(cr3, sem);
+
+	//P
+	if (params[0] == 0)
+	{
+		pcb_sem_P(pcb_cur, sem);
+	}
+	//V
+	else if (params[0] == 1)
+	{
+		pcb_sem_V(pcb_cur, sem);
+	}
+
+	set_cr3(cr3);
+	set_ds(0xf);
+}
+
 void sys_stdio(int *params)
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
