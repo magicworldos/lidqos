@@ -9,8 +9,9 @@
 #include <shell/unistd.h>
 #include <shell/pthread.h>
 
-#define PNUM 		(2)
+#define PNUM 		(10)
 
+//全局售票信号量
 s_sem sem;
 
 void sell_ticket(int num)
@@ -25,37 +26,39 @@ void sell_ticket(int num)
 void myfunc(void *args)
 {
 	int *num = (int *) args;
-
 	while (1)
 	{
-		//sem_wait(&sem);
-
+		//信号量P操作
+		sem_wait(&sem);
+		//剩余票数为0时停止售票
 		if ((*num) <= 0)
 		{
 			break;
 		}
+		//模拟等待了一小会
 		msleep(10);
+		//售票
 		sell_ticket(*num);
+		//剩余票数减1
 		(*num)--;
-
-		//sem_post(&sem);
+		//信号量V操作
+		sem_post(&sem);
 	}
-	//sem_post(&sem);
-
+	//信号量V操作
+	sem_post(&sem);
 	for (;;)
 	{
-
 	}
 }
 
 int main(int argc, char **args)
 {
-	//sem_init(&sem, 1);
-
+	//初始化信号量
+	sem_init(&sem, 1);
+	//剩余票数
 	int num = 20;
-
 	s_pthread p[PNUM];
-
+	//创建多个线程
 	for (int i = 0; i < PNUM; i++)
 	{
 		pthread_create(&p[i], &myfunc, &num);
