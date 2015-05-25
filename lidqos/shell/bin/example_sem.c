@@ -6,17 +6,59 @@
  */
 
 #include <shell/semaphore.h>
+#include <shell/unistd.h>
+#include <shell/pthread.h>
+
+#define PNUM 		(10)
+
+s_sem sem;
+
+void sell_ticket(int num)
+{
+	int params[2];
+	params[0] = 1;
+	params[1] = num;
+	__asm__ volatile("int	$0x82" :: "a"(params));
+}
+
+void myfunc(void *args)
+{
+	int *num = (int *) args;
+
+	while (1)
+	{
+		//sem_wait(&sem);
+
+		if ((*num) <= 0)
+		{
+			break;
+		}
+		msleep(10);
+		sell_ticket(*num);
+		(*num)--;
+
+		//sem_post(&sem);
+	}
+	//sem_post(&sem);
+
+	for (;;)
+	{
+
+	}
+}
 
 int main(int argc, char **args)
 {
-	s_sem sem;
-	sem_init(&sem, 1);
+	//sem_init(&sem, 1);
 
-	sem_wait(&sem);
-	sem_post(&sem);
+	int num = 20;
 
-	char *msg = "Example Semaphore.";
-	__asm__ volatile("int	$0x82" :: "a"(msg));
+	s_pthread p[PNUM];
+
+	for (int i = 0; i < PNUM; i++)
+	{
+		pthread_create(&p[i], &myfunc, &num);
+	}
 
 	for (;;)
 	{

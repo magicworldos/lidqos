@@ -98,4 +98,10 @@ typedef struct semaphore
 	void *list_block;
 } s_sem;
 
+//线程
+typedef struct pthread_t
+{
+	u32 pid;
+} s_pthread;
+
 #endif

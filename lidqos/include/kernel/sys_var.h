@@ -19,6 +19,10 @@
 //任务状态：停止
 #define T_S_STOP		(3)
 
+//进程栈页面数
+#define P_STACK_P_NUM	(0x1)
+//进程栈大小
+#define P_STACK_SIZE	(0x1000)
 //进程0级栈页面数
 #define P_STACK0_P_NUM	(0x1)
 //进程0级栈大小
@@ -75,6 +79,8 @@ typedef struct process_control_block
 	void *page_dir;
 	//页表
 	void *page_tbl;
+	//程序栈
+	void *stack;
 	//程序0级栈
 	void *stack0;
 	//等待毫秒数（剩余）

@@ -26,8 +26,12 @@ s_list* list_insert_node(s_list *list, s_list *p_list)
 	}
 	else
 	{
-		p_list->next = header;
-		header = p_list;
+		s_list *p = header;
+		while (p->next != NULL)
+		{
+			p = p->next;
+		}
+		p->next = p_list;
 	}
 	return header;
 }

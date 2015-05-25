@@ -83,4 +83,8 @@ u32 get_current_process_id();
  */
 s_pcb* get_current_process();
 
+void init_pthread(s_pcb *pcb, u32 pid, void *run);
+
+void create_pthread(s_pcb *parent_pcb, s_pthread *p, void *run, void *args);
+
 #endif

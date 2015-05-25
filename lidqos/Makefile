@@ -231,6 +231,8 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 	#example_sem
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_sem -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
 		$(BUILD_PATH)/$(PSHELL)/example_sem.o			\
+		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
+		$(BUILD_PATH)/$(PSHELL)/pthread.o				\
 		$(BUILD_PATH)/$(PSHELL)/semaphore.o
 
 #外壳程序的obj文件
@@ -239,6 +241,7 @@ $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/$(SYSTEM).c			-o $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).o	
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/unistd.c				-o $(BUILD_PATH)/$(PSHELL)/unistd.o	
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/semaphore.c			-o $(BUILD_PATH)/$(PSHELL)/semaphore.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/pthread.c			-o $(BUILD_PATH)/$(PSHELL)/pthread.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_sleep.c		-o $(BUILD_PATH)/$(PSHELL)/example_sleep.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_sem.c		-o $(BUILD_PATH)/$(PSHELL)/example_sem.o
 

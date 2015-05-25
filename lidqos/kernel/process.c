@@ -53,7 +53,7 @@ void install_system()
 {
 	//载入并运行system程序
 	load_process("/usr/bin/system", "");
-	load_process("/usr/bin/example_sleep", "");
+	//load_process("/usr/bin/example_sleep", "");
 	load_process("/usr/bin/example_sem", "");
 }
 
@@ -142,11 +142,7 @@ s_pcb* load_process(char *file_name, char *params)
 	return pcb;
 }
 
-/*
- * 创建tts任务
- *  - int type : tts任务类型TASK_TYPE_NOR、TASK_TYPE_SPE
- */
-void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
+void init_pcb(s_pcb *pcb)
 {
 	//s_tss
 	pcb->tss.back_link = 0;
@@ -179,6 +175,15 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	//设置多任务的gdt描述符
 	addr_to_gdt(LDT_TYPE_CS, 0, &(pcb->ldt[0]), GDT_G_KB, 0xffffffff);
 	addr_to_gdt(LDT_TYPE_DS, 0, &(pcb->ldt[1]), GDT_G_KB, 0xffffffff);
+}
+
+/*
+ * 创建tts任务
+ *  - int type : tts任务类型TASK_TYPE_NOR、TASK_TYPE_SPE
+ */
+void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
+{
+	init_pcb(pcb);
 
 	//不处理空任务
 	if (pid == 0)
@@ -477,3 +482,68 @@ s_pcb* get_current_process()
 	return pcb_cur;
 }
 
+void create_pthread(s_pcb *parent_pcb, s_pthread *p, void *run, void *args)
+{
+	//进程控制块
+	s_pcb *pcb = alloc_page(process_id, pages_of_pcb(), 0, 0);
+	if (pcb == NULL)
+	{
+		return;
+	}
+	//页目录
+	pcb->page_dir = parent_pcb->page_dir;
+	//页表
+	pcb->page_tbl = parent_pcb->page_tbl;
+	//申请栈
+	pcb->stack = alloc_page(process_id, P_STACK_P_NUM, 1, 0);
+	if (pcb->stack == NULL)
+	{
+		free_mm(pcb, pages_of_pcb());
+		return;
+	}
+	if (args != NULL)
+	{
+		//设置传入参数
+		u32 *args_addr = pcb->stack + P_STACK_P_NUM - 4;
+		*args_addr = (u32) args;
+	}
+	//申请0级栈
+	pcb->stack0 = alloc_page(process_id, P_STACK0_P_NUM, 0, 0);
+	if (pcb->stack0 == NULL)
+	{
+		free_mm(pcb->stack, P_STACK_P_NUM);
+		free_mm(pcb, pages_of_pcb());
+		return;
+	}
+	//初始化pcb
+	init_pthread(pcb, process_id, run);
+	//将此进程加入链表
+	pcb_insert(pcb);
+	//进程号加一
+	process_id++;
+}
+
+/*
+ * 创建tts任务
+ *  - int type : tts任务类型TASK_TYPE_NOR、TASK_TYPE_SPE
+ */
+void init_pthread(s_pcb *pcb, u32 pid, void *run)
+{
+	init_pcb(pcb);
+
+	//进程号
+	pcb->process_id = pid;
+	//程序入口地址
+	pcb->tss.eip = (u32) run;
+	//程序栈
+	pcb->tss.esp = (u32) pcb->stack + P_STACK_P_NUM - 8;
+	//程序0级栈
+	pcb->tss.esp0 = (u32) pcb->stack0 + P_STACK0_SIZE;
+	//页目录存入到cr3中
+	pcb->tss.cr3 = (u32) pcb->page_dir;
+
+	//初始化pcb所在的内存页
+	init_process_page((u32) pcb, pages_of_pcb(), pcb->page_dir);
+	//初始化pcb->stack0所在的内存页
+	init_process_page((u32) pcb->stack0, pages_of_pcb(), pcb->page_dir);
+}

@@ -136,7 +136,6 @@ void pcb_sleep(s_pcb *pcb, int ms)
 
 }
 
-//信号量的P操作，申请资源
 void pcb_sem_P(s_pcb *pcb, s_sem *sem)
 {
 	if (pcb == NULL)
@@ -144,15 +143,12 @@ void pcb_sem_P(s_pcb *pcb, s_sem *sem)
 		return;
 	}
 
-	//如果信号量大于1
 	if (sem->value > 0)
 	{
-		//将信号量减1
 		sem->value--;
 		return;
 	}
 
-	//阻塞进程
 	//链表节点
 	s_list *list_node = NULL;
 	//从运行链表中移出此进程
@@ -163,7 +159,6 @@ void pcb_sem_P(s_pcb *pcb, s_sem *sem)
 	schedule();
 }
 
-//信号量的V操作，释放资源
 void pcb_sem_V(s_pcb *pcb, s_sem *sem)
 {
 	if (pcb == NULL)
@@ -171,10 +166,7 @@ void pcb_sem_V(s_pcb *pcb, s_sem *sem)
 		return;
 	}
 
-	//信号量加1
 	sem->value++;
-
-	//唤醒进程
 	s_list *list_node = NULL;
 	for (int i = 0; i < sem->value && sem->list_block != NULL; i++)
 	{

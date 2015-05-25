@@ -268,6 +268,19 @@ void sys_process(int *params)
 		int ms = params[1];
 		pcb_sleep(pcb_cur, ms);
 	}
+	//创建线程
+	else if (params[0] == 3)
+	{
+		s_pthread *p = (s_pthread *) params[1];
+		void *function = (void *) params[2];
+		void *args = (void *) params[3];
+
+		p = addr_parse(cr3, p);
+		function = addr_parse(cr3, function);
+		args = addr_parse(cr3, args);
+
+		create_pthread(pcb_cur, p, function, args);
+	}
 
 	set_cr3(cr3);
 	set_ds(0xf);
@@ -305,7 +318,14 @@ void sys_stdio(int *params)
 	u32 cr3 = pcb_cur->tss.cr3;
 	params = addr_parse(cr3, params);
 
-	printf("%s\n", (char *) (params));
+	if (params[0] == 0)
+	{
+		printf("%s\n", (char *) params[1]);
+	}
+	else if (params[0] == 1)
+	{
+		printf("%d\n", (int) params[1]);
+	}
 
 	set_cr3(cr3);
 	set_ds(0xf);
