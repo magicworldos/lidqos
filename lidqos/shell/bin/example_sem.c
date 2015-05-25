@@ -15,7 +15,7 @@ int main(int argc, char **args)
 	sem_wait(&sem);
 	sem_post(&sem);
 
-	char *msg = "example_sem.c";
+	char *msg = "Example Semaphore.";
 	__asm__ volatile("int	$0x82" :: "a"(msg));
 
 	for (;;)
