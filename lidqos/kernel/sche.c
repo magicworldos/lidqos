@@ -185,10 +185,7 @@ int pcb_sem_V(s_pcb *pcb, s_sem *sem)
 	}
 	//信号量加1
 	sem->value++;
-	//printf("V++ %x\n", sem->value);
 	s_list *list_node = NULL;
-	//for (int i = 0; i < sem->value && sem->list_block != NULL; i++)
-	//{
 	if (sem->list_block != NULL)
 	{
 		s_list *p = (s_list *) sem->list_block;
@@ -198,7 +195,6 @@ int pcb_sem_V(s_pcb *pcb, s_sem *sem)
 		//加入到执行链表
 		list_pcb = list_insert_node(list_pcb, list_node);
 	}
-	//}
 	return 1;
 }
 
