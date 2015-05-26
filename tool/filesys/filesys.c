@@ -91,6 +91,7 @@ int main(int argc, char **args)
 	save_map();
 #else
 	install_file("../../lidqos/build/fs/usr/bin/system", "/usr/bin/system", 0, 0, 01755);
+	install_file("../../lidqos/build/fs/usr/bin/start_pthread", "/usr/bin/start_pthread", 0, 0, 01755);
 	install_file("../../lidqos/build/fs/usr/bin/example_sleep", "/usr/bin/example_sleep", 0, 0, 01755);
 	install_file("../../lidqos/build/fs/usr/bin/example_sem", "/usr/bin/example_sem", 0, 0, 01755);
 #endif

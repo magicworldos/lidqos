@@ -14,6 +14,9 @@ extern s_pcb *pcb_cur;
 //进程号从1开始，0代表的是系统内核
 u32 process_id = 1;
 
+void *start_pthread_data = NULL;
+u32 start_pthread_data_offset = 0;
+
 /*
  * 计算pcb所占用的页面数
  */
@@ -44,6 +47,18 @@ void install_process()
 	//载入tss和ldt
 	load_tss(GDT_INDEX_TSS);
 	load_ldt(GDT_INDEX_LDT);
+
+	//从文件系统读入程序
+	s_file *fp = f_open("/usr/bin/start_pthread", FS_MODE_READ, 0, 0);
+	//申请页面用于存放程序代码
+	start_pthread_data = alloc_page(process_id, 1, 0, 0);
+	//读入程序
+	f_read(fp, fp->fs.size, (u8 *) start_pthread_data);
+	//程序大小
+	u32 run_size = fp->fs.size;
+	//关闭文件
+	f_close(fp);
+	start_pthread_data_offset = relocation_elf(start_pthread_data);
 }
 
 /*
@@ -490,7 +505,7 @@ s_pcb* get_current_process()
 	return pcb_cur;
 }
 
-void create_pthread(s_pcb *parent_pcb, s_pthread *p, void *run, void *args)
+void create_pthread(s_pcb *parent_pcb, s_pthread *pthread, void *run, void *args)
 {
 	//进程控制块
 	s_pcb *pcb = alloc_page(process_id, pages_of_pcb(), 0, 0);
@@ -509,18 +524,19 @@ void create_pthread(s_pcb *parent_pcb, s_pthread *p, void *run, void *args)
 		free_mm(pcb, pages_of_pcb());
 		return;
 	}
-	pcb->run = parent_pcb->run;
-	pcb->run_size = parent_pcb->run_size;
+
+	pcb->run = alloc_page(process_id, 1, 0, 0);
+	pcb->run_size = 1;
+	mmcopy(start_pthread_data + start_pthread_data_offset, pcb->run, 0x1000);
 	if (args != NULL)
 	{
 		//设置传入参数
-		u32 *args_addr = pcb->stack + P_STACK_P_NUM - 0x14;
+		u32 *args_addr = pcb->run + 9;
 		*args_addr = (u32) args;
 	}
-	//设置iret返回到0, 停止
-//	u32 *iret_eip = (u32 *)(pcb->stack + P_STACK_P_NUM - 0x10);
-//	*iret_eip = 0;
-
+	//设置call pthread_function
+	u32 *pthread_function = pcb->run + 0x14;
+	*pthread_function = (run - (pcb->run + 0x14) - 4);
 	//申请0级栈
 	pcb->stack0 = alloc_page(process_id, P_STACK0_P_NUM, 0, 0);
 	if (pcb->stack0 == NULL)
@@ -530,7 +546,7 @@ void create_pthread(s_pcb *parent_pcb, s_pthread *p, void *run, void *args)
 		return;
 	}
 	//初始化pcb
-	init_pthread(pcb, process_id, run);
+	init_pthread(pcb, process_id);
 	//将此进程加入链表
 	pcb_insert(pcb);
 	//进程号加一
@@ -541,7 +557,7 @@ void create_pthread(s_pcb *parent_pcb, s_pthread *p, void *run, void *args)
  * 创建tts任务
  *  - int type : tts任务类型TASK_TYPE_NOR、TASK_TYPE_SPE
  */
-void init_pthread(s_pcb *pcb, u32 pid, void *run)
+void init_pthread(s_pcb *pcb, u32 pid)
 {
 	init_pcb(pcb);
 
@@ -550,7 +566,7 @@ void init_pthread(s_pcb *pcb, u32 pid, void *run)
 	//类型
 	pcb->type_pt = 1;
 	//程序入口地址
-	pcb->tss.eip = (u32) run;
+	pcb->tss.eip = (u32) pcb->run;
 	//程序栈
 	pcb->tss.esp = (u32) pcb->stack + P_STACK_P_NUM - 0x18;
 	//程序0级栈

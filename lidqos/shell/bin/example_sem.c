@@ -46,9 +46,6 @@ void myfunc(void *args)
 	}
 	//信号量V操作
 	sem_post(&sem);
-//	for (;;)
-//	{
-//	}
 }
 
 int main(int argc, char **args)
@@ -62,10 +59,6 @@ int main(int argc, char **args)
 	for (int i = 0; i < PNUM; i++)
 	{
 		pthread_create(&p[i], &myfunc, &num);
-	}
-
-	for (;;)
-	{
 	}
 
 	return 0;

@@ -209,6 +209,10 @@ $(PSHELL)_S:			$(PSHELL)_elf
 	$(ELF) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -s >> $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).elf
 	$(ELF) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -r >> $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).elf
 	
+	#start_pthread
+	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/start_pthread > $(BUILD_PATH)/$(PSHELL)/start_pthread_att.S
+	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/start_pthread > $(BUILD_PATH)/$(PSHELL)/start_pthread_intel.S
+	
 	#example_sleep
 	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/example_sleep > $(BUILD_PATH)/$(PSHELL)/example_sleep_att.S
 	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/example_sleep > $(BUILD_PATH)/$(PSHELL)/example_sleep_intel.S
@@ -223,6 +227,9 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
 		$(BUILD_PATH)/$(PSHELL)/$(SYSTEM).o
 		
+	#start_pthread
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/start_pthread -e start_pthread -r $(BUILD_PATH)/$(PSHELL)/start_pthread.o
+	
 	#example_sleep
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_sleep -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
 		$(BUILD_PATH)/$(PSHELL)/example_sleep.o			\
@@ -238,6 +245,7 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 #外壳程序的obj文件
 $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/start_main.c 		-o $(BUILD_PATH)/$(PSHELL)/start_main.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/start_pthread.c 		-o $(BUILD_PATH)/$(PSHELL)/start_pthread.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/$(SYSTEM).c			-o $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).o	
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/unistd.c				-o $(BUILD_PATH)/$(PSHELL)/unistd.o	
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/semaphore.c			-o $(BUILD_PATH)/$(PSHELL)/semaphore.o

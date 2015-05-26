@@ -9,16 +9,16 @@
 
 #include <shell/start_main.h>
 
-extern int main(int argc, char *args[]);
+extern int main(int argc, char **args);
 
 void start_main()
 {
-
+	int argc = 0;
+	char **args = NULL;
+	main(argc, args);
 
 	int params[2];
 	params[0] = 4;
-
-	main(1, NULL);
 	__asm__ volatile("int	$0x80" :: "a"(params));
 
 	for (;;)
