@@ -193,7 +193,6 @@ void backspace()
 	__asm__ volatile ("int $0x82" :: "a"(params));
 }
 
-
 void gets(char *str)
 {
 	char ch, *p = str;
