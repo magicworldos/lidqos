@@ -286,7 +286,6 @@ void sys_process(int *params)
 	//停止进程
 	else if (params[0] == 4)
 	{
-		printf("stop %x\n", pcb_cur->process_id);
 		pcb_stop(pcb_cur);
 	}
 

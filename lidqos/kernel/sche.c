@@ -224,9 +224,20 @@ void pcb_free()
 		p = p->next;
 
 		s_pcb *pcb = (s_pcb *) pf->node;
-		u32 pid = pcb->process_id;
-		free_page_by_pid(pid);
-		free_mm(pf, sizeof(s_list));
+		if (pcb->children == NULL)
+		{
+			s_list *list_node = NULL;
+			list_pcb_stop = list_remove_node(list_pcb_stop, pcb, &list_node);
+			if (pcb->parent != NULL)
+			{
+				s_pcb *parent = pcb->parent;
+				s_list *list_n = NULL;
+				//把当前pcb从其父进程的children中移出
+				parent->children = list_remove_node(parent->children, pcb, &list_n);
+			}
+			u32 pid = pcb->process_id;
+			free_page_by_pid(pid);
+			free_mm(pf, sizeof(s_list));
+		}
 	}
-	list_pcb_stop = NULL;
 }

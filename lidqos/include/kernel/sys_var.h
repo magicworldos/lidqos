@@ -89,6 +89,10 @@ typedef struct process_control_block
 	void *stack0;
 	//等待毫秒数（剩余）
 	int sleep_ms;
+	//父进程/线程
+	void *parent;
+	//子进程/线程
+	void *children;
 } s_pcb;
 
 typedef struct s_hda_rw

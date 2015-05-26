@@ -219,6 +219,10 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	pcb->run_offset = run_offset;
 	//程序大小
 	pcb->run_size = run_size;
+	//父进程
+	pcb->parent = NULL;
+	//子进程
+	pcb->children = NULL;
 	//程序入口地址
 	pcb->tss.eip = (u32) run + run_offset;
 	//永远是4G，但为了4K对齐保留了最后一个0x1000
@@ -547,6 +551,15 @@ void create_pthread(s_pcb *parent_pcb, s_pthread *pthread, void *run, void *args
 	}
 	//初始化pcb
 	init_pthread(pcb, process_id);
+
+	//设置父进程线程
+	pcb->parent = parent_pcb;
+
+	s_list *p_list = alloc_mm(sizeof(s_list));
+	p_list->node = pcb;
+	//设置其父进程线程的子线程为当前线程
+	parent_pcb->children = list_insert_node(parent_pcb->children, p_list);
+
 	//将此进程加入链表
 	pcb_insert(pcb);
 	//进程号加一
@@ -565,6 +578,10 @@ void init_pthread(s_pcb *pcb, u32 pid)
 	pcb->process_id = pid;
 	//类型
 	pcb->type_pt = 1;
+	//父进程/线程
+	pcb->parent = NULL;
+	//子进程
+	pcb->children = NULL;
 	//程序入口地址
 	pcb->tss.eip = (u32) pcb->run;
 	//程序栈
