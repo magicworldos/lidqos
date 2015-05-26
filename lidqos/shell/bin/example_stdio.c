@@ -10,7 +10,7 @@
 
 int main(int argc, char **args)
 {
-	printf("getchar() '\\n' for end.\n");
+	printf("Enter '\\n' to the end of the function 'getchar()'.\n");
 	char ch = 0;
 	do
 	{
@@ -19,15 +19,31 @@ int main(int argc, char **args)
 	}
 	while (ch != '\n');
 
-	printf("gets() \"exit\" for end.\n");
-	char buff[0x200];
+	printf("Enter \"exit\" to the end of the function 'gets()'.\n");
+	char str[0x200];
 	do
 	{
-		gets(buff);
-		printf("%s\n", buff);
+		gets(str);
+		printf("%s\n", str);
 	}
-	while (str_compare("exit", buff) != 0);
+	while (str_compare("exit", str) != 0);
 
-	printf("The end.\n");
+	int i;
+	do
+	{
+		printf("Enter 0 for i to the end of the function 'scanf()'.\n");
+		printf("i = ");
+		scanf("%d", &i);
+		printf("ch = ");
+		scanf("%c", &ch);
+		printf("\n");
+		printf("str = ");
+		scanf("%s", str);
+
+		printf("i = %d\tch = %c\tstr = %s\n", i, ch, str);
+	}
+	while (i != 0);
+
+	printf("End of stdio example.\n");
 	return 0;
 }

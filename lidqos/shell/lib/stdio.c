@@ -206,7 +206,7 @@ void gets(char *str)
 				int back_num = 1;
 				if (*(p - 1) == '\t')
 				{
-					back_num = 8;
+					back_num = 4;
 				}
 				for (int i = 0; i < back_num; ++i)
 				{
@@ -224,6 +224,112 @@ void gets(char *str)
 	}
 	*p = '\0';
 	putchar('\n');
+}
+
+/*
+ * get_int : 读入一个整数
+ * return : int读入整数
+ */
+int get_int()
+{
+	char str[0x800];
+	char ch, *p = str;
+	char sign = 0;
+	do
+	{
+		ch = getchar();
+		if (ch == 0x8)
+		{
+			if (p > str)
+			{
+				p--;
+				backspace();
+			}
+		}
+		else if (sign == 0 && (ch == '+' || ch == '-'))
+		{
+			sign = ch;
+			putchar(ch);
+		}
+		else if (ch == '\n')
+		{
+			putchar(ch);
+			break;
+		}
+		else // if (ch >= '0' && ch <= '9')
+		{
+			*p = ch;
+			p++;
+			putchar(ch);
+		}
+	}
+	while (1);
+	*p = '\0';
+	p = str;
+
+	int num = 0;
+	for (int i = 0; p[i] != '\0'; i++)
+	{
+		if (i == 0)
+		{
+			num = (int) p[i] - 48;
+		}
+		else
+		{
+			num *= 10;
+			num += (int) p[i] - 48;
+		}
+	}
+	if (sign == '-')
+	{
+		return -num;
+	}
+	return num;
+}
+
+/*
+ * scanf : 按指定格式读入
+ *  - char *fmt : 格式字符串
+ *  - ... : 动态参数
+ * return : void
+ */
+void scanf(char *fmt, ...)
+{
+	va_list args;
+	va_init(args, fmt);
+	while (*fmt != '\0')
+	{
+		if (*fmt == '%')
+		{
+			if ('c' == *(fmt + 1))
+			{
+				char *p = (char *) va_arg(args, u32);
+				*p = getchar();
+				putchar(*p);
+				fmt += 2;
+			}
+			else if ('s' == *(fmt + 1))
+			{
+				char *str = (char *) va_arg(args, u32);
+				gets(str);
+				fmt += 2;
+			}
+			else if ('d' == *(fmt + 1))
+			{
+				int *p = (int *) va_arg(args, u32);
+				*p = get_int();
+				fmt += 2;
+			}
+			else
+			{
+				break;
+			}
+		}
+		else
+		{
+			fmt++;
+		}
+	}
 }
 
 #endif

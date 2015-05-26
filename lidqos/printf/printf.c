@@ -124,7 +124,7 @@ void putchar(char ch)
 		//显示空格
 		ch = 0x20;
 		//显示8个空格
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < 4; i++)
 		{
 			putascii(x, y, ch);
 			x++;
@@ -144,12 +144,14 @@ void backspace()
 {
 	//取得当前光标线性位置
 	u16 cursor_pos = get_cursor();
+	cursor_pos--;
+	u16 x = cursor_pos % 80;
+	u16 y = cursor_pos / 80;
 	if (cursor_pos > 0)
 	{
-		int x, y;
-		get_cursor(&x, &y);
 		putascii(x, y, ' ');
-		cursor_pos--;
+		x = cursor_pos % 80;
+		y = cursor_pos / 80;
 		set_cursor(x, y);
 	}
 }

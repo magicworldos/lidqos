@@ -30,4 +30,8 @@ int printf(char *fmt, ...);
 
 char getchar();
 
+int get_int();
+
+void scanf(char *fmt, ...);
+
 #endif /* INCLUDE_SHELL_STDIO_H_ */
