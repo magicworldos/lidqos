@@ -25,7 +25,6 @@ s_pcb *pcb_cur = NULL;
 //上一次运行的进程
 s_pcb *pcb_last_run = NULL;
 
-int i = 0;
 /*
  * 进程调度，目前只使用平均时间片轮转的算法
  */
@@ -42,11 +41,6 @@ void schedule()
 	pcb_cur = (s_pcb *) (list_header->node);
 	//将链表头移动到链表尾，链表
 	list_pcb = list_header2footer(list_pcb);
-	//show_list();
-	if (i++ > 10)
-	{
-		//hlt();
-	}
 	/*
 	 * 如果当前进程不是上一次运行的进程，说明链表中有两个或两个以上的进程
 	 * 链表中只有一个进程，不需要切换。
@@ -68,18 +62,6 @@ void schedule()
 		//切换进程
 		call_tss();
 	}
-}
-
-void show_list()
-{
-	s_list *p = list_pcb;
-	while (p != NULL)
-	{
-		s_pcb * pcb = (s_pcb *) (p->node);
-		printf("%x ", pcb->process_id);
-		p = p->next;
-	}
-	printf("\n");
 }
 
 /*

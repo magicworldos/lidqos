@@ -511,6 +511,12 @@ s_pcb* get_current_process()
 
 void create_pthread(s_pcb *parent_pcb, s_pthread *pthread, void *run, void *args)
 {
+	//线程的父进程
+	while (parent_pcb->parent != NULL)
+	{
+		parent_pcb = parent_pcb->parent;
+	}
+
 	//进程控制块
 	s_pcb *pcb = alloc_page(process_id, pages_of_pcb(), 0, 0);
 	if (pcb == NULL)
@@ -528,17 +534,20 @@ void create_pthread(s_pcb *parent_pcb, s_pthread *pthread, void *run, void *args
 		free_mm(pcb, pages_of_pcb());
 		return;
 	}
-
+	//程序入口函数start_pthread所在内存
 	pcb->run = alloc_page(process_id, 1, 0, 0);
-	pcb->run_size = 1;
+	//一个页面
+	pcb->run_size = 0x1000;
+	//复制start_pthread函数内容到pcb->run中
 	mmcopy(start_pthread_data + start_pthread_data_offset, pcb->run, 0x1000);
+	//如果有参数
 	if (args != NULL)
 	{
 		//设置传入参数
 		u32 *args_addr = pcb->run + 9;
 		*args_addr = (u32) args;
 	}
-	//设置call pthread_function
+	//设置call pthread_function的固定位置
 	u32 *pthread_function = pcb->run + 0x14;
 	*pthread_function = (run - (pcb->run + 0x14) - 4);
 	//申请0级栈
