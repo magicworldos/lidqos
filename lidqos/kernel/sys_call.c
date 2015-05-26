@@ -12,10 +12,11 @@
 extern s_pcb *pcb_cur;
 //可显字符
 extern u8 keys[0x53][2];
+//全局按键信号量
+extern s_sem sem_key;
 //shift键按下状态
 u8 kb_key_shift = 0;
-
-int temp = 0;
+char *ch_for_get = NULL;
 
 /*
  * 除零错
@@ -223,8 +224,19 @@ void int_keyboard()
 	}
 	else if (status == 0)
 	{
-		//显示字符
-		putchar(keys[key_ind - 1][kb_key_shift]);
+		if (ch_for_get != NULL)
+		{
+			//得到按键
+			char ch = keys[key_ind - 1][kb_key_shift];
+//			printf("%x %x\n",key_ind, ch);
+			//为请求程序设置按键
+			*ch_for_get = ch;
+			//显示字符
+			//putchar(ch);
+			//清空数据区
+			ch_for_get = NULL;
+			pcb_wakeup_key();
+		}
 	}
 	//清除键盘状态可以接受新按键
 	outb_p(scan_code & 0x7f, 0x61);
@@ -315,6 +327,23 @@ void sys_semaphore(int *params)
 	{
 		*ret = pcb_sem_V(pcb_cur, sem);
 	}
+	//获取全局信号量
+	else if (params[0] == 2)
+	{
+		int type = (int) params[1];
+		//按键信号量
+		if (type == 0)
+		{
+			s_sem **sem = (s_sem **) params[2];
+			sem = addr_parse(cr3, sem);
+			*sem = &sem_key;
+		}
+		//IDE设备信号量
+		else if (type == 1)
+		{
+
+		}
+	}
 
 	set_cr3(cr3);
 	set_ds(0xf);
@@ -327,12 +356,12 @@ void sys_stdio(int *params)
 	u32 cr3 = pcb_cur->tss.cr3;
 	params = addr_parse(cr3, params);
 
-	//type为0显示字符
+	//显示字符
 	if (params[0] == 0)
 	{
 		putchar((char) params[1]);
 	}
-	//type为1显示字符串
+	//显示字符串
 	else if (params[0] == 1)
 	{
 		int *count = (int *) params[2];
@@ -340,6 +369,14 @@ void sys_stdio(int *params)
 		char *str = (char *) params[1];
 		str = addr_parse(cr3, str);
 		*count = puts(str);
+	}
+	//getchar
+	else if (params[0] == 0x10)
+	{
+		char *ch = (char *) params[1];
+		ch = addr_parse(cr3, ch);
+		ch_for_get = ch;
+		pcb_wait_key(pcb_cur);
 	}
 
 	set_cr3(cr3);

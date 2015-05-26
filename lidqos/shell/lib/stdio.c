@@ -168,4 +168,22 @@ int printf(char *fmt, ...)
 	return count;
 }
 
+char getchar()
+{
+	char ch = 0;
+	//取得全局按键信号量
+	s_sem *sem = get_global_sem(0);
+	while (ch == 0)
+	{
+		sem_wait(sem);
+		int params[2];
+		params[0] = 0x10;
+		params[1] = (int)&ch;
+		__asm__ volatile ("int $0x82" :: "a"(params));
+		sem_post(sem);
+	}
+
+	return ch;
+}
+
 #endif

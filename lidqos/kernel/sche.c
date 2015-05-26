@@ -25,6 +25,9 @@ s_pcb *pcb_cur = NULL;
 //上一次运行的进程
 s_pcb *pcb_last_run = NULL;
 
+//等待按键
+s_list *list_pcb_wait_key = NULL;
+
 /*
  * 进程调度，目前只使用平均时间片轮转的算法
  */
@@ -222,4 +225,23 @@ void pcb_free()
 			free_mm(pf, sizeof(s_list));
 		}
 	}
+}
+
+void pcb_wait_key(s_pcb *pcb)
+{
+	s_list *list_node = NULL;
+	list_pcb = list_remove_node(list_pcb, pcb, &list_node);
+	list_pcb_wait_key = list_insert_node(list_pcb_wait_key, list_node);
+}
+
+void pcb_wakeup_key()
+{
+	s_pcb *pcb = NULL;
+	if (list_pcb_wait_key != NULL)
+	{
+		pcb = (s_pcb *) list_pcb_wait_key->node;
+	}
+	s_list *list_node = NULL;
+	list_pcb_wait_key = list_remove_node(list_pcb_wait_key, pcb, &list_node);
+	list_pcb = list_insert_node(list_pcb, list_node);
 }

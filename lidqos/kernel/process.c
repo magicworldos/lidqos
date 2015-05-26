@@ -68,8 +68,9 @@ void install_system()
 {
 	//载入并运行system程序
 	load_process("/usr/bin/system", "");
-	load_process("/usr/bin/example_sleep", "");
-	load_process("/usr/bin/example_sem", "");
+//	load_process("/usr/bin/example_sleep", "");
+//	load_process("/usr/bin/example_sem", "");
+	load_process("/usr/bin/example_stdio", "");
 }
 
 /*

@@ -16,4 +16,6 @@ void sem_wait(s_sem *sem);
 
 void sem_post(s_sem *sem);
 
+s_sem* get_global_sem(int type);
+
 #endif /* INCLUDE_KERNEL_SEMAPHORE_H_ */

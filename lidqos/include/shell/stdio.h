@@ -10,6 +10,7 @@
 
 #include <kernel/sys_var.h>
 #include <kernel/arg.h>
+#include <shell/semaphore.h>
 
 void putch(char ch);
 
@@ -20,5 +21,7 @@ int puts(char *str);
 void number_to_str(char *buff, int number, int hex);
 
 int printf(char *fmt, ...);
+
+char getchar();
 
 #endif /* INCLUDE_SHELL_STDIO_H_ */

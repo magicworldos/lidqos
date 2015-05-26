@@ -40,3 +40,14 @@ void sem_post(s_sem *sem)
 		__asm__ volatile("int	$0x81" :: "a"(params));
 	}
 }
+
+s_sem* get_global_sem(int type)
+{
+	s_sem *sem;
+	int params[3];
+	params[0] = 2;
+	params[1] = (int) type;
+	params[2] = (int) &sem;
+	__asm__ volatile("int	$0x81" :: "a"(params));
+	return sem;
+}

@@ -244,6 +244,12 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
 		$(BUILD_PATH)/$(PSHELL)/pthread.o				\
 		$(BUILD_PATH)/$(PSHELL)/semaphore.o
+		
+	#example_stdio
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_stdio -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
+		$(BUILD_PATH)/$(PSHELL)/example_stdio.o			\
+		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
+		$(BUILD_PATH)/$(PSHELL)/semaphore.o
 
 #外壳程序的obj文件
 $(PSHELL)_objs:
@@ -256,6 +262,7 @@ $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/stdio.c				-o $(BUILD_PATH)/$(PSHELL)/stdio.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_sleep.c		-o $(BUILD_PATH)/$(PSHELL)/example_sleep.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_sem.c		-o $(BUILD_PATH)/$(PSHELL)/example_sem.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_stdio.c		-o $(BUILD_PATH)/$(PSHELL)/example_stdio.o
 
 ##################################################################################################################
 	
