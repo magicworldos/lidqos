@@ -228,11 +228,8 @@ void int_keyboard()
 		{
 			//得到按键
 			char ch = keys[key_ind - 1][kb_key_shift];
-//			printf("%x %x\n",key_ind, ch);
 			//为请求程序设置按键
 			*ch_for_get = ch;
-			//显示字符
-			//putchar(ch);
 			//清空数据区
 			ch_for_get = NULL;
 			pcb_wakeup_key();
