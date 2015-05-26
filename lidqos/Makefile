@@ -168,7 +168,8 @@ $(KERNEL)_elfs:		$(KERNEL)_objs
 		$(BUILD_PATH)/$(KERNEL)/mount.o			\
 		$(BUILD_PATH)/$(KERNEL)/tree.o			\
 		$(BUILD_PATH)/$(KERNEL)/sche.o			\
-		$(BUILD_PATH)/$(KERNEL)/list.o
+		$(BUILD_PATH)/$(KERNEL)/list.o			\
+		$(BUILD_PATH)/$(KERNEL)/rand.o
 
 #内核程序的obj文件
 $(KERNEL)_objs:
@@ -191,6 +192,7 @@ $(KERNEL)_objs:
 	$(CC) $(GC_K_PARAMS) $(KERNEL)/tree.c 				-o $(BUILD_PATH)/$(KERNEL)/tree.o
 	$(CC) $(GC_K_PARAMS) $(KERNEL)/list.c 				-o $(BUILD_PATH)/$(KERNEL)/list.o
 	$(CC) $(GC_K_PARAMS) $(KERNEL)/sche.c 				-o $(BUILD_PATH)/$(KERNEL)/sche.o
+	$(CC) $(GC_K_PARAMS) $(KERNEL)/rand.c 				-o $(BUILD_PATH)/$(KERNEL)/rand.o
 	
 ##################################################################################################################
 

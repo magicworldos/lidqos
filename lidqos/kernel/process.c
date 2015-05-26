@@ -70,7 +70,7 @@ void install_system()
 	load_process("/usr/bin/system", "");
 //	load_process("/usr/bin/example_sleep", "");
 //	load_process("/usr/bin/example_sem", "");
-	load_process("/usr/bin/example_stdio", "");
+//	load_process("/usr/bin/example_stdio", "");
 }
 
 /*
