@@ -262,7 +262,6 @@ int printf(char *fmt, ...)
 			else if ('x' == *(fmt + 1))
 			{
 				number_to_str(buff, va_arg(args, u32), 16);
-				count += puts("0x");
 				count += puts(buff);
 				fmt += 2;
 			}

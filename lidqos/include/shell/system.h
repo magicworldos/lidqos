@@ -9,5 +9,6 @@
 #define _SYSTEM_H_
 
 #include <kernel/typedef.h>
+#include <shell/stdio.h>
 
 #endif /* SYSTEM_H_ */

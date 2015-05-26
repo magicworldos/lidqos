@@ -329,11 +329,15 @@ void sys_stdio(int *params)
 
 	if (params[0] == 0)
 	{
-		printf("%s\n", (char *) params[1]);
+		putchar((char) params[1]);
 	}
 	else if (params[0] == 1)
 	{
-		printf("%d\n", (int) params[1]);
+		int *count = (int *) params[2];
+		count = addr_parse(cr3, count);
+		char *str = (char *) params[1];
+		str = addr_parse(cr3, str);
+		*count = puts(str);
 	}
 
 	set_cr3(cr3);

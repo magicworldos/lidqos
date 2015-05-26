@@ -5,6 +5,7 @@
  *      Author: lidq
  */
 
+#include <shell/stdio.h>
 #include <shell/semaphore.h>
 #include <shell/unistd.h>
 #include <shell/pthread.h>
@@ -16,11 +17,7 @@ s_sem sem;
 
 void sell_ticket(int num)
 {
-	//调用0x82号中断程序，显示一个数字
-	int params[2];
-	params[0] = 1;
-	params[1] = num;
-	__asm__ volatile("int	$0x82" :: "a"(params));
+	printf("%d\n", num);
 }
 
 void myfunc(void *args)

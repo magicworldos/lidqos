@@ -220,8 +220,6 @@ void pcb_free()
 			u32 pid = pcb->process_id;
 			free_page_by_pid(pid);
 			free_mm(pf, sizeof(s_list));
-
-			printf("free process %d\n", pid);
 		}
 	}
 }
