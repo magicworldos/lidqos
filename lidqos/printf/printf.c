@@ -140,6 +140,20 @@ void putchar(char ch)
 	}
 }
 
+void backspace()
+{
+	//取得当前光标线性位置
+	u16 cursor_pos = get_cursor();
+	if (cursor_pos > 0)
+	{
+		int x, y;
+		get_cursor(&x, &y);
+		putascii(x, y, ' ');
+		cursor_pos--;
+		set_cursor(x, y);
+	}
+}
+
 /*
  * number_to_str : 将整数转为字符串
  *  - int tty_id : tty编号

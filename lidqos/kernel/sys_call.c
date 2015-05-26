@@ -378,6 +378,11 @@ void sys_stdio(int *params)
 		ch_for_get = ch;
 		pcb_wait_key(pcb_cur);
 	}
+	//backspace
+	else if (params[0] == 0x11)
+	{
+		backspace();
+	}
 
 	set_cr3(cr3);
 	set_ds(0xf);

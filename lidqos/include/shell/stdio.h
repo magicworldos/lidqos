@@ -18,6 +18,12 @@ void putchar(char ch);
 
 int puts(char *str);
 
+void backspace();
+
+void gets(char *str);
+
+void backspace();
+
 void number_to_str(char *buff, int number, int hex);
 
 int printf(char *fmt, ...);

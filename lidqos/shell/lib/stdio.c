@@ -186,4 +186,44 @@ char getchar()
 	return ch;
 }
 
+void backspace()
+{
+	int params[2];
+	params[0] = 0x11;
+	__asm__ volatile ("int $0x82" :: "a"(params));
+}
+
+
+void gets(char *str)
+{
+	char ch, *p = str;
+	while ((ch = getchar()) != '\n')
+	{
+		if (ch == 0x8)
+		{
+			if (p > str)
+			{
+				int back_num = 1;
+				if (*(p - 1) == '\t')
+				{
+					back_num = 8;
+				}
+				for (int i = 0; i < back_num; ++i)
+				{
+					p--;
+					backspace();
+				}
+			}
+		}
+		else
+		{
+			*p = ch;
+			p++;
+			putchar(ch);
+		}
+	}
+	*p = '\0';
+	putchar('\n');
+}
+
 #endif
