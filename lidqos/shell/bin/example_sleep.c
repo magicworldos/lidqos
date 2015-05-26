@@ -10,7 +10,7 @@
 
 int main(int argc, char **args)
 {
-	for (int i = 1; i <= 5; i++)
+	for (int i = 1; i <= 3; i++)
 	{
 		msleep(1000);
 		printf("Example: sleep %ds.\n", i);

@@ -327,10 +327,12 @@ void sys_stdio(int *params)
 	u32 cr3 = pcb_cur->tss.cr3;
 	params = addr_parse(cr3, params);
 
+	//type为0显示字符
 	if (params[0] == 0)
 	{
 		putchar((char) params[1]);
 	}
+	//type为1显示字符串
 	else if (params[0] == 1)
 	{
 		int *count = (int *) params[2];

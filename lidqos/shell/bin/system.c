@@ -9,8 +9,7 @@
 
 int main(int argc, char **args)
 {
-	char *str = "Start System Process.";
-	printf("%s\n", str);
+	printf("Start System Process.\n");
 
 	for (;;)
 	{
