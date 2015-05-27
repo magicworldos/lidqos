@@ -15,8 +15,7 @@ int main(int argc, char **args)
 		float i = 6.14;
 		float j = 23.78;
 		int k = (int) (i * j);
-
-		printf("B: %d\n", k);
+		printf("6.14 x 23.78 %d\n", k);
 	}
 	return 0;
 }

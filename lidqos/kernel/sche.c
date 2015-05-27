@@ -36,6 +36,14 @@ extern u8 fpu_d[FPU_SIZE];
  */
 void schedule()
 {
+	//取得链表头
+	s_list *list_header = list_pcb;
+	if (list_header == NULL)
+	{
+		return;
+	}
+
+	//如果上一次运行的pcb需要fpu，把当前fpu状态保存到上一次运行的pcb内存中
 	if (pcb_last_run != NULL && pcb_last_run->is_need_fpu == 1)
 	{
 		//打开浮点运算器
@@ -46,13 +54,6 @@ void schedule()
 		mmcopy(fpu_d, pcb_last_run->fpu_data, FPU_SIZE);
 		//关闭浮点运算器
 		close_fpu();
-	}
-
-	//取得链表头
-	s_list *list_header = list_pcb;
-	if (list_header == NULL)
-	{
-		return;
 	}
 
 	//取得链表头的进程

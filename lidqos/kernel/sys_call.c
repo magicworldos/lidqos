@@ -102,8 +102,10 @@ void int_no_fpu()
 
 	//打开浮点运算器
 	open_fpu();
+	//如果是第一次使用fpu不需要从内存恢复
 	if (pcb_cur->is_need_fpu == 0)
 	{
+		//设置为需要fpu
 		pcb_cur->is_need_fpu = 1;
 	}
 	else
