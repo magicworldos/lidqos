@@ -18,6 +18,10 @@ extern s_sem sem_key;
 u8 kb_key_shift = 0;
 char *ch_for_get = NULL;
 
+//浮点寄存器数据存储缓冲区
+u8 fpu_d[FPU_SIZE] =
+{ 0xf, };
+
 /*
  * 除零错
  */
@@ -94,8 +98,25 @@ void int_invalid_opcode()
 void int_no_fpu()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	printf("int_no_fpu.\n");
-	hlt();
+	set_cr3(PAGE_DIR);
+
+	//打开浮点运算器
+	open_fpu();
+	if (pcb_cur->is_need_fpu == 0)
+	{
+		pcb_cur->is_need_fpu = 1;
+	}
+	else
+	{
+		//恢复内存区数据到浮点寄存器
+		mmcopy(pcb_cur->fpu_data, fpu_d, FPU_SIZE);
+		//恢复内存区数据到浮点寄存器
+		restore_fpu(fpu_d);
+	}
+
+	u32 cr3 = pcb_cur->tss.cr3;
+	set_cr3(cr3);
+	set_ds(0xf);
 }
 
 /***
@@ -186,9 +207,6 @@ void int_timer()
 	//在时钟中断时并没有切换ds和cr3寄存器
 	set_ds(GDT_INDEX_KERNEL_DS);
 	set_cr3(PAGE_DIR);
-
-	//通知PIC可以接受新中断
-	outb_p(0x20, 0x20);
 
 	//释放已停止进程
 	pcb_free();

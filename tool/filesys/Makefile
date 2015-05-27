@@ -11,6 +11,8 @@ all:
 	cp ../../lidqos/build/shell/example_sleep ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/example_sem ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/example_stdio ../../lidqos/build/fs/usr/bin/
+	cp ../../lidqos/build/shell/example_fpu ../../lidqos/build/fs/usr/bin/
+	cp ../../lidqos/build/shell/example_fpu2 ../../lidqos/build/fs/usr/bin/
 	./build/filesys
 
 clean:

@@ -253,6 +253,16 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
 		$(BUILD_PATH)/$(PSHELL)/string.o				\
 		$(BUILD_PATH)/$(PSHELL)/semaphore.o
+		
+	#example_fpu
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_fpu -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
+		$(BUILD_PATH)/$(PSHELL)/example_fpu.o			\
+		$(BUILD_PATH)/$(PSHELL)/stdio.o
+		
+	#example_fpu
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_fpu2 -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
+		$(BUILD_PATH)/$(PSHELL)/example_fpu2.o			\
+		$(BUILD_PATH)/$(PSHELL)/stdio.o
 
 #外壳程序的obj文件
 $(PSHELL)_objs:
@@ -267,6 +277,8 @@ $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_sleep.c		-o $(BUILD_PATH)/$(PSHELL)/example_sleep.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_sem.c		-o $(BUILD_PATH)/$(PSHELL)/example_sem.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_stdio.c		-o $(BUILD_PATH)/$(PSHELL)/example_stdio.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_fpu.c		-o $(BUILD_PATH)/$(PSHELL)/example_fpu.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_fpu2.c		-o $(BUILD_PATH)/$(PSHELL)/example_fpu2.o
 
 ##################################################################################################################
 	

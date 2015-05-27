@@ -34,6 +34,9 @@
 //时钟周期10ms
 #define CLOCK_TIMER		(10)
 
+//fpu需要内存存储字节数
+#define FPU_SIZE 		(0x200)
+
 //tss数据结构
 typedef struct tss_s
 {
@@ -67,8 +70,6 @@ typedef struct process_control_block
 {
 	//进程号
 	u32 process_id;
-	//类型，进程、线程
-	u32 type_pt;
 	//任务描述段
 	s_tss tss;
 	//代码段和数据段的局部描述符
@@ -93,6 +94,10 @@ typedef struct process_control_block
 	void *parent;
 	//子进程/线程
 	void *children;
+	//是否需要使用fpu
+	int is_need_fpu;
+	//浮点寄存器数据保存区
+	u8 *fpu_data;
 } s_pcb;
 
 typedef struct s_hda_rw

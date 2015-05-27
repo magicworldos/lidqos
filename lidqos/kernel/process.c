@@ -51,7 +51,7 @@ void install_process()
 	//从文件系统读入程序
 	s_file *fp = f_open("/usr/bin/start_pthread", FS_MODE_READ, 0, 0);
 	//申请页面用于存放程序代码
-	start_pthread_data = alloc_page(process_id, 1, 0, 0);
+	start_pthread_data = alloc_mm(0x1000);
 	//读入程序
 	f_read(fp, fp->fs.size, (u8 *) start_pthread_data);
 	//程序大小
@@ -71,6 +71,8 @@ void install_system()
 //	load_process("/usr/bin/example_sleep", "");
 //	load_process("/usr/bin/example_sem", "");
 //	load_process("/usr/bin/example_stdio", "");
+	load_process("/usr/bin/example_fpu", "");
+	load_process("/usr/bin/example_fpu2", "");
 }
 
 /*
@@ -145,6 +147,18 @@ s_pcb* load_process(char *file_name, char *params)
 		return NULL;
 	}
 
+	//申请fpu内存
+	pcb->fpu_data = alloc_page(process_id, 1, 0, 0);
+	if (pcb->fpu_data == NULL)
+	{
+		free_mm(pcb->stack0, P_STACK0_P_NUM);
+		free_mm(pcb->page_tbl, P_PAGE_TBL_NUM);
+		free_mm(pcb->page_dir, P_PAGE_DIR_NUM);
+		free_mm(pcb, pages_of_pcb());
+		free_mm(run, run_pages);
+		return NULL;
+	}
+
 	//初始化pcb
 	init_process(pcb, process_id, run, entry_point, run_size);
 
@@ -207,8 +221,6 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	}
 	//进程号
 	pcb->process_id = pid;
-	//类型
-	pcb->type_pt = 0;
 	//程序地址
 	pcb->run = run;
 	//程序start_main偏移
@@ -227,6 +239,8 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	pcb->tss.esp0 = (u32) pcb->stack0 + P_STACK0_SIZE;
 	//页目录存入到cr3中
 	pcb->tss.cr3 = (u32) pcb->page_dir;
+	//是否需要使用fpu
+	pcb->is_need_fpu = 0;
 
 	//地址
 	u32 address = 0;
@@ -581,8 +595,6 @@ void init_pthread(s_pcb *pcb, u32 pid)
 
 	//进程号
 	pcb->process_id = pid;
-	//类型
-	pcb->type_pt = 1;
 	//父进程/线程
 	pcb->parent = NULL;
 	//子进程
@@ -595,6 +607,8 @@ void init_pthread(s_pcb *pcb, u32 pid)
 	pcb->tss.esp0 = (u32) pcb->stack0 + P_STACK0_SIZE;
 	//页目录存入到cr3中
 	pcb->tss.cr3 = (u32) pcb->page_dir;
+	//是否需要使用fpu
+	pcb->is_need_fpu = 0;
 
 	//初始化pcb所在的内存页
 	init_process_page((u32) pcb, pages_of_pcb(), pcb->page_dir);

@@ -28,20 +28,36 @@ s_pcb *pcb_last_run = NULL;
 //等待按键
 s_list *list_pcb_wait_key = NULL;
 
+//浮点寄存器数据存储缓冲区
+extern u8 fpu_d[FPU_SIZE];
+
 /*
  * 进程调度，目前只使用平均时间片轮转的算法
  */
 void schedule()
 {
+	if (pcb_last_run != NULL && pcb_last_run->is_need_fpu == 1)
+	{
+		//打开浮点运算器
+		open_fpu();
+		//保存当前浮点寄存器内容到内存
+		save_fpu(fpu_d);
+		//保存当前浮点寄存器内容到pcb
+		mmcopy(fpu_d, pcb_last_run->fpu_data, FPU_SIZE);
+		//关闭浮点运算器
+		close_fpu();
+	}
+
 	//取得链表头
 	s_list *list_header = list_pcb;
 	if (list_header == NULL)
 	{
 		return;
 	}
-	//show_list();
+
 	//取得链表头的进程
 	pcb_cur = (s_pcb *) (list_header->node);
+
 	//将链表头移动到链表尾，链表
 	list_pcb = list_header2footer(list_pcb);
 	/*
@@ -62,8 +78,15 @@ void schedule()
 		//但是在call tss时cr3会被修改为tss中的cr3
 		set_ds(0xf);
 
+		//通知PIC可以接受新中断
+		outb_p(0x20, 0x20);
 		//切换进程
 		call_tss();
+	}
+	else
+	{
+		//通知PIC可以接受新中断
+		outb_p(0x20, 0x20);
 	}
 }
 

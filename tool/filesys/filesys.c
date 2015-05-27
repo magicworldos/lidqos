@@ -14,7 +14,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 
-#define CONFIG_INIT_OPERA			(1)
+#define CONFIG_INIT_OPERA			(0)
 
 #define FS_OSISO_START_SNO			(1024)
 //map大小为256KB，可表示1GB容量使用情况
@@ -95,6 +95,8 @@ int main(int argc, char **args)
 	install_file("../../lidqos/build/fs/usr/bin/example_sleep", "/usr/bin/example_sleep", 0, 0, 01755);
 	install_file("../../lidqos/build/fs/usr/bin/example_sem", "/usr/bin/example_sem", 0, 0, 01755);
 	install_file("../../lidqos/build/fs/usr/bin/example_stdio", "/usr/bin/example_stdio", 0, 0, 01755);
+	install_file("../../lidqos/build/fs/usr/bin/example_fpu", "/usr/bin/example_fpu", 0, 0, 01755);
+	install_file("../../lidqos/build/fs/usr/bin/example_fpu2", "/usr/bin/example_fpu2", 0, 0, 01755);
 #endif
 
 //	test_read_file();
