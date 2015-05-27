@@ -231,6 +231,14 @@ $(PSHELL)_S:			$(PSHELL)_elf
 	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/example_fpu > $(BUILD_PATH)/$(PSHELL)/example_fpu_att.S
 	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/example_fpu > $(BUILD_PATH)/$(PSHELL)/example_fpu_intel.S
 	
+	#example_icecream
+	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/example_icecream > $(BUILD_PATH)/$(PSHELL)/example_icecream_att.S
+	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/example_icecream > $(BUILD_PATH)/$(PSHELL)/example_icecream_intel.S
+	$(ELF) $(BUILD_PATH)/$(PSHELL)/example_icecream -h > $(BUILD_PATH)/$(PSHELL)/example_icecream.elf
+	$(ELF) $(BUILD_PATH)/$(PSHELL)/example_icecream -S >> $(BUILD_PATH)/$(PSHELL)/example_icecream.elf
+	$(ELF) $(BUILD_PATH)/$(PSHELL)/example_icecream -s >> $(BUILD_PATH)/$(PSHELL)/example_icecream.elf
+	$(ELF) $(BUILD_PATH)/$(PSHELL)/example_icecream -r >> $(BUILD_PATH)/$(PSHELL)/example_icecream.elf
+	
 #外壳程序的ecc可重定向文件
 $(PSHELL)_elf:		$(PSHELL)_objs
 	#system
