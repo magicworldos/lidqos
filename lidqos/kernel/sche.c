@@ -148,7 +148,6 @@ int pcb_sem_P(s_pcb *pcb, s_sem *sem)
 		sem->value--;
 		return 1;
 	}
-	pcb->tss.eip -= 2;
 	//链表节点
 	s_list *list_node = NULL;
 	//从运行链表中移出此进程
