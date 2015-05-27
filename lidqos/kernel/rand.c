@@ -23,5 +23,5 @@ void srand(u32 seed)
 
 int random(int min, int max)
 {
-	return rand() % (max - min) + min;
+	return rand() % ((max + 1) - min) + min;
 }

@@ -161,6 +161,7 @@ $(KERNEL)_elfs:		$(KERNEL)_objs
 		$(BUILD_PATH)/$(KERNEL)/key.o			\
 		$(BUILD_PATH)/$(KERNEL)/page.o			\
 		$(BUILD_PATH)/$(KERNEL)/swap.o			\
+		$(BUILD_PATH)/$(KERNEL)/rand.o			\
 		$(BUILD_PATH)/$(KERNEL)/hd.o			\
 		$(BUILD_PATH)/$(KERNEL)/sys_var.o		\
 		$(BUILD_PATH)/$(KERNEL)/fs.o			\
@@ -274,6 +275,15 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(KERNEL)/math.o					\
 		$(BUILD_PATH)/$(KERNEL)/math_S.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o
+	
+	#example_icecream
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_icecream -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
+		$(BUILD_PATH)/$(PSHELL)/example_icecream.o		\
+		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
+		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
+		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
+		$(BUILD_PATH)/$(PSHELL)/pthread.o				\
+		$(BUILD_PATH)/$(PSHELL)/semaphore.o
 
 #外壳程序的obj文件
 $(PSHELL)_objs:
@@ -284,12 +294,14 @@ $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/semaphore.c			-o $(BUILD_PATH)/$(PSHELL)/semaphore.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/pthread.c			-o $(BUILD_PATH)/$(PSHELL)/pthread.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/stdio.c				-o $(BUILD_PATH)/$(PSHELL)/stdio.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/stdlib.c				-o $(BUILD_PATH)/$(PSHELL)/stdlib.o
 	$(CC) $(GC_S_PARAMS) mm/string.c						-o $(BUILD_PATH)/$(PSHELL)/string.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_sleep.c		-o $(BUILD_PATH)/$(PSHELL)/example_sleep.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_sem.c		-o $(BUILD_PATH)/$(PSHELL)/example_sem.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_stdio.c		-o $(BUILD_PATH)/$(PSHELL)/example_stdio.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_fpu.c		-o $(BUILD_PATH)/$(PSHELL)/example_fpu.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_fpu2.c		-o $(BUILD_PATH)/$(PSHELL)/example_fpu2.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_icecream.c	-o $(BUILD_PATH)/$(PSHELL)/example_icecream.o
 
 ##################################################################################################################
 	

@@ -15,6 +15,7 @@
 #include <kernel/page.h>
 #include <kernel/printf.h>
 #include <kernel/sche.h>
+#include <kernel/rand.h>
 
 void int_div_error();
 
@@ -31,5 +32,7 @@ void* addr_parse(u32 cr3, void *addr);
 void sys_process(int *params);
 
 void sys_stdio(int *params);
+
+void sys_stdlib(int *params);
 
 #endif

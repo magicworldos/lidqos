@@ -479,7 +479,11 @@ _int_0x82:
 _int_0x83:
 	cli
 	push	%ebp
-	mov		%esp, %ebp
+	mov 	%esp, %ebp
+
+	sub		$0x4, %esp
+    movl	%eax, (%esp)
+	call	sys_stdlib
 
 	leave
 	sti

@@ -404,3 +404,32 @@ void sys_stdio(int *params)
 	set_cr3(cr3);
 	set_ds(0xf);
 }
+
+void sys_stdlib(int *params)
+{
+	set_ds(GDT_INDEX_KERNEL_DS);
+	set_cr3(PAGE_DIR);
+	u32 cr3 = pcb_cur->tss.cr3;
+	params = addr_parse(cr3, params);
+	if (params[0] == 0)
+	{
+		int *ret = (int*) params[1];
+		ret = addr_parse(cr3, ret);
+		*ret = rand();
+	}
+	else if (params[0] == 1)
+	{
+		srand(params[1]);
+	}
+	else if (params[0] == 2)
+	{
+		int *ret = (int*) params[3];
+		ret = addr_parse(cr3, ret);
+		int min = (int) params[1];
+		int max = (int) params[2];
+		*ret = random(min, max);
+	}
+
+	set_cr3(cr3);
+	set_ds(0xf);
+}

@@ -71,8 +71,9 @@ void install_system()
 //	load_process("/usr/bin/example_sleep", "");
 //	load_process("/usr/bin/example_sem", "");
 //	load_process("/usr/bin/example_stdio", "");
-	load_process("/usr/bin/example_fpu", "");
-	load_process("/usr/bin/example_fpu2", "");
+//	load_process("/usr/bin/example_fpu", "");
+//	load_process("/usr/bin/example_fpu2", "");
+	load_process("/usr/bin/example_icecream", "");
 }
 
 /*
