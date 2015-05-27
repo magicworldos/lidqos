@@ -295,16 +295,18 @@ void sys_semaphore(int *params)
 
 	s_sem *sem = (s_sem *) (params[1]);
 	sem = addr_parse(cr3, sem);
+	int *ret = (int *) (params[2]);
+	ret = addr_parse(cr3, ret);
 
 	//P
 	if (params[0] == 0)
 	{
-		pcb_sem_P(pcb_cur, sem);
+		*ret = pcb_sem_P(pcb_cur, sem);
 	}
 	//V
 	else if (params[0] == 1)
 	{
-		pcb_sem_V(pcb_cur, sem);
+		*ret = pcb_sem_V(pcb_cur, sem);
 	}
 
 	set_cr3(cr3);

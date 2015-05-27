@@ -136,47 +136,45 @@ void pcb_sleep(s_pcb *pcb, int ms)
 
 }
 
-void pcb_sem_P(s_pcb *pcb, s_sem *sem)
+int pcb_sem_P(s_pcb *pcb, s_sem *sem)
 {
 	if (pcb == NULL)
 	{
-		return;
+		return 0;
 	}
 
 	if (sem->value > 0)
 	{
 		sem->value--;
-		return;
+		return 1;
 	}
-
 	//链表节点
 	s_list *list_node = NULL;
 	//从运行链表中移出此进程
 	list_pcb = list_remove_node(list_pcb, pcb, &list_node);
 	//加入到等待链表
 	sem->list_block = list_insert_node(sem->list_block, list_node);
-	//因为当前进程就是调用block中断的进程，为了让其等待要执行一次调度
-	schedule();
+
+	return 0;
 }
 
-void pcb_sem_V(s_pcb *pcb, s_sem *sem)
+int pcb_sem_V(s_pcb *pcb, s_sem *sem)
 {
 	if (pcb == NULL)
 	{
-		return;
+		return 0;
 	}
-
+	//信号量加1
 	sem->value++;
 	s_list *list_node = NULL;
-	for (int i = 0; i < sem->value && sem->list_block != NULL; i++)
+	if (sem->list_block != NULL)
 	{
+		s_list *p = (s_list *) sem->list_block;
+		s_pcb *pcb_wakeup = (s_pcb *) p->node;
 		//从运行链表中移出此进程
-		sem->list_block = list_remove_node(sem->list_block, pcb, &list_node);
-		//取得被阻塞的pcb
-		s_pcb *pcb_wakeup = (s_pcb *) list_node->node;
-		//从int 0x81开始重新执行，也就是需要重新执行P操作
-		pcb_wakeup->tss.eip -= 2;
+		sem->list_block = list_remove_node(sem->list_block, pcb_wakeup, &list_node);
 		//加入到执行链表
 		list_pcb = list_insert_node(list_pcb, list_node);
 	}
+	return 1;
 }
