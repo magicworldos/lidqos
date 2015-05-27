@@ -169,7 +169,8 @@ $(KERNEL)_elfs:		$(KERNEL)_objs
 		$(BUILD_PATH)/$(KERNEL)/tree.o			\
 		$(BUILD_PATH)/$(KERNEL)/sche.o			\
 		$(BUILD_PATH)/$(KERNEL)/list.o			\
-		$(BUILD_PATH)/$(KERNEL)/rand.o
+		$(BUILD_PATH)/$(KERNEL)/math.o			\
+		$(BUILD_PATH)/$(KERNEL)/math_S.o			
 
 #内核程序的obj文件
 $(KERNEL)_objs:
@@ -193,6 +194,8 @@ $(KERNEL)_objs:
 	$(CC) $(GC_K_PARAMS) $(KERNEL)/list.c 				-o $(BUILD_PATH)/$(KERNEL)/list.o
 	$(CC) $(GC_K_PARAMS) $(KERNEL)/sche.c 				-o $(BUILD_PATH)/$(KERNEL)/sche.o
 	$(CC) $(GC_K_PARAMS) $(KERNEL)/rand.c 				-o $(BUILD_PATH)/$(KERNEL)/rand.o
+	$(CC) $(GC_K_PARAMS) $(KERNEL)/math.c 				-o $(BUILD_PATH)/$(KERNEL)/math.o
+	$(CC) $(GC_K_PARAMS) $(KERNEL)/math.S				-o $(BUILD_PATH)/$(KERNEL)/math_S.o
 	
 ##################################################################################################################
 
@@ -222,6 +225,10 @@ $(PSHELL)_S:			$(PSHELL)_elf
 	#example_sleep
 	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/example_sem > $(BUILD_PATH)/$(PSHELL)/example_sem_att.S
 	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/example_sem > $(BUILD_PATH)/$(PSHELL)/example_sem_intel.S
+	
+	#example_fpu
+	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/example_fpu > $(BUILD_PATH)/$(PSHELL)/example_fpu_att.S
+	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/example_fpu > $(BUILD_PATH)/$(PSHELL)/example_fpu_intel.S
 	
 #外壳程序的ecc可重定向文件
 $(PSHELL)_elf:		$(PSHELL)_objs
@@ -257,11 +264,15 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 	#example_fpu
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_fpu -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
 		$(BUILD_PATH)/$(PSHELL)/example_fpu.o			\
+		$(BUILD_PATH)/$(KERNEL)/math.o					\
+		$(BUILD_PATH)/$(KERNEL)/math_S.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o
 		
 	#example_fpu
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_fpu2 -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
 		$(BUILD_PATH)/$(PSHELL)/example_fpu2.o			\
+		$(BUILD_PATH)/$(KERNEL)/math.o					\
+		$(BUILD_PATH)/$(KERNEL)/math_S.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o
 
 #外壳程序的obj文件

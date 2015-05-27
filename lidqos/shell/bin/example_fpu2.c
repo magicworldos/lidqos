@@ -12,10 +12,10 @@ int main(int argc, char **args)
 {
 	for (;;)
 	{
-		float i = 6.14;
-		float j = 23.78;
-		int k = (int) (i * j);
-		printf("6.14 x 23.78 %d\n", k);
+		float i = 36.83;
+		float j = 7.19;
+		float k = i / j;
+		printf("%f / %f = %f\n", i, j, k);
 	}
 	return 0;
 }

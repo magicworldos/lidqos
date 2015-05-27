@@ -104,4 +104,21 @@ typedef struct pthread_t
 	u32 pid;
 } s_pthread;
 
+typedef union u64_d
+{
+	double d;
+	u64 u;
+	struct
+	{
+		u32 uh;
+		u32 ul;
+	};
+} u64d;
+
+typedef union u32_f
+{
+	float f;
+	u32 u;
+} u32f;
+
 #endif

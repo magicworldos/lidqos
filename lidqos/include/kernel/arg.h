@@ -21,6 +21,7 @@ typedef u32 va_list;
 #define va_init(v, a)				\
 	({								\
 		v = (va_list)(&a);			\
+		v += sizeof(a);				\
 	})
 
 /***
@@ -31,8 +32,8 @@ typedef u32 va_list;
  */
 #define va_arg(v, t)				\
 	({								\
-		v += 4;						\
-		(t)(*((t*)(v)));			\
+		v += sizeof(t);				\
+		(t)(*((t*)(v-sizeof(t))));	\
 	})
 
 #endif /* INCLUDE_KERNEL_ARG_H_ */

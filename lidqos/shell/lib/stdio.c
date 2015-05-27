@@ -100,6 +100,253 @@ void number_to_str(char *buff, int number, int hex)
 }
 
 /*
+ * printf_lf_e : 以科学计数法显示浮点数
+ *  - int tty_id : tty编号
+ *  - int float_or_double : 单双精度
+ *  - double val : 浮点数值
+ *  - int e : 指数
+ *  - int sign : 正负号
+ * return : void
+ */
+void printf_lf_e(int float_or_double, double val, int e, int sign)
+{
+	int lf_size = 0;
+	if (float_or_double)
+	{
+		lf_size = FLOAT_SIZE;
+	}
+	else
+	{
+		lf_size = DOUBLE_SIZE;
+	}
+	char buff[0x200];
+	int i = 0, start = 0;
+	int length = 2 + lf_size;
+	if (sign)
+	{
+		putchar('-');
+	}
+	for (; i < length; ++i)
+	{
+		if (i == 1)
+		{
+			buff[i] = '.';
+		}
+		else
+		{
+			int n = (int) val;
+			buff[i] = n + '0';
+			val -= n;
+			val *= 10.0;
+		}
+	}
+
+	buff[i++] = 'e';
+	int sign_e = 0;
+	if (e >= 0)
+	{
+		buff[i++] = '+';
+	}
+	else
+	{
+		buff[i++] = '-';
+		e = -e;
+	}
+	buff[i] = '\0';
+	printf("%s", buff);
+	printf("%d", e);
+}
+
+/*
+ * printf_lf : 以小数形式显示浮点数
+ *  - int tty_id : tty编号
+ *  - int float_or_double : 单双精度
+ *  - double val : 浮点数值
+ *  - int e : 指数
+ *  - int sign : 正负号
+ * return : void
+ */
+void printf_lf(int float_or_double, double val, int e, int sign)
+{
+	int lf_size = 0;
+	if (float_or_double)
+	{
+		lf_size = FLOAT_SIZE;
+	}
+	else
+	{
+		lf_size = DOUBLE_SIZE;
+	}
+	char buff[0x200];
+	if (sign)
+	{
+		putchar('-');
+	}
+	int i = 0;
+	if (e >= 0)
+	{
+		int length = e + 2 + lf_size;
+		for (; i < length; ++i)
+		{
+			if (i == e + 1)
+			{
+				buff[i] = '.';
+			}
+			else
+			{
+				int n = (int) val;
+				buff[i] = n + '0';
+				val -= n;
+				val *= 10.0;
+			}
+		}
+	}
+	else
+	{
+		e = -e;
+		int length = e + 2 + lf_size;
+		for (; i < length; ++i)
+		{
+			if (i == 0)
+			{
+				buff[i] = '0';
+			}
+			else if (i == 1)
+			{
+				buff[i] = '.';
+			}
+			else if (i < e + 1)
+			{
+				buff[i] = '0';
+			}
+			else
+			{
+				int n = (int) val;
+				buff[i] = n + '0';
+				val -= n;
+				val *= 10;
+			}
+		}
+	}
+	buff[i] = '\0';
+	printf("%s", buff);
+}
+
+/*
+ * printf_vf : 显示单精度浮点数
+ *  - int tty_id : tty编号
+ *  - float val : 浮点数值
+ *  - int with_e : 是否使用科学计数法
+ * return : void
+ */
+void printf_vf(float val, int with_e)
+{
+	int sign = 0;
+	u32f uf;
+	uf.f = val;
+
+	if (uf.f < 0)
+	{
+		uf.f = -uf.f;
+		sign = 1;
+	}
+	int e2 = (uf.u >> 23 & 0xff);
+	u32 fp = uf.u & 0x7FFFFF;
+	if (e2 == 0 && fp == 0)
+	{
+		printf("0.0");
+		return;
+	}
+	else if (e2 == 0 && fp != 0)
+	{
+		e2 -= 126;
+	}
+	else
+	{
+		e2 -= 127;
+	}
+	int e10 = log(10, pow(2, e2));
+	float val_f = uf.f / pow(10, e10);
+	int val_fs = (int) val_f;
+	if (val_fs >= 10)
+	{
+		val_f /= 10.0;
+		e10++;
+	}
+	else if (val_fs < 1)
+	{
+		val_f *= 10.0;
+		e10--;
+	}
+
+	if (with_e)
+	{
+		printf_lf_e(LF_TYPE_FLOAT, val_f, e10, sign);
+	}
+	else
+	{
+		printf_lf(LF_TYPE_FLOAT, val_f, e10, sign);
+	}
+}
+
+/*
+ * printf_vlf : 显示双精度浮点数
+ *  - int tty_id : tty编号
+ *  - double val : 浮点数值
+ *  - int with_e : 是否使用科学计数法
+ * return : void
+ */
+void printf_vlf(double val, int with_e)
+{
+	u64d ud;
+	ud.d = val;
+
+	int sign = 0;
+	if (ud.d < 0)
+	{
+		ud.d = -ud.d;
+		sign = 1;
+	}
+	int e2 = (ud.u >> 52) & 0x7FF;
+	u64 fp = ud.u & 0xfffffffffffffull;
+	if (e2 == 0 && fp == 0)
+	{
+		printf("0.0");
+		return;
+	}
+	else if (e2 == 0 && fp != 0)
+	{
+		e2 -= 1022;
+	}
+	else
+	{
+		e2 -= 1023;
+	}
+	int e10 = log(10, pow(2, e2));
+	double val_d = ud.d / pow(10, e10);
+	int val_ds = (int) val_d;
+	if (val_ds >= 10)
+	{
+		val_d /= 10.0;
+		e10++;
+	}
+	else if (val_ds < 1)
+	{
+		val_d *= 10.0;
+		e10--;
+	}
+
+	if (with_e)
+	{
+		printf_lf_e(LF_TYPE_DOUBLE, val_d, e10, sign);
+	}
+	else
+	{
+		printf_lf(LF_TYPE_DOUBLE, val_d, e10, sign);
+	}
+}
+
+/*
  * printf : 标准设备显示函数
  *  - char *fmt : 显示格式
  *  - ... : 动态参数
@@ -156,6 +403,30 @@ int printf(char *fmt, ...)
 				count += puts(buff);
 				fmt += 2;
 			}
+			else if ('f' == *(fmt + 1))
+			{
+				float val = va_arg(args, double);
+				printf_vf(val, 0);
+				fmt += 2;
+			}
+			else if ('F' == *(fmt + 1))
+			{
+				double val = va_arg(args, double);
+				printf_vlf(val, 0);
+				fmt += 2;
+			}
+			else if ('z' == *(fmt + 1))
+			{
+				float val = va_arg(args, double);
+				printf_vf(val, 1);
+				fmt += 2;
+			}
+			else if ('Z' == *(fmt + 1))
+			{
+				double val = va_arg(args, double);
+				printf_vlf(val, 1);
+				fmt += 2;
+			}
 		}
 		//显示普通字符
 		else
@@ -178,7 +449,7 @@ char getchar()
 		sem_wait(sem);
 		int params[2];
 		params[0] = 0x10;
-		params[1] = (int)&ch;
+		params[1] = (int) &ch;
 		__asm__ volatile ("int $0x82" :: "a"(params));
 		sem_post(sem);
 	}

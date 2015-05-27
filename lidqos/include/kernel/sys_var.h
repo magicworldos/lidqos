@@ -34,8 +34,26 @@
 //时钟周期10ms
 #define CLOCK_TIMER		(10)
 
+//制表符使用4个空格
+#define VIDEO_TAB_SIZE			(4)
+//显示字符串缓冲区大小
+#define PRINTF_BUFF_SIZE		(1024)
+
+//显示格式中%f为float %F为double
+//显示格式中%e为float %E为double
+#define LF_TYPE_FLOAT 			(1)
+#define LF_TYPE_DOUBLE 			(0)
+//浮点精度
+#define ZERO_FLOAT 				(0.00001)
+//双精度浮点数精度
+#define ZERO_DOUBLE 			(0.00000000000000001)
+//浮点数小数位
+#define FLOAT_SIZE 				(6)
+//双精度浮点数小数位
+#define DOUBLE_SIZE 			(18)
+
 //fpu需要内存存储字节数
-#define FPU_SIZE 		(0x200)
+#define FPU_SIZE 				(0x200)
 
 //tss数据结构
 typedef struct tss_s
