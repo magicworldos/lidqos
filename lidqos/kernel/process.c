@@ -568,6 +568,15 @@ void create_pthread(s_pcb *parent_pcb, s_pthread *pthread, void *run, void *args
 		free_mm(pcb, pages_of_pcb());
 		return;
 	}
+	//申请fpu内存
+	pcb->fpu_data = alloc_page(process_id, 1, 0, 0);
+	if (pcb->fpu_data == NULL)
+	{
+		free_mm(pcb->stack, P_STACK_P_NUM);
+		free_mm(pcb->stack0, P_STACK0_P_NUM);
+		free_mm(pcb, pages_of_pcb());
+		return;
+	}
 	//初始化pcb
 	init_pthread(pcb, process_id);
 
