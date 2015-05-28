@@ -111,8 +111,7 @@ void* malloc(s_pcb *pcb, int size)
 		if ((p_tbl[i] & 1) == 0 && (p_tbl[i] >> 9 & 0x1) == 0)
 		{
 			u32 address = i * MM_PAGE_SIZE;
-			__asm__ volatile("movl	%%eax, %%cr2" :: "a"(address));
-			page_error(6);
+			page_error(6, address);
 		}
 		//如果是未使用或已使用但是动态内存
 		if (((p_tbl[i] >> 10) & 0x1) == 0 || (((p_tbl[i] >> 10) & 0x1) == 1 && ((p_tbl[i] >> 11) & 0x1) == 1))

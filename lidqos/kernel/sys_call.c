@@ -189,7 +189,8 @@ void int_page_error(u32 error_code)
 	set_ds(GDT_INDEX_KERNEL_DS);
 	set_cr3(PAGE_DIR);
 
-	page_error(error_code);
+	u32 error_addr = cr2();
+	page_error(error_code, error_addr);
 
 	u32 cr3 = pcb_cur->tss.cr3;
 	set_cr3(cr3);

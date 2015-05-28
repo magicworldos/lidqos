@@ -36,10 +36,8 @@ void install_page()
 	open_mm_page();
 }
 
-void page_error(u32 error_code)
+void page_error(u32 error_code ,u32 error_addr)
 {
-	//取得页面错误地址
-	u32 error_addr = cr2();
 	u32 v_cr3 = pcb_cur->tss.cr3;
 	u32 pid = pcb_cur->process_id;
 
