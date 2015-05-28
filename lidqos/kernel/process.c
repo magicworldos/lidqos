@@ -73,7 +73,7 @@ void install_system()
 //	load_process("/usr/bin/example_stdio", "");
 //	load_process("/usr/bin/example_fpu", "");
 //	load_process("/usr/bin/example_fpu2", "");
-	load_process("/usr/bin/example_icecream", "");
+//	load_process("/usr/bin/example_icecream", "");
 }
 
 /*
@@ -242,6 +242,8 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	pcb->tss.cr3 = (u32) pcb->page_dir;
 	//是否需要使用fpu
 	pcb->is_need_fpu = 0;
+	//内存申请表为空
+	pcb->alloc_list = NULL;
 
 	//地址
 	u32 address = 0;
@@ -258,7 +260,7 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 		{
 			if (i < 4)
 			{
-				page_tbl[j] = address | 5;
+				page_tbl[j] = address | 5 | (1 << 10);
 			}
 			else
 			{
@@ -294,7 +296,7 @@ void init_process_page(u32 address, u32 pages, u32 *page_dir)
 		//设置mm_pcb所在内存的页表
 		if (i >= page_table_index && i <= (page_table_index + 16))
 		{
-			page_tbl[i] = address | 7;
+			page_tbl[i] = address | 7 | (1 << 10);
 		}
 		address += 0x1000;
 	}
@@ -310,7 +312,7 @@ void init_process_page(u32 address, u32 pages, u32 *page_dir)
 		{
 			if (i < (pages - (1024 - page_table_index)))
 			{
-				page_tbl[i] = address | 7;
+				page_tbl[i] = address | 7 | (1 << 10);
 			}
 			address += 0x1000;
 		}
@@ -619,9 +621,78 @@ void init_pthread(s_pcb *pcb, u32 pid)
 	pcb->tss.cr3 = (u32) pcb->page_dir;
 	//是否需要使用fpu
 	pcb->is_need_fpu = 0;
+	//内存申请表为空
+	pcb->alloc_list = NULL;
 
 	//初始化pcb所在的内存页
 	init_process_page((u32) pcb, pages_of_pcb(), pcb->page_dir);
 	//初始化pcb->stack0所在的内存页
 	init_process_page((u32) pcb->stack0, pages_of_pcb(), pcb->page_dir);
+}
+
+void* pcb_malloc(s_pcb *pcb, int size)
+{
+	s_alloc_list *alloc_node = alloc_mm(sizeof(s_alloc_list));
+	if (alloc_node == NULL)
+	{
+		return NULL;
+	}
+
+	void *addr = malloc(pcb, size);
+	if (addr == NULL)
+	{
+		free_mm(alloc_node, sizeof(s_alloc_list));
+		return NULL;
+	}
+
+	alloc_node->next = NULL;
+	alloc_node->addr = addr;
+	alloc_node->size = size;
+
+	if (pcb->alloc_list == NULL)
+	{
+		pcb->alloc_list = alloc_node;
+	}
+	else
+	{
+		s_alloc_list *p = pcb->alloc_list;
+		while (p->next != NULL)
+		{
+			p = p->next;
+		}
+		p->next = alloc_node;
+	}
+	return addr;
+}
+
+void pcb_free(s_pcb *pcb, void *addr)
+{
+	s_alloc_list *p = pcb->alloc_list;
+	s_alloc_list *fp = p;
+	while (p != NULL)
+	{
+		if (p->addr == addr)
+		{
+			if (fp == p)
+			{
+				pcb->alloc_list = p->next;
+			}
+			else
+			{
+				fp->next = p->next;
+			}
+			free(pcb, addr, p->size);
+			free_mm(p, sizeof(s_alloc_list));
+			break;
+		}
+		if (fp == p)
+		{
+			p = p->next;
+		}
+		else
+		{
+			p = p->next;
+			fp = fp->next;
+		}
+	}
 }

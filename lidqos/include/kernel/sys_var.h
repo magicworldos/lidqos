@@ -116,6 +116,8 @@ typedef struct process_control_block
 	int is_need_fpu;
 	//浮点寄存器数据保存区
 	u8 *fpu_data;
+	//内存申请表
+	void *alloc_list;
 } s_pcb;
 
 typedef struct s_hda_rw

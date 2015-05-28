@@ -10,10 +10,14 @@
 
 #include <kernel/typedef.h>
 
-int rand();
-
-void srand(u32 seed);
+//int rand();
+//
+//void srand(u32 seed);
 
 int random(int min, int max);
+
+void* malloc(int size);
+
+void free(void *addr);
 
 #endif /* INCLUDE_SHELL_STDIO_H_ */

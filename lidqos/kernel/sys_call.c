@@ -211,7 +211,7 @@ void int_timer()
 	set_cr3(PAGE_DIR);
 
 	//释放已停止进程
-	pcb_free();
+	pcb_release();
 	//处理等待链表
 	list_sleep_change();
 	//任务调度算法
@@ -428,6 +428,23 @@ void sys_stdlib(int *params)
 		int min = (int) params[1];
 		int max = (int) params[2];
 		*ret = random(min, max);
+	}
+	else if (params[0] == 0x10)
+	{
+		int size = params[1];
+		void **addr = (void **) params[2];
+		addr = addr_parse(cr3, addr);
+		/*
+		 * 注意，pcb_malloc返回的是pcb的一个逻辑地址，
+		 * 而addr本身是一个需要从逻辑地址转为物理地址的二级指针地址
+		 */
+		*addr = pcb_malloc(pcb_cur, size);
+	}
+	else if (params[0] == 0x11)
+	{
+		//注意，addr是个逻辑地址，不需要转换为物理地址
+		void* addr = (void *)params[1];
+		pcb_free(pcb_cur, addr);
 	}
 
 	set_cr3(cr3);

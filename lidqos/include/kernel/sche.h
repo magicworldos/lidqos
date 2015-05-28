@@ -35,7 +35,7 @@ void list_block_change();
 
 void pcb_stop(s_pcb *pcb);
 
-void pcb_free();
+void pcb_release();
 
 void pcb_sleep(s_pcb *pcb, int ms);
 

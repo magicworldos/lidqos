@@ -228,7 +228,7 @@ void pcb_stop(s_pcb *pcb)
 /*
  * 释放已停止的pcb的资源
  */
-void pcb_free()
+void pcb_release()
 {
 	s_list *p = list_pcb_stop;
 	while (p != NULL)

@@ -17,6 +17,7 @@
 #include <kernel/sys_var.h>
 #include <kernel/list.h>
 #include <kernel/sche.h>
+#include <kernel/malloc.h>
 
 /*
  * 计算pcb所占用的页面数
@@ -86,5 +87,9 @@ s_pcb* get_current_process();
 void init_pthread(s_pcb *pcb, u32 pid);
 
 void create_pthread(s_pcb *parent_pcb, s_pthread *p, void *run, void *args);
+
+void* pcb_malloc(s_pcb *pcb, int size);
+
+void pcb_free(s_pcb *pcb, void *addr);
 
 #endif

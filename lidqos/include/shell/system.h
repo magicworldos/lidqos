@@ -10,5 +10,6 @@
 
 #include <kernel/typedef.h>
 #include <shell/stdio.h>
+#include <shell/stdlib.h>
 
 #endif /* SYSTEM_H_ */

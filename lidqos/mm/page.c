@@ -109,9 +109,13 @@ void page_error(u32 pid, u32 error_code)
 		tbl = (u32 *) (page_dir[page_dir_index] & 0xfffff000);
 	}
 
+	//将10、11bit值取出
+	u32 userdef = tbl[page_table_index] & 0xc00;
+
 	//如果此页面并没有被换出，swap状态为0
 	if ((tbl[page_table_index] >> 9 & 0x1) == 0)
 	{
+
 		u32 ph_page_no = 0;
 		u32 shared = 0;
 		u32 share_addr = 0;
@@ -130,11 +134,11 @@ void page_error(u32 pid, u32 error_code)
 			{
 				address = share_addr;
 				//共享时页面为只读
-				tbl[page_table_index] = address | 5;
+				tbl[page_table_index] = address | 5 | userdef;
 			}
 			else
 			{
-				tbl[page_table_index] = address | 7;
+				tbl[page_table_index] = address | 7 | userdef;
 			}
 		}
 	}
@@ -159,7 +163,7 @@ void page_error(u32 pid, u32 error_code)
 			 * 对于物理内存内的地址按物理地址分配，对于大于物理内存的地址按alloc_page申请的地址来分配
 			 */
 			u32 address = ph_page_no * 0x1000;
-			tbl[page_table_index] = address | 7;
+			tbl[page_table_index] = address | 7 | userdef;
 		}
 		//如果换回内存页失败
 		else

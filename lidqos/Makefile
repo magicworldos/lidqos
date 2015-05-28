@@ -171,7 +171,8 @@ $(KERNEL)_elfs:		$(KERNEL)_objs
 		$(BUILD_PATH)/$(KERNEL)/sche.o			\
 		$(BUILD_PATH)/$(KERNEL)/list.o			\
 		$(BUILD_PATH)/$(KERNEL)/math.o			\
-		$(BUILD_PATH)/$(KERNEL)/math_S.o			
+		$(BUILD_PATH)/$(KERNEL)/math_S.o		\
+		$(BUILD_PATH)/$(KERNEL)/malloc.o				
 
 #内核程序的obj文件
 $(KERNEL)_objs:
@@ -197,6 +198,7 @@ $(KERNEL)_objs:
 	$(CC) $(GC_K_PARAMS) $(KERNEL)/rand.c 				-o $(BUILD_PATH)/$(KERNEL)/rand.o
 	$(CC) $(GC_K_PARAMS) $(KERNEL)/math.c 				-o $(BUILD_PATH)/$(KERNEL)/math.o
 	$(CC) $(GC_K_PARAMS) $(KERNEL)/math.S				-o $(BUILD_PATH)/$(KERNEL)/math_S.o
+	$(CC) $(GC_K_PARAMS) mm/malloc.c 					-o $(BUILD_PATH)/$(KERNEL)/malloc.o
 	
 ##################################################################################################################
 
@@ -244,7 +246,11 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 	#system
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
 		$(BUILD_PATH)/$(PSHELL)/$(SYSTEM).o				\
-		$(BUILD_PATH)/$(PSHELL)/stdio.o				
+		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
+		$(BUILD_PATH)/$(PSHELL)/pthread.o				\
+		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
+		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
+		$(BUILD_PATH)/$(PSHELL)/semaphore.o		
 		
 	#start_pthread
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/start_pthread -e start_pthread -r $(BUILD_PATH)/$(PSHELL)/start_pthread.o
