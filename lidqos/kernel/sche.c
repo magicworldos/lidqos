@@ -249,6 +249,13 @@ void pcb_release()
 				parent->children = list_remove_node(parent->children, pcb, &list_n);
 			}
 			u32 pid = pcb->process_id;
+			s_alloc_list *p = pcb->alloc_list;
+			while (p != NULL)
+			{
+				s_alloc_list *fp = p;
+				p = p->next;
+				free_mm(fp, sizeof(s_alloc_list));
+			}
 			free_page_by_pid(pid);
 			free_mm(pf, sizeof(s_list));
 		}
