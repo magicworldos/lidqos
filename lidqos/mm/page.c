@@ -36,22 +36,22 @@ void install_page()
 	open_mm_page();
 }
 
-void page_error(u32 pid, u32 error_code)
+void page_error(u32 error_code)
 {
 	//取得页面错误地址
-	u32 v_cr3 = cr3();
-	set_cr3(PAGE_DIR);
 	u32 error_addr = cr2();
+	u32 v_cr3 = pcb_cur->tss.cr3;
+	u32 pid = pcb_cur->process_id;
 
 //	if (error_addr % 0x100000 == 0)
 //	{
-//	printf("Missing Page: %x\n", error_addr);
+//		printf("Missing Page: %x\n", error_addr);
 //		hlt();
 //	}
 
 //	if (error_addr >= 0x20000000)
 //	{
-//		printf("Missing Page: %x\n", error_addr);
+//		printf("Missing Page: %x %x\n", error_addr, error_code);
 //	}
 
 	if (error_code == 7)
@@ -139,6 +139,7 @@ void page_error(u32 pid, u32 error_code)
 			else
 			{
 				tbl[page_table_index] = address | 7 | userdef;
+//				printf("%x\n", tbl[page_table_index]);
 			}
 		}
 	}
@@ -173,8 +174,6 @@ void page_error(u32 pid, u32 error_code)
 //			hlt();
 		}
 	}
-	//恢复cr3
-	set_cr3(v_cr3);
 }
 
 /*

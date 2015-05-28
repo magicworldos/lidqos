@@ -20,13 +20,13 @@
 #define T_S_STOP		(3)
 
 //进程栈页面数
-#define P_STACK_P_NUM	(0x1)
+#define P_STACK_P_NUM	(0x10)
 //进程栈大小
-#define P_STACK_SIZE	(0x1000)
+#define P_STACK_SIZE	(0x10000)
 //进程0级栈页面数
-#define P_STACK0_P_NUM	(0x1)
+#define P_STACK0_P_NUM	(0x10)
 //进程0级栈大小
-#define P_STACK0_SIZE	(0x1000)
+#define P_STACK0_SIZE	(0x10000)
 //进程页目录数
 #define P_PAGE_DIR_NUM	(0x1)
 //进程页表数

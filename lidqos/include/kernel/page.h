@@ -20,7 +20,7 @@
 
 void install_page();
 
-void page_error(u32 pid, u32 error_code);
+void page_error(u32 error_code);
 
 int alloc_page_no(u32 pid, u32 page_no, u32 *page_no_ret, u32 *shared, u32 *share_addr);
 

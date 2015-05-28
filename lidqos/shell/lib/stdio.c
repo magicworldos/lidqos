@@ -62,7 +62,7 @@ int puts(char *str)
  */
 void number_to_str(char *buff, int number, int hex)
 {
-	char temp[0x800];
+	char temp[0x200];
 	char num[0x20] = "0123456789ABCDEFG";
 
 	int i = 0;
@@ -355,7 +355,7 @@ void printf_vlf(double val, int with_e)
 int printf(char *fmt, ...)
 {
 	//显示数字缓冲区
-	char buff[0x800];
+	char buff[0x200];
 	//显示字符串指针
 	char *str;
 	//显示字符变量
@@ -502,7 +502,7 @@ void gets(char *str)
  */
 int get_int()
 {
-	char str[0x800];
+	char str[0x200];
 	char ch, *p = str;
 	char sign = 0;
 	do

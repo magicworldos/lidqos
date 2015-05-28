@@ -55,7 +55,7 @@ void* malloc(int size)
 void free(void *addr)
 {
 	int params[2];
-	params[0] = 0x11;
+	params[0] = 0x20;
 	params[1] = (int) addr;
 	__asm__ volatile("int	$0x83" :: "a"(params));
 }

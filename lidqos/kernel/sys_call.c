@@ -187,7 +187,12 @@ void int_protection_error()
 void int_page_error(u32 error_code)
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	page_error(pcb_cur->process_id, error_code);
+	set_cr3(PAGE_DIR);
+
+	page_error(error_code);
+
+	u32 cr3 = pcb_cur->tss.cr3;
+	set_cr3(cr3);
 	set_ds(0xf);
 }
 
@@ -443,7 +448,7 @@ void sys_stdlib(int *params)
 	else if (params[0] == 0x11)
 	{
 		//注意，addr是个逻辑地址，不需要转换为物理地址
-		void* addr = (void *)params[1];
+		void* addr = (void *) params[1];
 		pcb_free(pcb_cur, addr);
 	}
 
