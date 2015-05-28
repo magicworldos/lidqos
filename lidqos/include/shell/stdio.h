@@ -11,6 +11,7 @@
 #include <kernel/sys_var.h>
 #include <kernel/arg.h>
 #include <kernel/math.h>
+#include <kernel/string.h>
 #include <shell/semaphore.h>
 
 void putch(char ch);

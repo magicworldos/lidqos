@@ -399,7 +399,22 @@ int printf(char *fmt, ...)
 			//显示无符号16进制整数
 			else if ('x' == *(fmt + 1))
 			{
-				number_to_str(buff, va_arg(args, u32), 16);
+				u32 num = va_arg(args, u32);
+				u32 nl = num & 0xffff;
+				u32 nh = num >> 16;
+				count += puts("0x");
+				number_to_str(buff, nh, 16);
+				count += puts(buff);
+
+				number_to_str(buff, nl, 16);
+				if (nh != 0)
+				{
+					int zero = 4 - str_len(buff);
+					for (int i = 0; i < zero; i++)
+					{
+						putchar('0');
+					}
+				}
 				count += puts(buff);
 				fmt += 2;
 			}

@@ -36,10 +36,12 @@ extern u8 fpu_d[FPU_SIZE];
  */
 void schedule()
 {
+	//printf("timer\n");
 	//取得链表头
 	s_list *list_header = list_pcb;
 	if (list_header == NULL)
 	{
+		printf("empty\n");
 		return;
 	}
 
@@ -58,15 +60,8 @@ void schedule()
 
 	//取得链表头的进程
 	pcb_cur = (s_pcb *) (list_header->node);
-
 	//将链表头移动到链表尾，链表
 	list_pcb = list_header2footer(list_pcb);
-	/*
-	 * 如果当前进程不是上一次运行的进程，说明链表中有两个或两个以上的进程
-	 * 链表中只有一个进程，不需要切换。
-	 * 链表中有两个或两个以上的进程，需要切换。
-	 */
-	if (pcb_cur != pcb_last_run)
 	{
 		//设置tss和ldt
 		addr_to_gdt(GDT_TYPE_TSS, (u32) &(pcb_cur->tss), &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
@@ -77,17 +72,12 @@ void schedule()
 
 		//在时钟中断时并没有切换ds和cr3寄存器
 		//但是在call tss时cr3会被修改为tss中的cr3
-		set_ds(0xf);
 
 		//通知PIC可以接受新中断
 		outb_p(0x20, 0x20);
+		set_ds(0xf);
 		//切换进程
 		call_tss();
-	}
-	else
-	{
-		//通知PIC可以接受新中断
-		outb_p(0x20, 0x20);
 	}
 }
 

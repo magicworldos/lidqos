@@ -415,6 +415,7 @@ void sys_stdlib(int *params)
 	set_ds(GDT_INDEX_KERNEL_DS);
 	set_cr3(PAGE_DIR);
 	u32 cr3 = pcb_cur->tss.cr3;
+
 	params = addr_parse(cr3, params);
 	if (params[0] == 0)
 	{

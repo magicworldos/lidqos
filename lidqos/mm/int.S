@@ -373,14 +373,16 @@ _int_0x1f:
 
 //时钟中断
 _int_0x20:
-	pushal
-	pushfl
+	//pushal
+	//pushfl
 	cli
 	//调用时钟中断处理函数
 	call int_timer
+
+
 	sti
-	popfl
-	popal
+	//popfl
+	//popal
 	iret
 
 //键盘中断
@@ -438,6 +440,8 @@ _int_0x2f:
 	iret
 
 _int_0x80:
+	pushal
+	pushfl
 	cli
 	push	%ebp
 	mov 	%esp, %ebp
@@ -448,9 +452,13 @@ _int_0x80:
 
 	leave
 	sti
+	popfl
+	popal
 	iret
 
 _int_0x81:
+	pushal
+	pushfl
 	cli
 	push	%ebp
 	mov 	%esp, %ebp
@@ -461,9 +469,13 @@ _int_0x81:
 
 	leave
 	sti
+	popfl
+	popal
 	iret
 
 _int_0x82:
+	pushal
+	pushfl
 	cli
 	push	%ebp
 	mov 	%esp, %ebp
@@ -474,6 +486,8 @@ _int_0x82:
 
 	leave
 	sti
+	popfl
+	popal
 	iret
 
 _int_0x83:

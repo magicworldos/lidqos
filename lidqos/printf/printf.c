@@ -13,7 +13,7 @@
  * u16 x: 光标的横坐标
  * u16 y: 光标的纵坐标
  */
-void set_cursor(u16 x, u16 y)
+void set_cursor(u32 x, u32 y)
 {
 	//横坐标超出80换行
 	if (x > 80)
@@ -31,7 +31,7 @@ void set_cursor(u16 x, u16 y)
 	}
 
 	//计算光标的线性位置
-	u16 cursor_pos = y * 80 + x;
+	u32 cursor_pos = y * 80 + x;
 	//告诉地址寄存器要接下来要使用14号寄存器
 	outb_p(14, 0x03d4);
 	//向光标位置高位寄存器写入值
@@ -46,16 +46,16 @@ void set_cursor(u16 x, u16 y)
  * 取得光标位置
  * return: 光标的线性位置
  */
-u16 get_cursor()
+u32 get_cursor()
 {
 	//告诉地址寄存器要接下来要使用14号寄存器
 	outb_p(14, 0x03d4);
 	//从光标位置高位寄存器读取值
-	u8 cursor_pos_h = inb_p(0x03d5);
+	u32 cursor_pos_h = inb_p(0x03d5);
 	//告诉地址寄存器要接下来要使用15号寄存器
 	outb_p(15, 0x03d4);
 	//从光标位置高位寄存器读取值
-	u8 cursor_pos_l = inb_p(0x03d5);
+	u32 cursor_pos_l = inb_p(0x03d5);
 	//返回光标位置
 	return (cursor_pos_h << 8) | cursor_pos_l;
 }
@@ -83,7 +83,7 @@ void scroll_up(int row)
  * u16 y: 纵坐标
  * char ch: 要显示的字符
  */
-void putascii(u16 x, u16 y, char ch)
+void putascii(u32 x, u32 y, char ch)
 {
 	//定义显存地址
 	char *video_addr = (char *) 0xb8000;
@@ -105,10 +105,10 @@ void putascii(u16 x, u16 y, char ch)
 void putchar(char ch)
 {
 	//取得当前光标线性位置
-	u16 cursor_pos = get_cursor();
+	u32 cursor_pos = get_cursor();
 	//计算横纵坐标
-	u16 x = cursor_pos % 80;
-	u16 y = cursor_pos / 80;
+	u32 x = cursor_pos % 80;
+	u32 y = cursor_pos / 80;
 
 	//如果是换行符\n
 	if (ch == 0xa)
@@ -143,10 +143,10 @@ void putchar(char ch)
 void backspace()
 {
 	//取得当前光标线性位置
-	u16 cursor_pos = get_cursor();
+	u32 cursor_pos = get_cursor();
 	cursor_pos--;
-	u16 x = cursor_pos % 80;
-	u16 y = cursor_pos / 80;
+	u32 x = cursor_pos % 80;
+	u32 y = cursor_pos / 80;
 	if (cursor_pos > 0)
 	{
 		putascii(x, y, ' ');
@@ -277,7 +277,22 @@ int printf(char *fmt, ...)
 			//显示无符号16进制整数
 			else if ('x' == *(fmt + 1))
 			{
-				number_to_str(buff, va_arg(args, u32), 16);
+				u32 num = va_arg(args, u32);
+				u32 nl = num & 0xffff;
+				u32 nh = num >> 16;
+				count += puts("0x");
+				number_to_str(buff, nh, 16);
+				count += puts(buff);
+
+				number_to_str(buff, nl, 16);
+				if (nh != 0)
+				{
+					int zero = 4 - str_len(buff);
+					for (int i = 0; i < zero; i++)
+					{
+						putchar('0');
+					}
+				}
 				count += puts(buff);
 				fmt += 2;
 			}

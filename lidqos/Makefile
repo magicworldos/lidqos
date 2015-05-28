@@ -246,6 +246,7 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 	#system
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
 		$(BUILD_PATH)/$(PSHELL)/$(SYSTEM).o				\
+		$(BUILD_PATH)/$(KERNEL)/string.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
 		$(BUILD_PATH)/$(PSHELL)/pthread.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
@@ -258,12 +259,14 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 	#example_sleep
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_sleep -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
 		$(BUILD_PATH)/$(PSHELL)/example_sleep.o			\
+		$(BUILD_PATH)/$(PSHELL)/string.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
 		$(BUILD_PATH)/$(PSHELL)/unistd.o
 		
 	#example_sem
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_sem -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
 		$(BUILD_PATH)/$(PSHELL)/example_sem.o			\
+		$(BUILD_PATH)/$(PSHELL)/string.o				\
 		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
 		$(BUILD_PATH)/$(PSHELL)/pthread.o				\
@@ -281,12 +284,14 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(PSHELL)/example_fpu.o			\
 		$(BUILD_PATH)/$(KERNEL)/math.o					\
 		$(BUILD_PATH)/$(KERNEL)/math_S.o				\
+		$(BUILD_PATH)/$(PSHELL)/string.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o
 		
 	#example_fpu
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_fpu2 -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
 		$(BUILD_PATH)/$(PSHELL)/example_fpu2.o			\
 		$(BUILD_PATH)/$(KERNEL)/math.o					\
+		$(BUILD_PATH)/$(PSHELL)/string.o				\
 		$(BUILD_PATH)/$(KERNEL)/math_S.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o
 	
@@ -295,6 +300,7 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(PSHELL)/example_icecream.o		\
 		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
+		$(BUILD_PATH)/$(PSHELL)/string.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
 		$(BUILD_PATH)/$(PSHELL)/pthread.o				\
 		$(BUILD_PATH)/$(PSHELL)/semaphore.o

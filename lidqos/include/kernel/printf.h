@@ -12,15 +12,16 @@
 
 #include <kernel/typedef.h>
 #include <kernel/io.h>
+#include <kernel/string.h>
 #include <kernel/arg.h>
 
-void set_cursor(u16 x, u16 y);
+void set_cursor(u32 x, u32 y);
 
-u16 get_cursor();
+u32 get_cursor();
 
 void scroll_up(int row);
 
-void putascii(u16 x, u16 y, char ch);
+void putascii(u32 x, u32 y, char ch);
 
 void putchar(char ch);
 
