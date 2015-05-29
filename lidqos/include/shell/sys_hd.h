@@ -11,8 +11,6 @@
 #include <kernel/typedef.h>
 #include <kernel/sys_var.h>
 #include <kernel/fsdef.h>
-#include <shell/stdio.h>
-#include <shell/stdlib.h>
 
 
 #define HD_READ         	0x20
