@@ -7,6 +7,7 @@ all:
 	-o build/filesys
 	cp -rvf ../../lidqos/fs/ ../../lidqos/build/	
 	cp ../../lidqos/build/shell/system ../../lidqos/build/fs/usr/bin/
+	cp ../../lidqos/build/shell/shell ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/start_pthread ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/example_sleep ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/example_sem ../../lidqos/build/fs/usr/bin/

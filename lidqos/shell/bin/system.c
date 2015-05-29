@@ -43,6 +43,11 @@ int main(int argc, char **args)
 	install_swap(&(sys_var->pts[2]));
 	printf("[ OK ] Mount had3 to swap.\n");
 
+	//启动shell程序
+	printf("[ OK ] Start shell program.\n");
+	install_program("/usr/bin/shell", "");
+
+
 	for (;;)
 	{
 	}

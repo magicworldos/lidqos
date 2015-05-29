@@ -202,26 +202,34 @@ $(KERNEL)_objs:
 	
 ##################################################################################################################
 
-SYSTEM		= system
-
 #外壳程序
 $(PSHELL):			$(PSHELL)_S
 
 #外壳程序反汇编文件
 $(PSHELL)_S:			$(PSHELL)_elf
 	#system
-	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) > $(BUILD_PATH)/$(PSHELL)/$(SYSTEM)_att.S
-	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) > $(BUILD_PATH)/$(PSHELL)/$(SYSTEM)_intel.S
-	$(ELF) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -h > $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).elf
-	$(ELF) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -S >> $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).elf
-	$(ELF) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -s >> $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).elf
-	$(ELF) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -r >> $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).elf
+	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/system > $(BUILD_PATH)/$(PSHELL)/system_att.S
+	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/system > $(BUILD_PATH)/$(PSHELL)/system_intel.S
+	$(ELF) $(BUILD_PATH)/$(PSHELL)/system -h > $(BUILD_PATH)/$(PSHELL)/system.elf
+	$(ELF) $(BUILD_PATH)/$(PSHELL)/system -S >> $(BUILD_PATH)/$(PSHELL)/system.elf
+	$(ELF) $(BUILD_PATH)/$(PSHELL)/system -s >> $(BUILD_PATH)/$(PSHELL)/system.elf
+	$(ELF) $(BUILD_PATH)/$(PSHELL)/system -r >> $(BUILD_PATH)/$(PSHELL)/system.elf
 
 #外壳程序的ecc可重定向文件
 $(PSHELL)_elf:		$(PSHELL)_objs
 	#system
-	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
-		$(BUILD_PATH)/$(PSHELL)/$(SYSTEM).o				\
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/system -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
+		$(BUILD_PATH)/$(PSHELL)/system.o				\
+		$(BUILD_PATH)/$(KERNEL)/string.o				\
+		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
+		$(BUILD_PATH)/$(PSHELL)/pthread.o				\
+		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
+		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
+		$(BUILD_PATH)/$(PSHELL)/semaphore.o	
+		
+	#shell
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/shell -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
+		$(BUILD_PATH)/$(PSHELL)/shell.o					\
 		$(BUILD_PATH)/$(KERNEL)/string.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
 		$(BUILD_PATH)/$(PSHELL)/pthread.o				\
@@ -285,8 +293,9 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/start_main.c 		-o $(BUILD_PATH)/$(PSHELL)/start_main.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/start_pthread.c 		-o $(BUILD_PATH)/$(PSHELL)/start_pthread.o
-	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/$(SYSTEM).c			-o $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).o	
-	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/unistd.c				-o $(BUILD_PATH)/$(PSHELL)/unistd.o	
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/system.c				-o $(BUILD_PATH)/$(PSHELL)/system.o	
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/shell.c				-o $(BUILD_PATH)/$(PSHELL)/shell.o	
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/unistd.c				-o $(BUILD_PATH)/$(PSHELL)/unistd.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/semaphore.c			-o $(BUILD_PATH)/$(PSHELL)/semaphore.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/pthread.c			-o $(BUILD_PATH)/$(PSHELL)/pthread.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/stdio.c				-o $(BUILD_PATH)/$(PSHELL)/stdio.o
