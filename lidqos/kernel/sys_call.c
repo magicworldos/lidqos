@@ -301,9 +301,12 @@ void sys_process(int *params)
 		path = addr_parse(cr3, path);
 		par_s = addr_parse(cr3, par_s);
 		sem_addr = addr_parse(cr3, sem_addr);
-
+		*sem_addr = 0;
 		s_pcb *pcb = load_process(path, par_s);
-		*sem_addr = (u32) pcb->sem_shell;
+		if (pcb != NULL)
+		{
+			*sem_addr = (u32) pcb->sem_shell;
+		}
 	}
 	//停止进程
 	else if (params[0] == 1)

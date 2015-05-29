@@ -65,17 +65,8 @@ void schedule()
 	//取得链表头的进程
 	pcb_cur = (s_pcb *) (list_header->node);
 
-//	if (timer < 10)
-//	{
-//		show_pcb_list();
-//	}
 	//将链表头移动到链表尾，链表
 	list_pcb = list_header2footer(list_pcb);
-//	if (timer < 10)
-//	{
-//		show_pcb_list();
-//	}
-	timer++;
 
 	//设置tss和ldt
 	addr_to_gdt(GDT_TYPE_TSS, (u32) &(pcb_cur->tss), &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
@@ -222,6 +213,7 @@ int pcb_sem_V(s_pcb *pcb, s_sem *sem)
 		sem->list_block = list_remove_node(sem->list_block, pcb_wakeup, &list_node);
 		//加入到执行链表
 		list_pcb = list_insert_node(list_pcb, list_node);
+		printf("wake up %d\n", pcb_wakeup->process_id);
 	}
 
 	//show_pcb_list();
@@ -238,6 +230,9 @@ void pcb_stop(s_pcb *pcb)
 	list_pcb = list_remove_node(list_pcb, pcb, &list_node);
 	//加入到停止链表
 	list_pcb_stop = list_insert_node(list_pcb_stop, list_node);
+
+	pcb_sem_V(pcb, &pcb->sem_shell[0]);
+
 	//执行一次调度，跳过当前进程
 	schedule();
 }
@@ -254,7 +249,7 @@ void pcb_release()
 		p = p->next;
 
 		s_pcb *pcb = (s_pcb *) pf->node;
-		if (pcb->children == NULL)
+		if (pcb->children == NULL && pcb->sem_shell[1].value == 1)
 		{
 			s_list *list_node = NULL;
 			list_pcb_stop = list_remove_node(list_pcb_stop, pcb, &list_node);
@@ -273,6 +268,7 @@ void pcb_release()
 				p = p->next;
 				free_mm(fp, sizeof(s_alloc_list));
 			}
+			//printf("free %d\n", pid);
 			free_page_by_pid(pid);
 			free_mm(pf, sizeof(s_list));
 		}

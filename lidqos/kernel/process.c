@@ -79,6 +79,7 @@ s_pcb* load_process(char *file_name, char *params)
 	s_file *fp = f_open(file_name, FS_MODE_READ, 0, 0);
 	if (fp == NULL)
 	{
+		printf("error 1\n");
 		return NULL;
 	}
 	//计算程序占用的页面数量
@@ -90,8 +91,10 @@ s_pcb* load_process(char *file_name, char *params)
 
 	//申请页面用于存放程序代码
 	void *run = alloc_page(process_id, run_pages, 0, 0);
+	printf("%x\n", run);
 	if (run == NULL)
 	{
+		printf("error 2\n");
 		f_close(fp);
 		return NULL;
 	}
@@ -109,6 +112,7 @@ s_pcb* load_process(char *file_name, char *params)
 	s_pcb *pcb = alloc_page(process_id, pages_of_pcb(), 0, 0);
 	if (pcb == NULL)
 	{
+		printf("error 3\n");
 		free_mm(run, run_pages);
 		return NULL;
 	}
@@ -125,6 +129,7 @@ s_pcb* load_process(char *file_name, char *params)
 	pcb->page_tbl = alloc_page(process_id, P_PAGE_TBL_NUM, 0, 0);
 	if (pcb->page_tbl == NULL)
 	{
+		printf("error 5\n");
 		free_mm(pcb->page_dir, P_PAGE_DIR_NUM);
 		free_mm(pcb, pages_of_pcb());
 		free_mm(run, run_pages);
@@ -134,6 +139,7 @@ s_pcb* load_process(char *file_name, char *params)
 	pcb->stack0 = alloc_page(process_id, P_STACK0_P_NUM, 0, 0);
 	if (pcb->stack0 == NULL)
 	{
+		printf("error 6\n");
 		free_mm(pcb->page_tbl, P_PAGE_TBL_NUM);
 		free_mm(pcb->page_dir, P_PAGE_DIR_NUM);
 		free_mm(pcb, pages_of_pcb());
@@ -145,6 +151,7 @@ s_pcb* load_process(char *file_name, char *params)
 	pcb->fpu_data = alloc_page(process_id, 1, 0, 0);
 	if (pcb->fpu_data == NULL)
 	{
+		printf("error 7\n");
 		free_mm(pcb->stack0, P_STACK0_P_NUM);
 		free_mm(pcb->page_tbl, P_PAGE_TBL_NUM);
 		free_mm(pcb->page_dir, P_PAGE_DIR_NUM);

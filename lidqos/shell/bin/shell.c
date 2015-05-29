@@ -23,8 +23,9 @@ int main(int argc, char **args)
 	do
 	{
 		printf("[lidq-os /]$ ");
-		scanf("%s", buff);
-		execute_cmd(buff);
+		//scanf("%s", buff);
+//		execute_cmd(buff);
+		execute_cmd("/usr/bin/example_fpu");
 	}
 	while (1);
 
@@ -48,7 +49,10 @@ void install_program(char *path, char *args)
 	params[2] = (int) args;
 	params[3] = (int) &sem_addr;
 	__asm__ volatile("int $0x80" :: "a"(params));
-	sem_wait_shell(sem_addr);
-	sem_post_shell(sem_addr + sizeof(s_sem));
+	if (sem_addr != 0)
+	{
+		sem_wait_shell(sem_addr);
+		sem_post_shell(sem_addr + sizeof(s_sem));
+	}
 }
 
