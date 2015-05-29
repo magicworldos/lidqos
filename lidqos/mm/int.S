@@ -489,6 +489,8 @@ _int_0x82:
 	iret
 
 _int_0x83:
+	pushal
+	pushfl
 	cli
 	push	%ebp
 	mov 	%esp, %ebp
@@ -499,24 +501,42 @@ _int_0x83:
 
 	leave
 	sti
+	popfl
+	popal
 	iret
 
 _int_0x84:
+	pushal
+	pushfl
 	cli
-	push   %ebp
-	mov    %esp,%ebp
+	push	%ebp
+	mov 	%esp, %ebp
+
+	sub		$0x4, %esp
+    movl	%eax, (%esp)
+	call	sys_hd_rw
 
 	leave
 	sti
+	popfl
+	popal
 	iret
 
 _int_0x85:
+	pushal
+	pushfl
 	cli
-	push   %ebp
-	mov    %esp,%ebp
+	push	%ebp
+	mov 	%esp, %ebp
+
+	sub		$0x4, %esp
+    movl	%eax, (%esp)
+	call	sys_pts
 
 	leave
 	sti
+	popfl
+	popal
 	iret
 
 _int_0x86:

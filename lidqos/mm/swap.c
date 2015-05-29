@@ -7,6 +7,8 @@
 
 #include <kernel/swap.h>
 
+s_pt *swap_pts = NULL;
+
 /*
  * 安装交换分区，此时尚未真正的处理磁盘设备
  * 这里只是使用了一个4G大小的物理磁盘
@@ -15,8 +17,10 @@
  * 当页面被换出到交换分区之后，页表中的高20位转变为存放20位的磁盘扇区号
  * 系统启动时，初始化交换分区，将交换分区的map初始化为0
  */
-void install_swap()
+void install_swap(s_pt *pts)
 {
+	swap_pts = pts;
+
 	u8 bitmap[0x200];
 	for (int i = 0; i < 0x200; i++)
 	{
@@ -26,7 +30,7 @@ void install_swap()
 	u32 bitmap_size = 0x20000;
 	for (u32 j = 0; j < bitmap_size / 0x200; j++)
 	{
-		hd_rw(j, HD_WRITE, bitmap);
+		hd_rw(swap_pts->bitmap_start + j, HD_WRITE, bitmap);
 	}
 }
 
@@ -35,12 +39,18 @@ void install_swap()
  */
 u32 swap_alloc_sec()
 {
+	if (swap_pts == NULL)
+	{
+		printf("swap error\n");
+		return 0xffffffff;
+	}
+
 	u8 bitmap[0x200];
 	//map大小为： 4G / 4096 / 8 = 0x20000
 	u32 bitmap_size = 0x20000;
 	for (u32 j = 0; j < bitmap_size / 0x200; j++)
 	{
-		hd_rw(j, HD_READ, bitmap);
+		hd_rw(swap_pts->bitmap_start + j, HD_READ, bitmap);
 		for (u32 k = 0; k < 0x200; k++)
 		{
 			for (u32 l = 0; l < 8; l++)
@@ -48,7 +58,7 @@ u32 swap_alloc_sec()
 				if (((bitmap[k] >> l) & 0x1) == 0)
 				{
 					bitmap[k] |= (0x1 << l);
-					hd_rw(j, HD_WRITE, bitmap);
+					hd_rw(swap_pts->bitmap_start + j, HD_WRITE, bitmap);
 					u32 sec_no = (j * 0x200 * 8) + k * 8 + l;
 					return sec_no;
 				}
@@ -65,9 +75,9 @@ void swap_free_sec(u32 sec_no)
 {
 	u8 bitmap[0x200];
 	u32 ind = sec_no / 8 / 0x200;
-	hd_rw(ind, HD_READ, bitmap);
+	hd_rw(swap_pts->bitmap_start + ind, HD_READ, bitmap);
 	bitmap[(sec_no % (0x200 * 8)) / 8] &= ~(0x1 << ((sec_no % (0x200 * 8)) % 8));
-	hd_rw(ind, HD_WRITE, bitmap);
+	hd_rw(swap_pts->bitmap_start + ind, HD_WRITE, bitmap);
 }
 
 /*
@@ -78,7 +88,7 @@ void swap_write_page(u32 sec_no, void *page_data)
 	//计算物理扇区号
 	sec_no *= 8;
 	//跳过map所在扇区
-	sec_no += 0x100;
+	sec_no += swap_pts->start;
 
 	//写入8个扇区
 	for (int i = 0; i < 8; i++)
@@ -96,7 +106,7 @@ void swap_read_page(u32 sec_no, void *page_data)
 	//计算物理扇区号
 	sec_no *= 8;
 	//跳过map所在扇区
-	sec_no += 0x100;
+	sec_no += swap_pts->start;
 
 	//读出8个扇区
 	for (int i = 0; i < 8; i++)

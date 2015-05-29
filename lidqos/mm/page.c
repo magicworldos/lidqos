@@ -36,15 +36,15 @@ void install_page()
 	open_mm_page();
 }
 
-void page_error(u32 error_code ,u32 error_addr)
+void page_error(u32 error_code, u32 error_addr)
 {
 	u32 v_cr3 = pcb_cur->tss.cr3;
 	u32 pid = pcb_cur->process_id;
 
 //	if (error_addr % 0x100000 == 0)
 //	{
-		//printf("Missing Page: %x\n", error_addr);
-		//printf("esp %x\n", pcb_cur->tss.esp);
+	//printf("Missing Page: %x\n", error_addr);
+	//printf("esp %x\n", pcb_cur->tss.esp);
 //		hlt();
 //	}
 
@@ -55,8 +55,8 @@ void page_error(u32 error_code ,u32 error_addr)
 
 	if (error_code == 7)
 	{
+		printf("Segmentation fault.\n");
 		pcb_stop(pcb_cur);
-//		printf("Segmentation fault.\n");
 //		hlt();
 	}
 
@@ -88,6 +88,7 @@ void page_error(u32 error_code ,u32 error_addr)
 			//如果申请失败
 			else
 			{
+				printf("Segmentation fault.\n");
 				pcb_stop(pcb_cur);
 //				printf("Segmentation fault.\n");
 //				hlt();
@@ -121,6 +122,7 @@ void page_error(u32 error_code ,u32 error_addr)
 		//如果缺页申请失败
 		if (alloc_page_no(pid, page_no, &ph_page_no, &shared, &share_addr) == 0)
 		{
+			printf("Segmentation fault.\n");
 			pcb_stop(pcb_cur);
 //			printf("Segmentation fault.\n");
 //			hlt();
@@ -168,6 +170,7 @@ void page_error(u32 error_code ,u32 error_addr)
 		//如果换回内存页失败
 		else
 		{
+			printf("Segmentation fault.\n");
 			pcb_stop(pcb_cur);
 //			printf("Segmentation fault.\n");
 //			hlt();

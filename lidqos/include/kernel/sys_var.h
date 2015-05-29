@@ -154,17 +154,11 @@ typedef struct s_partition_table
 
 typedef struct
 {
-	s_hda_rw *hda_rw_header;
-	s_hda_rw *hda_rw_footer;
-
+	s_pt pts[0x20];
 	int pt_count;
-	s_pt *pts;
-} s_hda_info;
-
-typedef struct
-{
-	s_hda_info *hda_info;
 
 } s_sys_var;
+
+s_sys_var* get_sys_var();
 
 #endif /* SYS_VAR_H_ */

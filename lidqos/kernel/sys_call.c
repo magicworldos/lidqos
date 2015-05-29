@@ -294,10 +294,16 @@ void sys_process(int *params)
 	//载入可执行文件并创建进程
 	if (params[0] == 0)
 	{
+		char *path = (char *) params[1];
+		char *par_s = (char *) params[2];
+		path = addr_parse(cr3, path);
+		par_s = addr_parse(cr3, par_s);
+		load_process(path, par_s);
 	}
-	//退出或杀死进程
+	//停止进程
 	else if (params[0] == 1)
 	{
+		pcb_stop(pcb_cur);
 	}
 	//msleep等待
 	else if (params[0] == 2)
@@ -317,11 +323,6 @@ void sys_process(int *params)
 		args = addr_parse(cr3, args);
 
 		create_pthread(pcb_cur, p, function, args);
-	}
-	//停止进程
-	else if (params[0] == 4)
-	{
-		pcb_stop(pcb_cur);
 	}
 
 	set_cr3(cr3);
@@ -452,6 +453,52 @@ void sys_stdlib(int *params)
 		//注意，addr是个逻辑地址，不需要转换为物理地址
 		void* addr = (void *) params[1];
 		pcb_free(pcb_cur, addr);
+	}
+
+	set_cr3(cr3);
+	set_ds(0xf);
+}
+
+void sys_hd_rw(int *params)
+{
+	set_ds(GDT_INDEX_KERNEL_DS);
+	set_cr3(PAGE_DIR);
+	u32 cr3 = pcb_cur->tss.cr3;
+
+	params = addr_parse(cr3, params);
+	if (params[0] == 0)
+	{
+		u32 lba = (u32) params[1];
+		u8 com = (u32) params[2];
+		u8 *buff = (u8 *) params[3];
+		buff = addr_parse(cr3, buff);
+		hd_rw(lba, com, buff);
+	}
+
+	set_cr3(cr3);
+	set_ds(0xf);
+}
+
+void sys_pts(int *params)
+{
+	set_ds(GDT_INDEX_KERNEL_DS);
+	set_cr3(PAGE_DIR);
+	u32 cr3 = pcb_cur->tss.cr3;
+
+	params = addr_parse(cr3, params);
+	if (params[0] == 0)
+	{
+		s_pt *pts = (s_pt *) params[1];
+		pts = addr_parse(cr3, pts);
+		install_swap(pts);
+	}
+	else if (params[0] == 1)
+	{
+		s_pt *pts = (s_pt *) params[1];
+		pts = addr_parse(cr3, pts);
+		char *mount_point = (char *) params[2];
+		mount_point = addr_parse(cr3, pts);
+		mount_hda(pts, mount_point);
 	}
 
 	set_cr3(cr3);

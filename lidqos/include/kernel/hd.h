@@ -95,12 +95,6 @@ void hd_rw_cmd(u32 lba, u8 com, u8* buff);
 
 void hd_rw_data(u8 com, u8* buff);
 
-void hd_rw_insert_queue(s_hda_info *hda_info, u32 lba, u8 com, u8 *buff, int *status);
-
-void hd_rw_execute(s_hda_info *hda_info);
-
-void hd_rw_finished(s_hda_info *hda_info);
-
 void hd_rw(u32 lba, u8 com, void *buf);
 
 #endif

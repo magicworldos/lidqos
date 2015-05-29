@@ -31,12 +31,16 @@ s_list *list_pcb_wait_key = NULL;
 //浮点寄存器数据存储缓冲区
 extern u8 fpu_d[FPU_SIZE];
 
+int timer = 0;
+
 /*
  * 进程调度，目前只使用平均时间片轮转的算法
  */
 void schedule()
 {
-	//printf("timer\n");
+	//生成随机数种子
+	srand(timer);
+
 	//取得链表头
 	s_list *list_header = list_pcb;
 	if (list_header == NULL)
@@ -60,25 +64,34 @@ void schedule()
 
 	//取得链表头的进程
 	pcb_cur = (s_pcb *) (list_header->node);
+
+//	if (timer < 10)
+//	{
+//		show_pcb_list();
+//	}
 	//将链表头移动到链表尾，链表
 	list_pcb = list_header2footer(list_pcb);
-	{
-		//设置tss和ldt
-		addr_to_gdt(GDT_TYPE_TSS, (u32) &(pcb_cur->tss), &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
-		addr_to_gdt(GDT_TYPE_LDT, (u32) (pcb_cur->ldt), &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
+//	if (timer < 10)
+//	{
+//		show_pcb_list();
+//	}
+	timer++;
 
-		//将上一次运行进程设置为当前进程
-		pcb_last_run = pcb_cur;
+	//设置tss和ldt
+	addr_to_gdt(GDT_TYPE_TSS, (u32) &(pcb_cur->tss), &gdts[4], GDT_G_BYTE, sizeof(s_tss) * 8);
+	addr_to_gdt(GDT_TYPE_LDT, (u32) (pcb_cur->ldt), &gdts[5], GDT_G_BYTE, sizeof(s_gdt) * 2 * 8);
 
-		//在时钟中断时并没有切换ds和cr3寄存器
-		//但是在call tss时cr3会被修改为tss中的cr3
+	//将上一次运行进程设置为当前进程
+	pcb_last_run = pcb_cur;
 
-		//通知PIC可以接受新中断
-		outb_p(0x20, 0x20);
-		set_ds(0xf);
-		//切换进程
-		call_tss();
-	}
+	//在时钟中断时并没有切换ds和cr3寄存器
+	//但是在call tss时cr3会被修改为tss中的cr3
+
+	//通知PIC可以接受新中断
+	outb_p(0x20, 0x20);
+	set_ds(0xf);
+	//切换进程
+	call_tss();
 }
 
 /*
@@ -123,6 +136,18 @@ void pcb_insert(s_pcb *pcb)
 	s_list *p_list = alloc_mm(sizeof(s_list));
 	p_list->node = pcb;
 	list_pcb = list_insert_node(list_pcb, p_list);
+}
+
+void show_pcb_list()
+{
+	s_list *p = list_pcb;
+	while (p != NULL)
+	{
+		s_pcb *pcb = (s_pcb *) p->node;
+		printf("%d ", pcb->process_id);
+		p = p->next;
+	}
+	printf("\n");
 }
 
 /*

@@ -216,31 +216,7 @@ $(PSHELL)_S:			$(PSHELL)_elf
 	$(ELF) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -S >> $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).elf
 	$(ELF) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -s >> $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).elf
 	$(ELF) $(BUILD_PATH)/$(PSHELL)/$(SYSTEM) -r >> $(BUILD_PATH)/$(PSHELL)/$(SYSTEM).elf
-	
-	#start_pthread
-	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/start_pthread > $(BUILD_PATH)/$(PSHELL)/start_pthread_att.S
-	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/start_pthread > $(BUILD_PATH)/$(PSHELL)/start_pthread_intel.S
-	
-	#example_sleep
-	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/example_sleep > $(BUILD_PATH)/$(PSHELL)/example_sleep_att.S
-	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/example_sleep > $(BUILD_PATH)/$(PSHELL)/example_sleep_intel.S
-	
-	#example_sleep
-	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/example_sem > $(BUILD_PATH)/$(PSHELL)/example_sem_att.S
-	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/example_sem > $(BUILD_PATH)/$(PSHELL)/example_sem_intel.S
-	
-	#example_fpu
-	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/example_fpu > $(BUILD_PATH)/$(PSHELL)/example_fpu_att.S
-	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/example_fpu > $(BUILD_PATH)/$(PSHELL)/example_fpu_intel.S
-	
-	#example_icecream
-	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/example_icecream > $(BUILD_PATH)/$(PSHELL)/example_icecream_att.S
-	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/example_icecream > $(BUILD_PATH)/$(PSHELL)/example_icecream_intel.S
-	$(ELF) $(BUILD_PATH)/$(PSHELL)/example_icecream -h > $(BUILD_PATH)/$(PSHELL)/example_icecream.elf
-	$(ELF) $(BUILD_PATH)/$(PSHELL)/example_icecream -S >> $(BUILD_PATH)/$(PSHELL)/example_icecream.elf
-	$(ELF) $(BUILD_PATH)/$(PSHELL)/example_icecream -s >> $(BUILD_PATH)/$(PSHELL)/example_icecream.elf
-	$(ELF) $(BUILD_PATH)/$(PSHELL)/example_icecream -r >> $(BUILD_PATH)/$(PSHELL)/example_icecream.elf
-	
+
 #外壳程序的ecc可重定向文件
 $(PSHELL)_elf:		$(PSHELL)_objs
 	#system
@@ -251,7 +227,7 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(PSHELL)/pthread.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
 		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
-		$(BUILD_PATH)/$(PSHELL)/semaphore.o		
+		$(BUILD_PATH)/$(PSHELL)/semaphore.o	
 		
 	#start_pthread
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/start_pthread -e start_pthread -r $(BUILD_PATH)/$(PSHELL)/start_pthread.o

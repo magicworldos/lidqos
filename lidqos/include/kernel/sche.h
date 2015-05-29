@@ -18,6 +18,7 @@
 #include <kernel/config.h>
 #include <kernel/io.h>
 #include <kernel/fs.h>
+#include <kernel/rand.h>
 
 /*
  * 进程调度，目前只使用平均时间片轮转的算法

@@ -68,12 +68,6 @@ void install_system()
 {
 	//载入并运行system程序
 	load_process("/usr/bin/system", "");
-//	load_process("/usr/bin/example_sleep", "");
-//	load_process("/usr/bin/example_sem", "");
-//	load_process("/usr/bin/example_stdio", "");
-//	load_process("/usr/bin/example_fpu", "");
-//	load_process("/usr/bin/example_fpu2", "");
-//	load_process("/usr/bin/example_icecream", "");
 }
 
 /*
@@ -101,7 +95,6 @@ s_pcb* load_process(char *file_name, char *params)
 		f_close(fp);
 		return NULL;
 	}
-
 	//读入程序
 	f_read(fp, fp->fs.size, (u8 *) run);
 	//程序大小
@@ -167,7 +160,6 @@ s_pcb* load_process(char *file_name, char *params)
 	pcb_insert(pcb);
 	//进程号加一
 	process_id++;
-
 	//返回创建的新进程
 	return pcb;
 }

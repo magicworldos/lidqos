@@ -14,8 +14,8 @@ void start_pthread()
 	pthread_function(args);
 
 	int params[2];
-	//type为4,代表停止进程
-	params[0] = 4;
+	//type为1,代表停止线程
+	params[0] = 1;
 	//请求0x80号中断服务
 	__asm__ volatile("int	$0x80" :: "a"(params));
 }

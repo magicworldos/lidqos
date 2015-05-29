@@ -8,9 +8,10 @@
 #ifndef _MM_SWAP_H_
 #define _MM_SWAP_H_
 
+#include <kernel/sys_var.h>
 #include <kernel/hd.h>
 
-void install_swap();
+void install_swap(s_pt *pts);
 
 u32 swap_alloc_sec();
 

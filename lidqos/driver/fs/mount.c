@@ -124,13 +124,17 @@ int find_mount_id(s_tree *tree, char *path)
 
 void mount_hda(s_pt *pts, char *mount_point)
 {
-	s_mount *mount = alloc_mm(sizeof(s_mount));
-	mount->dev_id = pts->device;
-	str_copy(mount_point, mount->path);
+	//不挂载swap分区
+	if (pts->type != 0x1)
+	{
+		s_mount *mount = alloc_mm(sizeof(s_mount));
+		mount->dev_id = pts->device;
+		str_copy(mount_point, mount->path);
 
-	s_tree *mp = alloc_mm(sizeof(s_tree));
-	tree_init_node(mp, mount_next_id++);
-	mp->node = mount;
-	int mount_id = find_mount_id_fullpath(mount_point);
-	tree_insert_node(root, mount_id, mp);
+		s_tree *mp = alloc_mm(sizeof(s_tree));
+		tree_init_node(mp, mount_next_id++);
+		mp->node = mount;
+		int mount_id = find_mount_id_fullpath(mount_point);
+		tree_insert_node(root, mount_id, mp);
+	}
 }
