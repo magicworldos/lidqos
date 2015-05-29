@@ -18,6 +18,10 @@ int random(int min, int max);
 
 void* malloc(int size);
 
+void* realloc(void *addr, int size);
+
 void free(void *addr);
+
+void memcpy(void *from, void *to, int n);
 
 #endif /* INCLUDE_SHELL_STDIO_H_ */

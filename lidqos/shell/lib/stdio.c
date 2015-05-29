@@ -401,21 +401,26 @@ int printf(char *fmt, ...)
 			{
 				u32 num = va_arg(args, u32);
 				u32 nl = num & 0xffff;
-				u32 nh = num >> 16;
+				u32 nh = (num >> 16) & 0xffff;
 				count += puts("0x");
-				number_to_str(buff, nh, 16);
-				count += puts(buff);
-
-				number_to_str(buff, nl, 16);
-				if (nh != 0)
+				if (nh == 0)
 				{
+					number_to_str(buff, nl, 16);
+					count += puts(buff);
+				}
+				else
+				{
+					number_to_str(buff, nh, 16);
+					count += puts(buff);
+
+					number_to_str(buff, nl, 16);
 					int zero = 4 - str_len(buff);
 					for (int i = 0; i < zero; i++)
 					{
 						putchar('0');
 					}
+					count += puts(buff);
 				}
-				count += puts(buff);
 				fmt += 2;
 			}
 			else if ('f' == *(fmt + 1))

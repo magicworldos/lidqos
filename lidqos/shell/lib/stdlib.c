@@ -52,6 +52,18 @@ void* malloc(int size)
 	return ret;
 }
 
+void* realloc(void *addr, int size)
+{
+	void *new_addr = malloc(size);
+	if (new_addr == NULL)
+	{
+		return addr;
+	}
+	memcpy(addr, new_addr, size);
+	free(addr);
+	return new_addr;
+}
+
 void free(void *addr)
 {
 	int params[2];
@@ -59,5 +71,16 @@ void free(void *addr)
 	params[1] = (int) addr;
 	__asm__ volatile("int	$0x83" :: "a"(params));
 }
+
+void memcpy(void *from, void *to, int n)
+{
+	u8 *t = (u8 *) to;
+	u8 *f = (u8 *) from;
+	for (int i = 0; i < n; i++)
+	{
+		*(t + i) = *(f + i);
+	}
+}
+
 
 #endif

@@ -630,14 +630,18 @@ void init_pthread(s_pcb *pcb, u32 pid)
 	init_process_page((u32) pcb->stack0, pages_of_pcb(), pcb->page_dir);
 }
 
+/*
+ * 为pcb申请内存，并记录下其申请的地址和大小
+ */
 void* pcb_malloc(s_pcb *pcb, int size)
 {
+	//申请一个存放记录的节点
 	s_alloc_list *alloc_node = alloc_mm(sizeof(s_alloc_list));
 	if (alloc_node == NULL)
 	{
 		return NULL;
 	}
-
+	//内存申请
 	void *addr = malloc(pcb, size);
 	if (addr == NULL)
 	{
@@ -645,10 +649,12 @@ void* pcb_malloc(s_pcb *pcb, int size)
 		return NULL;
 	}
 
+	//设置节点
 	alloc_node->next = NULL;
 	alloc_node->addr = addr;
 	alloc_node->size = size;
 
+	//保存申请记录
 	if (pcb->alloc_list == NULL)
 	{
 		pcb->alloc_list = alloc_node;
@@ -665,8 +671,12 @@ void* pcb_malloc(s_pcb *pcb, int size)
 	return addr;
 }
 
+/*
+ * 为pcb释放内存，在这里按其申请的地址到记录中查找其大小并释放内存
+ */
 void pcb_free(s_pcb *pcb, void *addr)
 {
+	//得到内存释放节点
 	s_alloc_list *p = pcb->alloc_list;
 	s_alloc_list *fp = p;
 	while (p != NULL)
@@ -681,6 +691,7 @@ void pcb_free(s_pcb *pcb, void *addr)
 			{
 				fp->next = p->next;
 			}
+			//释放内存
 			free(pcb, addr, p->size);
 			free_mm(p, sizeof(s_alloc_list));
 			break;

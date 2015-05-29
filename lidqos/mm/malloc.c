@@ -90,6 +90,7 @@ void* malloc(s_pcb *pcb, int size)
 		return palloc(pcb, count);
 	}
 
+	//得到页表
 	u32 *p_tbl = pcb->page_tbl;
 
 	//4字节对齐分配内存
@@ -107,8 +108,8 @@ void* malloc(s_pcb *pcb, int size)
 	//从未被分配内存页的地方开始查找
 	for (u32 i = MALLOC_START; i < MALLOC_END && !break_status; i++)
 	{
-
-		if ((p_tbl[i] & 1) == 0 && (p_tbl[i] >> 9 & 0x1) == 0)
+		//如果页面不在内存中，执行缺页申请
+		if ((p_tbl[i] & 1) == 0)
 		{
 			u32 address = i * MM_PAGE_SIZE;
 			page_error(6, address);
