@@ -21,7 +21,11 @@ int main(int argc, char **args)
 	create_partition_table();
 #endif
 
+	//载入分区表
 	load_partition_table();
+
+	//安装分区表内容到内核
+	install_pts();
 
 #if PT_CREATE_FORMAT
 	format_hda(1, 1, 01755);
@@ -200,6 +204,14 @@ void mount_hda(s_pt *pts, char *mount_point)
 	params[0] = 1;
 	params[1] = (int) pts;
 	params[2] = (int) mount_point;
+	__asm__ volatile("int $0x85" :: "a"(params));
+}
+
+void install_pts()
+{
+	int params[2];
+	params[0] = 2;
+	params[1] = (int) sys_var->pts;
 	__asm__ volatile("int $0x85" :: "a"(params));
 }
 

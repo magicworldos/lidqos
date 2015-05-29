@@ -45,6 +45,9 @@ int start_kernel(int argc, char **args)
 	//安装文件系统
 	install_fs_system();
 
+	//安装系统全局变量
+	install_sys_var();
+
 	//安装多任务
 	install_process();
 

@@ -31,6 +31,8 @@ void install_swap(s_pt *pts);
 
 void mount_hda(s_pt *pts, char *mount_point);
 
+void install_pts();
+
 void install_program(char *path, char *args);
 
 #endif /* SYSTEM_H_ */

@@ -500,6 +500,12 @@ void sys_pts(int *params)
 		mount_point = addr_parse(cr3, pts);
 		mount_hda(pts, mount_point);
 	}
+	else if (params[0] == 2)
+	{
+		void *pts = (void *) params[1];
+		pts = addr_parse(cr3, pts);
+		install_pts(pts);
+	}
 
 	set_cr3(cr3);
 	set_ds(0xf);
