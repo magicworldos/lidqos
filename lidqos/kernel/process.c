@@ -236,6 +236,12 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	pcb->is_need_fpu = 0;
 	//内存申请表为空
 	pcb->alloc_list = NULL;
+	//main函数运行结束信号量
+	pcb->sem_shell[0].value = 0;
+	pcb->sem_shell[0].list_block = NULL;
+	//pcb完全退出信号量
+	pcb->sem_shell[1].value = 0;
+	pcb->sem_shell[1].list_block = NULL;
 
 	//地址
 	u32 address = 0;

@@ -118,6 +118,8 @@ typedef struct process_control_block
 	u8 *fpu_data;
 	//内存申请表
 	void *alloc_list;
+	//shell运行pcb的同步信号量
+	s_sem sem_shell[2];
 } s_pcb;
 
 typedef struct s_hda_rw

@@ -41,6 +41,34 @@ void sem_post(s_sem *sem)
 	}
 }
 
+void sem_wait_shell(u32 sem_addr)
+{
+	int ret = 0;
+	int params[3];
+	//P
+	params[0] = 0x10;
+	params[1] = (int) sem_addr;
+	params[2] = (int) &ret;
+	while (ret == 0)
+	{
+		__asm__ volatile("int	$0x81" :: "a"(params));
+	}
+}
+
+void sem_post_shell(u32 sem_addr)
+{
+	int ret = 0;
+	int params[3];
+	//V
+	params[0] =0x11;
+	params[1] = (int) sem_addr;
+	params[2] = (int) &ret;
+	while (ret == 0)
+	{
+		__asm__ volatile("int	$0x81" :: "a"(params));
+	}
+}
+
 s_sem* get_global_sem(int type)
 {
 	s_sem *sem;

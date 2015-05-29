@@ -296,11 +296,14 @@ void sys_process(int *params)
 	{
 		char *path = (char *) params[1];
 		char *par_s = (char *) params[2];
+		u32 *sem_addr = (u32 *) params[3];
 
 		path = addr_parse(cr3, path);
 		par_s = addr_parse(cr3, par_s);
+		sem_addr = addr_parse(cr3, sem_addr);
 
-		load_process(path, par_s);
+		s_pcb *pcb = load_process(path, par_s);
+		*sem_addr = (u32) pcb->sem_shell;
 	}
 	//停止进程
 	else if (params[0] == 1)
@@ -338,19 +341,26 @@ void sys_semaphore(int *params)
 	u32 cr3 = pcb_cur->tss.cr3;
 	params = addr_parse(cr3, params);
 
-	s_sem *sem = (s_sem *) (params[1]);
-	sem = addr_parse(cr3, sem);
-	int *ret = (int *) (params[2]);
-	ret = addr_parse(cr3, ret);
-
 	//P
 	if (params[0] == 0)
 	{
+		s_sem *sem = (s_sem *) (params[1]);
+		int *ret = (int *) (params[2]);
+
+		sem = addr_parse(cr3, sem);
+		ret = addr_parse(cr3, ret);
+
 		*ret = pcb_sem_P(pcb_cur, sem);
 	}
 	//V
 	else if (params[0] == 1)
 	{
+		s_sem *sem = (s_sem *) (params[1]);
+		int *ret = (int *) (params[2]);
+
+		sem = addr_parse(cr3, sem);
+		ret = addr_parse(cr3, ret);
+
 		*ret = pcb_sem_V(pcb_cur, sem);
 	}
 	//获取全局信号量
@@ -369,6 +379,29 @@ void sys_semaphore(int *params)
 		{
 
 		}
+	}
+	//shell pcb P
+	else if (params[0] == 0x10)
+	{
+		s_sem *sem = (s_sem *) (params[1]);
+		int *ret = (int *) (params[2]);
+		ret = addr_parse(cr3, ret);
+		*ret = pcb_sem_P(pcb_cur, sem);
+	}
+	//shell pcb V
+	else if (params[0] == 0x11)
+	{
+		s_sem *sem = (s_sem *) (params[1]);
+		int *ret = (int *) (params[2]);
+		ret = addr_parse(cr3, ret);
+		*ret = pcb_sem_V(pcb_cur, sem);
+	}
+	//取得shell 运行的pcb的信号量
+	else if (params[0] == 0x12)
+	{
+		u32 *sem_addr = (u32 *) (params[1]);
+		sem_addr = addr_parse(cr3, sem_addr);
+		*sem_addr = (u32) pcb_cur->sem_shell;
 	}
 
 	set_cr3(cr3);
