@@ -245,7 +245,8 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(PSHELL)/example_sleep.o			\
 		$(BUILD_PATH)/$(PSHELL)/string.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
-		$(BUILD_PATH)/$(PSHELL)/unistd.o
+		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
+		$(BUILD_PATH)/$(PSHELL)/semaphore.o
 		
 	#example_sem
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_sem -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
@@ -269,6 +270,8 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(KERNEL)/math.o					\
 		$(BUILD_PATH)/$(KERNEL)/math_S.o				\
 		$(BUILD_PATH)/$(PSHELL)/string.o				\
+		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
+		$(BUILD_PATH)/$(PSHELL)/semaphore.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o
 		
 	#example_fpu
@@ -277,6 +280,8 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(KERNEL)/math.o					\
 		$(BUILD_PATH)/$(PSHELL)/string.o				\
 		$(BUILD_PATH)/$(KERNEL)/math_S.o				\
+		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
+		$(BUILD_PATH)/$(PSHELL)/semaphore.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o
 	
 	#example_icecream

@@ -9,6 +9,7 @@
 #define _START_MAIN_H_
 
 #include <kernel/typedef.h>
+#include <shell/semaphore.h>
 
 /*
  * start_main : 启动函数

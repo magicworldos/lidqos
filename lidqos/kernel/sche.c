@@ -199,7 +199,6 @@ int pcb_sem_P(s_pcb *pcb, s_sem *sem)
 	list_pcb = list_remove_node(list_pcb, pcb, &list_node);
 	//加入到等待链表
 	sem->list_block = list_insert_node(sem->list_block, list_node);
-
 	return 0;
 }
 
@@ -210,11 +209,12 @@ int pcb_sem_V(s_pcb *pcb, s_sem *sem)
 	{
 		return 0;
 	}
+
 	//信号量加1
 	sem->value++;
 	//唤醒进程
 	s_list *list_node = NULL;
-	if (sem->list_block != NULL)
+	while (sem->list_block != NULL)
 	{
 		s_list *p = (s_list *) sem->list_block;
 		s_pcb *pcb_wakeup = (s_pcb *) p->node;
@@ -223,6 +223,8 @@ int pcb_sem_V(s_pcb *pcb, s_sem *sem)
 		//加入到执行链表
 		list_pcb = list_insert_node(list_pcb, list_node);
 	}
+
+	//show_pcb_list();
 	return 1;
 }
 

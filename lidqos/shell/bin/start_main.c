@@ -20,6 +20,10 @@ void start_main()
 	int params[2];
 	//type为1,代表停止进程
 	params[0] = 1;
-	//请求0x80号中断服务
+	//请求0x80号中断服务停止此进程
 	__asm__ volatile("int	$0x80" :: "a"(params));
+
+	for (;;)
+	{
+	}
 }

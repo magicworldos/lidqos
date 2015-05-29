@@ -47,7 +47,6 @@ int main(int argc, char **args)
 	printf("[ OK ] Start shell program.\n");
 	install_program("/usr/bin/shell", "");
 
-
 	for (;;)
 	{
 	}

@@ -16,4 +16,8 @@
 
 int main(int argc, char **args);
 
+void execute_cmd(char *cmd);
+
+void install_program(char *path, char *args);
+
 #endif /* INCLUDE_SHELL_SHELL_H_ */

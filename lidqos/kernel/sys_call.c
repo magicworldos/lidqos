@@ -296,8 +296,10 @@ void sys_process(int *params)
 	{
 		char *path = (char *) params[1];
 		char *par_s = (char *) params[2];
+
 		path = addr_parse(cr3, path);
 		par_s = addr_parse(cr3, par_s);
+
 		load_process(path, par_s);
 	}
 	//停止进程

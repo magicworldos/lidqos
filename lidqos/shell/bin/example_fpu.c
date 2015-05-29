@@ -10,12 +10,10 @@
 
 int main(int argc, char **args)
 {
-	for (;;)
-	{
-		float i = 3.14;
-		float j = 5.78;
-		float k = i * j;
-		printf("%f x %f = %f\n", i, j, k);
-	}
+	float i = 3.14;
+	float j = 5.78;
+	float k = i * j;
+	printf("%f x %f = %f\n", i, j, k);
+
 	return 0;
 }
