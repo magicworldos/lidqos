@@ -159,6 +159,8 @@ typedef struct
 
 } s_sys_var;
 
-s_sys_var* get_sys_var();
+void install_sys_var();
+
+void install_pts(void *pts);
 
 #endif /* SYS_VAR_H_ */

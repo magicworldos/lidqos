@@ -25,7 +25,7 @@ int main(int argc, char **args)
 	load_partition_table();
 
 	//安装分区表内容到内核
-	install_pts();
+	install_pts_to_kernel();
 
 #if PT_CREATE_FORMAT
 	format_hda(1, 1, 01755);
@@ -97,7 +97,7 @@ void load_partition_table()
 			break;
 		}
 		sys_var->pt_count++;
-		printf("\thda%d   %d    %d  %d    %x %x %x\n", sys_var->pts[i].device, sys_var->pts[i].boot, sys_var->pts[i].id, sys_var->pts[i].type, sys_var->pts[i].start, sys_var->pts[i].start + sys_var->pts[i].size - 1, sys_var->pts[i].size);
+		printf("\thda%d   %d    %d  %d    %d %d %d\n", sys_var->pts[i].device, sys_var->pts[i].boot, sys_var->pts[i].id, sys_var->pts[i].type, sys_var->pts[i].start, sys_var->pts[i].start + sys_var->pts[i].size - 1, sys_var->pts[i].size);
 	}
 }
 
@@ -207,7 +207,7 @@ void mount_hda(s_pt *pts, char *mount_point)
 	__asm__ volatile("int $0x85" :: "a"(params));
 }
 
-void install_pts()
+void install_pts_to_kernel()
 {
 	int params[2];
 	params[0] = 2;
