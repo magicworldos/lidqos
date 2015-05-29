@@ -27,10 +27,6 @@ int main(int argc, char **args)
 	format_hda(1, 1, 01755);
 #endif
 
-	//安装交换分区
-	install_swap(&(sys_var->pts[2]));
-	printf("[ OK ] Install had3 to swap.\n");
-
 	//mount hda1
 	mount_hda(&(sys_var->pts[0]), "/data/work/");
 	printf("[ OK ] Mount hda1 to /data/work/.\n");
@@ -38,6 +34,10 @@ int main(int argc, char **args)
 	//mount hda1
 	mount_hda(&(sys_var->pts[1]), "/data/tool/");
 	printf("[ OK ] Mount hda2 to /data/tool/.\n");
+
+	//install hda3
+	install_swap(&(sys_var->pts[2]));
+	printf("[ OK ] Mount had3 to swap.\n");
 
 	for (;;)
 	{
