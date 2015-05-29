@@ -258,7 +258,7 @@ void int_keyboard()
 			*ch_for_get = ch;
 			//清空数据区
 			ch_for_get = NULL;
-			pcb_wakeup_key();
+			//pcb_wakeup_key();
 		}
 	}
 	//清除键盘状态可以接受新按键
@@ -435,7 +435,7 @@ void sys_stdio(int *params)
 		char *ch = (char *) params[1];
 		ch = addr_parse(cr3, ch);
 		ch_for_get = ch;
-		pcb_wait_key(pcb_cur);
+		//pcb_wait_key(pcb_cur);
 	}
 	//backspace
 	else if (params[0] == 0x11)

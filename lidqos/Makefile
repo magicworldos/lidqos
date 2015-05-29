@@ -215,6 +215,9 @@ $(PSHELL)_S:			$(PSHELL)_elf
 	$(ELF) $(BUILD_PATH)/$(PSHELL)/system -s >> $(BUILD_PATH)/$(PSHELL)/system.elf
 	$(ELF) $(BUILD_PATH)/$(PSHELL)/system -r >> $(BUILD_PATH)/$(PSHELL)/system.elf
 
+	$(OD)  $(OD_PARAMS_32_ATT)   $(BUILD_PATH)/$(PSHELL)/shell > $(BUILD_PATH)/$(PSHELL)/shell_att.S
+	$(OD)  $(OD_PARAMS_32_INTEL) $(BUILD_PATH)/$(PSHELL)/shell > $(BUILD_PATH)/$(PSHELL)/shell_intel.S
+	
 #外壳程序的ecc可重定向文件
 $(PSHELL)_elf:		$(PSHELL)_objs
 	#system

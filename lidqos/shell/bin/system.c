@@ -222,7 +222,7 @@ void install_pts_to_kernel()
 void install_program(char *path, char *args)
 {
 	void *ret = NULL;
-	int params[3];
+	int params[4];
 	params[0] = 0;
 	params[1] = (int) path;
 	params[2] = (int) args;

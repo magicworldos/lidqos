@@ -455,9 +455,9 @@ _int_0x80:
 	iret
 
 _int_0x81:
+	cli
 	pushal
 	pushfl
-	cli
 	push	%ebp
 	mov 	%esp, %ebp
 
