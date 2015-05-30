@@ -213,7 +213,6 @@ int pcb_sem_V(s_pcb *pcb, s_sem *sem)
 		sem->list_block = list_remove_node(sem->list_block, pcb_wakeup, &list_node);
 		//加入到执行链表
 		list_pcb = list_insert_node(list_pcb, list_node);
-		printf("wake up %d\n", pcb_wakeup->process_id);
 	}
 
 	//show_pcb_list();

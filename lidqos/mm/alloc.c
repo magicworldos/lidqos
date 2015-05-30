@@ -104,8 +104,8 @@ void* alloc_page(u32 process_id, u32 count, u32 can_swap, u32 is_dynamic)
 	//设置map的各个内存页的状态为已使用
 	for (u32 i = 0; i < count; i++)
 	{
-		mmap[start_with + i] = MM_USED; //(MM_USED | ((u32) can_swap << 1) | ((u32) is_dynamic << 2));
-		map_process[i] = process_id;
+		mmap[start_with + i] = MM_USED | MM_CAN_SWAP; //(MM_USED | ((u32) can_swap << 1) | ((u32) is_dynamic << 2));
+		map_process[start_with + i] = process_id;
 	}
 
 	//返回查找到内存地址

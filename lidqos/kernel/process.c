@@ -91,7 +91,6 @@ s_pcb* load_process(char *file_name, char *params)
 
 	//申请页面用于存放程序代码
 	void *run = alloc_page(process_id, run_pages, 0, 0);
-	printf("%x\n", run);
 	if (run == NULL)
 	{
 		printf("error 2\n");

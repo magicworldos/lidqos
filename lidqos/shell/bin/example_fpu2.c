@@ -10,10 +10,5 @@
 
 int main(int argc, char **args)
 {
-	float i = 36.83;
-	float j = 7.19;
-	float k = i / j;
-	printf("%f / %f = %f\n", i, j, k);
-
 	return 0;
 }
