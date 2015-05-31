@@ -24,8 +24,8 @@ int main(int argc, char **args)
 	{
 		printf("[lidq-os /]$ ");
 		scanf("%s", buff);
-		execute_cmd(buff);
-//		execute_cmd("/usr/bin/example_fpu");
+//		execute_cmd(buff);
+		execute_cmd("/usr/bin/example_fpu");
 	}
 	while (1);
 

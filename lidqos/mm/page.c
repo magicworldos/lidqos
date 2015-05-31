@@ -23,10 +23,10 @@ void install_page()
 	{
 		for (int j = 0; j < 1024; j++)
 		{
-			page_table[j] = address | 7;
+			page_table[j] = address | 3;
 			address += MM_PAGE_SIZE;
 		}
-		page_dir[i] = ((u32) page_table | 7);
+		page_dir[i] = ((u32) page_table | 3);
 		page_table += 1024;
 	}
 
@@ -55,7 +55,7 @@ void page_error(u32 error_code, u32 error_addr)
 
 	if (error_code == 7)
 	{
-		printf("Segmentation fault 0.\n");
+		printf("Segmentation fault 0: %x %x\n", error_code, error_addr);
 		pcb_stop(pcb_cur);
 //		hlt();
 	}
@@ -88,7 +88,7 @@ void page_error(u32 error_code, u32 error_addr)
 			//如果申请失败
 			else
 			{
-				printf("Segmentation fault 1.\n");
+				printf("Segmentation fault : %x %x\n", error_code, error_addr);
 				pcb_stop(pcb_cur);
 //				printf("Segmentation fault.\n");
 //				hlt();
@@ -122,7 +122,7 @@ void page_error(u32 error_code, u32 error_addr)
 		//如果缺页申请失败
 		if (alloc_page_no(pid, page_no, &ph_page_no, &shared, &share_addr) == 0)
 		{
-			printf("Segmentation fault 2.\n");
+			printf("Segmentation fault 2: %x %x\n", error_code, error_addr);
 			pcb_stop(pcb_cur);
 //			printf("Segmentation fault.\n");
 //			hlt();
@@ -170,7 +170,7 @@ void page_error(u32 error_code, u32 error_addr)
 		//如果换回内存页失败
 		else
 		{
-			printf("Segmentation fault 3.\n");
+			printf("Segmentation fault 3: %x %x\n", error_code, error_addr);
 			pcb_stop(pcb_cur);
 //			printf("Segmentation fault.\n");
 //			hlt();
