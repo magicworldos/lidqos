@@ -328,8 +328,26 @@ void execute_cmd(char *cmd)
 		fclose(fp);
 		return;
 	}
+
 	Elf32_Ehdr *ehdr = malloc(fp->fs.size);
 	fread(fp, sizeof(Elf32_Ehdr), (char *) ehdr);
+	free(ehdr);
+	fclose(fp);
+	if (check_elf_file(ehdr))
+	{
+		install_program(full_path, cmd);
+	}
+	else
+	{
+		printf("-bash: \"%s\": is not an executing program.\n", cmd_file);
+	}
+	free(cmd_param);
+	free(full_path);
+	free(cmd_file);
+}
+
+int check_elf_file(Elf32_Ehdr *ehdr)
+{
 	int check_passed = 1;
 	if (ehdr->e_ident[0] != 0x7f)
 	{
@@ -359,21 +377,7 @@ void execute_cmd(char *cmd)
 	{
 		check_passed = 0;
 	}
-
-	free(ehdr);
-	fclose(fp);
-
-	if (check_passed)
-	{
-		install_program(full_path, cmd);
-	}
-	else
-	{
-		printf("-bash: \"%s\": is not an executing program.\n", cmd_file);
-	}
-	free(cmd_param);
-	free(full_path);
-	free(cmd_file);
+	return check_passed;
 }
 
 void install_program(char *path, char *args)

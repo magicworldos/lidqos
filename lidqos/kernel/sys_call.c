@@ -594,9 +594,17 @@ void sys_file(int *params)
 		u32 uid = params[3];
 		u32 gid = params[4];
 		s_file *fp = (s_file *) params[5];
+		int *status = (int *) params[6];
 		file = addr_parse(cr3, file);
 		fp = addr_parse(cr3, fp);
+		status = addr_parse(cr3, status);
 		s_file *ker_fp = f_open(file, fs_mode, uid, gid);
+		if (ker_fp == NULL)
+		{
+			*status = 0;
+			return;
+		}
+		*status = 1;
 		mmcopy(ker_fp, fp, sizeof(s_file));
 		free_mm(ker_fp, sizeof(s_file));
 		return;
@@ -627,15 +635,10 @@ void sys_file(int *params)
 	{
 		s_file *fp = (s_file *) params[1];
 		fp = addr_parse(cr3, fp);
-		printf("size %d\n", fp->fs.size);
 		int size = params[2];
 		char *data = (char *) params[3];
 		data = addr_parse(cr3, data);
 		f_read(fp, size, data);
-//		for (int i = 0; i < 6; i++)
-//		{
-//			printf("%x ", data[i]);
-//		}
 		return;
 	}
 

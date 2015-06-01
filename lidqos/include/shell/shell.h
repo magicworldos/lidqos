@@ -46,6 +46,8 @@ void find_cmd_in_path(char *cmd, char* out);
 
 void execute_cmd(char *cmd);
 
+int check_elf_file(Elf32_Ehdr *ehdr);
+
 void install_program(char *path, char *args);
 
 void get_current_folder_name(char *folder_name);

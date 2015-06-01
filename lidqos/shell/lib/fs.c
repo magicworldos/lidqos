@@ -23,7 +23,8 @@ extern s_session *session;
  */
 FILE* fopen(char *file, int mode)
 {
-	int params[6];
+	int status = 0;
+	int params[7];
 
 	u32 uid = session->uid;
 	u32 gid = session->gid;
@@ -35,8 +36,14 @@ FILE* fopen(char *file, int mode)
 	params[3] = (int) uid;
 	params[4] = (int) gid;
 	params[5] = (int) fp;
+	params[6] = (int) &status;
 	__asm__ volatile("int	$0x86" :: "a"(params));
 
+	if (status == 0)
+	{
+		free(fp);
+		fp = NULL;
+	}
 	return fp;
 }
 
@@ -47,6 +54,11 @@ FILE* fopen(char *file, int mode)
  */
 void fclose(FILE *fp)
 {
+	if (fp == NULL)
+	{
+		return;
+	}
+
 	int params[2];
 	params[0] = 1;
 	params[1] = (int) fp;
