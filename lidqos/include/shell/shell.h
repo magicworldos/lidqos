@@ -21,18 +21,13 @@
 //计算机名，以后是要从配置文件里读的
 #define COMPUTER_NAME				"lidq-os"
 
-typedef struct
-{
-	char folder_name[0x200];
-} s_folder_name;
-
 #define FOLDE_RNAME_STACK_SIZE	(0x200)
 
 int main(int argc, char **args);
 
 void init_shell();
 
-void shell_addnew_path(char *path);
+void shell_init_path(char *path);
 
 void login();
 
@@ -40,13 +35,7 @@ void logout();
 
 int check_passwd(char *username, char *passwd);
 
-void repath(char *path, char *current_path, char *full_path);
-
-void find_cmd_in_path(char *cmd, char* out);
-
 void execute_cmd(char *cmd);
-
-int check_elf_file(Elf32_Ehdr *ehdr);
 
 void install_program(char *path, char *args);
 

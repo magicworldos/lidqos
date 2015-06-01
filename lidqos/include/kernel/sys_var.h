@@ -95,12 +95,6 @@ typedef struct tss_s
 	u32 trace_bitmap;
 } s_tss;
 
-typedef struct shell_path_s
-{
-	char *path;
-	struct shell_path_s *next;
-} s_path;
-
 //session数据结构
 typedef struct session_s
 {
@@ -118,7 +112,7 @@ typedef struct session_s
 	char *current_folder_name;
 
 	//环境变量
-	s_path *PATH;
+	char *PATH;
 	//状态
 	int status;
 

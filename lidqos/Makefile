@@ -239,7 +239,6 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
 		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
 		$(BUILD_PATH)/$(PSHELL)/semaphore.o				\
-		$(BUILD_PATH)/$(PSHELL)/stack.o					\
 		$(BUILD_PATH)/$(PSHELL)/fs.o
 		
 	#start_pthread
@@ -311,7 +310,6 @@ $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/stdio.c				-o $(BUILD_PATH)/$(PSHELL)/stdio.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/stdlib.c				-o $(BUILD_PATH)/$(PSHELL)/stdlib.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/fs.c					-o $(BUILD_PATH)/$(PSHELL)/fs.o
-	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/stack.c				-o $(BUILD_PATH)/$(PSHELL)/stack.o
 	$(CC) $(GC_S_PARAMS) mm/string.c						-o $(BUILD_PATH)/$(PSHELL)/string.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_sleep.c		-o $(BUILD_PATH)/$(PSHELL)/example_sleep.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_sem.c		-o $(BUILD_PATH)/$(PSHELL)/example_sem.o

@@ -50,12 +50,14 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size);
  */
 void init_process_page(u32 address, u32 pages, u32 *page_dir);
 
+int check_elf_file(Elf32_Ehdr *ehdr);
+
 /*
  * elf可执行文件重定位
  *  - void *addr : 可执行程序地址
  * return : u32 程序入口地址
  */
-u32 relocation_elf(void *addr);
+int relocation_elf(void *addr, u32 *entry_point);
 
 /*
  * 对.text段或.data段进程重定位

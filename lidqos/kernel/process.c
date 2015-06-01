@@ -58,7 +58,7 @@ void install_process()
 	u32 run_size = fp->fs.size;
 	//关闭文件
 	f_close(fp);
-	start_pthread_data_offset = relocation_elf(start_pthread_data);
+	relocation_elf(start_pthread_data, &start_pthread_data_offset);
 }
 
 /*
@@ -105,7 +105,14 @@ s_pcb* load_process(char *file_name, char *params)
 	//关闭文件
 	f_close(fp);
 	//对elf可重定位文件进行重定位，并取得程序入口偏移地址
-	u32 entry_point = relocation_elf(run);
+	u32 entry_point = 0;
+	int status = relocation_elf(run, &entry_point);
+	if (status == 0)
+	{
+		printf("error 3\n");
+		free_mm(run, run_pages);
+		return NULL;
+	}
 
 	//进程控制块
 	s_pcb *pcb = alloc_page(process_id, pages_of_pcb(), 0, 0);
@@ -331,11 +338,16 @@ void init_process_page(u32 address, u32 pages, u32 *page_dir)
  *  - void *addr : 可执行程序地址
  * return : u32 程序入口地址
  */
-u32 relocation_elf(void *addr)
+int relocation_elf(void *addr, u32 *entry_point)
 {
 	//elf文件头
 	Elf32_Ehdr ehdr;
 	mmcopy_with((char *) addr, (char *) &ehdr, 0, sizeof(Elf32_Ehdr));
+
+	if(check_elf_file(&ehdr) == 0)
+	{
+		return 0;
+	}
 
 	//程序头
 	Elf32_Phdr phdr;
@@ -447,8 +459,44 @@ u32 relocation_elf(void *addr)
 		free_mm(symtab, symtab_size);
 	}
 
+	*entry_point = sh_text_offset;
 	//返回程序入口地址
-	return sh_text_offset;
+	return 1;
+}
+
+int check_elf_file(Elf32_Ehdr *ehdr)
+{
+	int check_passed = 1;
+
+	if (ehdr->e_ident[0] != 0x7f)
+	{
+		check_passed = 0;
+	}
+	if (ehdr->e_ident[1] != 0x45)
+	{
+		check_passed = 0;
+	}
+	if (ehdr->e_ident[2] != 0x4c)
+	{
+		check_passed = 0;
+	}
+	if (ehdr->e_ident[3] != 0x46)
+	{
+		check_passed = 0;
+	}
+	if (ehdr->e_ident[4] != 0x01)
+	{
+		check_passed = 0;
+	}
+	if (ehdr->e_ident[5] != 0x01)
+	{
+		check_passed = 0;
+	}
+	if (ehdr->e_type != 0x01)
+	{
+		check_passed = 0;
+	}
+	return check_passed;
 }
 
 /*
