@@ -35,6 +35,7 @@ int main(int argc, char **args)
 				break;
 			}
 			execute_cmd(cmd);
+//			execute_cmd("/usr/bin/example_fpu");
 		}
 		free(cmd);
 
@@ -46,12 +47,12 @@ int main(int argc, char **args)
 
 void init_shell()
 {
-	session = malloc(sizeof(session));
+	session = malloc(sizeof(s_session));
 	session->username = malloc(USER_U_LEN);
 	session->home = malloc(USER_H_LEN);
 	session->current_path = malloc(SHELL_CMD_LEN);
 	session->current_folder_name = malloc(SHELL_CMD_LEN);
-
+	session->PATH = NULL;
 	session->username[0] = '\0';
 	session->home[0] = '\0';
 	session->current_path[0] = '\0';
@@ -98,7 +99,7 @@ void login()
 		puts("Password: ");
 		while ((*p = getchar()) != '\n')
 		{
-			putchar('*');
+			//putchar('*');
 			p++;
 		}
 		putchar('\n');
@@ -119,11 +120,19 @@ void logout()
 
 int check_passwd(char *username, char *passwd)
 {
+//	str_copy("lidq", session->username);
+//	str_copy("/home/lidq/", session->home);
+//	session->uid = 1;
+//	session->gid = 1;
+//	session->status = SESSION_STATUS_LOGIN;
+//	return 1;
+
 	//临时校验root/123456
 	if (str_compare(username, "root") == 0 && str_compare(passwd, "root") == 0)
 	{
 		str_copy(username, session->username);
 		str_copy("/root/", session->home);
+		str_copy(session->home, session->current_path);
 		session->uid = 0;
 		session->gid = 0;
 		session->status = SESSION_STATUS_LOGIN;
@@ -136,6 +145,7 @@ int check_passwd(char *username, char *passwd)
 	{
 		str_copy(username, session->username);
 		str_copy("/home/lidq/", session->home);
+		str_copy(session->home, session->current_path);
 		session->uid = 1;
 		session->gid = 1;
 		session->status = SESSION_STATUS_LOGIN;
@@ -159,18 +169,16 @@ void repath(char *path, char *current_path, char *full_path)
 	}
 
 	s_stack *sp = stack_init(sizeof(s_folder_name), FOLDE_RNAME_STACK_SIZE);
-
-	s_folder_name sfn;
-
+	s_folder_name *sfn = malloc(sizeof(s_folder_name));
 	if (current_path != NULL && path[0] != '/')
 	{
 		for (int i = 0, j = 0; i < str_len(current_path); i++)
 		{
-			sfn.folder_name[j] = current_path[i];
+			sfn->folder_name[j] = current_path[i];
 			if (current_path[i] == '/')
 			{
-				sfn.folder_name[j + 1] = '\0';
-				stack_push(sp, &sfn);
+				sfn->folder_name[j + 1] = '\0';
+				stack_push(sp, sfn);
 				j = 0;
 			}
 			else
@@ -182,32 +190,32 @@ void repath(char *path, char *current_path, char *full_path)
 
 	for (int i = 0, j = 0; i < str_len(path); i++)
 	{
-		sfn.folder_name[j] = path[i];
+		sfn->folder_name[j] = path[i];
+
 		if (path[i] == '/' || path[i + 1] == '\0')
 		{
-			sfn.folder_name[j + 1] = '\0';
-			if (i != 0 && str_compare(sfn.folder_name, "/") == 0)
+			sfn->folder_name[j + 1] = '\0';
+			if (i != 0 && str_compare(sfn->folder_name, "/") == 0)
 			{
-
 			}
-			else if (str_compare(sfn.folder_name, "./") == 0)
+			else if (str_compare(sfn->folder_name, "./") == 0)
 			{
-
 			}
-			else if (str_compare(sfn.folder_name, "../") == 0)
+			else if (str_compare(sfn->folder_name, "../") == 0)
 			{
-				stack_pop(sp, &sfn);
+				stack_pop(sp, sfn);
 				if (stack_count(sp) <= 0)
 				{
-					sfn.folder_name[0] = '/';
-					sfn.folder_name[1] = '\0';
-					stack_push(sp, &sfn);
+					sfn->folder_name[0] = '/';
+					sfn->folder_name[1] = '\0';
+					stack_push(sp, sfn);
 				}
-				sfn.folder_name[0] = '\0';
+				sfn->folder_name[0] = '\0';
 			}
 			else
 			{
-				stack_push(sp, &sfn);
+				//printf("push %s\n", sfn->folder_name);
+				stack_push(sp, sfn);
 			}
 			j = 0;
 		}
@@ -221,17 +229,17 @@ void repath(char *path, char *current_path, char *full_path)
 
 	while (stack_count(sp) > 0)
 	{
-		stack_pop(sp, &sfn);
-		stack_push(sp_build, &sfn);
+		stack_pop(sp, sfn);
+		stack_push(sp_build, sfn);
 	}
 	int j = 0;
 	while (stack_count(sp_build) > 0)
 	{
-		stack_pop(sp_build, &sfn);
-		for (int i = 0; i < str_len(sfn.folder_name); i++)
+		stack_pop(sp_build, sfn);
+		for (int i = 0; i < str_len(sfn->folder_name); i++)
 		{
-			full_path[j++] = sfn.folder_name[i];
-			if (sfn.folder_name[i + 1] == '\0')
+			full_path[j++] = sfn->folder_name[i];
+			if (sfn->folder_name[i + 1] == '\0')
 			{
 				break;
 			}
@@ -239,8 +247,8 @@ void repath(char *path, char *current_path, char *full_path)
 	}
 	full_path[j] = '\0';
 
+	free(sfn);
 	stack_free(sp_build);
-
 	stack_free(sp);
 }
 
@@ -281,11 +289,9 @@ void execute_cmd(char *cmd)
 	{
 		return;
 	}
-
 	char *cmd_file = malloc(SHELL_CMD_LEN);
 	char *cmd_param = malloc(SHELL_CMD_LEN);
 	char *p = cmd;
-
 	int ty = 0;
 	int j = 0, k = 0;
 	for (int i = 0; i < str_true_len(p); i++)
@@ -309,11 +315,9 @@ void execute_cmd(char *cmd)
 	}
 	cmd_file[k] = '\0';
 	cmd_param[j] = '\0';
-
 	char *full_path = malloc(SHELL_CMD_LEN);
 	full_path[0] = '\0';
 	find_cmd_in_path(cmd_file, full_path);
-
 	FILE *fp = fopen(full_path, FS_MODE_READ);
 	if (fp == NULL)
 	{
@@ -325,7 +329,6 @@ void execute_cmd(char *cmd)
 		return;
 	}
 	fclose(fp);
-
 	install_program(full_path, cmd);
 
 	free(cmd_param);

@@ -19,7 +19,6 @@ s_stack* stack_init(int unit_size, int unit_count)
 
 	sp->size = unit_size * unit_count;
 	sp->addr = malloc(sp->size);
-
 	sp->top = sp->addr + sp->size;
 	sp->bottom = sp->top;
 
@@ -34,15 +33,13 @@ void stack_free(s_stack* sp)
 
 int stack_push(s_stack* sp, void *unit)
 {
-	if (sp->top <= sp->addr)
+	if (sp->top < sp->addr)
 	{
 		return 0;
 	}
-
-	memcpy(unit, sp->top + sp->unit_size, sp->unit_size);
-	sp->top += sp->unit_size;
+	sp->top -= (u32)sp->unit_size;
+	memcpy(unit, sp->top, sp->unit_size);
 	sp->unit_count++;
-
 	return 1;
 }
 
@@ -52,9 +49,8 @@ int stack_pop(s_stack* sp, void *unit)
 	{
 		return 0;
 	}
-
 	memcpy(sp->top, unit, sp->unit_size);
-	sp->top -= sp->unit_size;
+	sp->top += sp->unit_size;
 	sp->unit_count--;
 
 	return 1;

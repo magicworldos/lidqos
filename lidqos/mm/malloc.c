@@ -55,6 +55,13 @@ void* palloc(s_pcb *pcb, int page)
 	//设置map的各个内存页的状态为已使用
 	for (u32 i = 0; i < page; i++)
 	{
+		//如果页面不在内存中，执行缺页申请
+		if ((p_tbl[start_with + i] & 1) == 0)
+		{
+			u32 address = (start_with + i) * MM_PAGE_SIZE;
+			page_error(6, address);
+		}
+
 		//将10bit置为1,表示已使用
 		p_tbl[start_with + i] |= (1 << 10);
 		//将11bit置为0,表示非动态页

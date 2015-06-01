@@ -48,7 +48,7 @@ void page_error(u32 error_code, u32 error_addr)
 //		hlt();
 //	}
 
-//	if (error_addr >= 0x20000000)
+//	if (pid == 2)
 //	{
 //		printf("Missing Page: %x %x\n", error_addr, error_code);
 //	}
@@ -88,7 +88,7 @@ void page_error(u32 error_code, u32 error_addr)
 			//如果申请失败
 			else
 			{
-				printf("Segmentation fault : %x %x\n", error_code, error_addr);
+				printf("Segmentation fault 1: %x %x\n", error_code, error_addr);
 				pcb_stop(pcb_cur);
 //				printf("Segmentation fault.\n");
 //				hlt();

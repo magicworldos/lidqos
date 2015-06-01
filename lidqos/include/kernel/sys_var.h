@@ -64,7 +64,7 @@
 #define SHELL_CMD_EXIT				("exit")
 
 //用户信息，用户名长度
-#define USER_U_LEN					(0x20)
+#define USER_U_LEN					(0x200)
 //用户信息，密码长度
 #define USER_P_LEN					(0x200)
 //用户信息，主目录长度

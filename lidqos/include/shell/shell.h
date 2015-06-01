@@ -22,8 +22,9 @@
 
 typedef struct
 {
-	char folder_name[SHELL_CMD_LEN];
+	char folder_name[0x200];
 } s_folder_name;
+
 #define FOLDE_RNAME_STACK_SIZE	(0x200)
 
 int main(int argc, char **args);

@@ -66,6 +66,10 @@ void* realloc(void *addr, int size)
 
 void free(void *addr)
 {
+	if (addr == NULL)
+	{
+		return;
+	}
 	int params[2];
 	params[0] = 0x11;
 	params[1] = (int) addr;
@@ -78,9 +82,8 @@ void memcpy(void *from, void *to, int n)
 	u8 *f = (u8 *) from;
 	for (int i = 0; i < n; i++)
 	{
-		*(t + i) = *(f + i);
+		t[i] = f[i];
 	}
 }
-
 
 #endif

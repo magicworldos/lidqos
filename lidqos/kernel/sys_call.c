@@ -581,6 +581,11 @@ void sys_pts(int *params)
  */
 void sys_file(int *params)
 {
+	set_ds(GDT_INDEX_KERNEL_DS);
+	set_cr3(PAGE_DIR);
+	u32 cr3 = pcb_cur->tss.cr3;
+	params = addr_parse(cr3, params);
+
 	//fopen打开文件
 	if (params[0] == 0)
 	{
@@ -589,6 +594,8 @@ void sys_file(int *params)
 		u32 uid = params[3];
 		u32 gid = params[4];
 		s_file **fp = (s_file **) params[5];
+		file = addr_parse(cr3, file);
+		fp = addr_parse(cr3, fp);
 		*fp = f_open(file, fs_mode, uid, gid);
 		return;
 	}
@@ -596,6 +603,7 @@ void sys_file(int *params)
 	else if (params[0] == 1)
 	{
 		s_file *fp = (s_file *) params[1];
+		fp = addr_parse(cr3, fp);
 		f_close(fp);
 		return;
 	}
@@ -603,8 +611,10 @@ void sys_file(int *params)
 	else if (params[0] == 2)
 	{
 		s_file *fp = (s_file *) params[1];
+		fp = addr_parse(cr3, fp);
 		int size = params[2];
 		char *data = (char *) params[3];
+		data = addr_parse(cr3, data);
 		f_write(fp, size, data);
 		return;
 	}
@@ -612,8 +622,10 @@ void sys_file(int *params)
 	else if (params[0] == 3)
 	{
 		s_file *fp = (s_file *) params[1];
+		fp = addr_parse(cr3, fp);
 		int size = params[2];
 		char *data = (char *) params[3];
+		data = addr_parse(cr3, data);
 		f_read(fp, size, data);
 		return;
 	}
@@ -622,7 +634,9 @@ void sys_file(int *params)
 	else if (params[0] == 4)
 	{
 		s_file *fp = (s_file *) params[1];
+		fp = addr_parse(cr3, fp);
 		char *data = (char *) params[2];
+		data = addr_parse(cr3, data);
 		if (f_is_eof(fp))
 		{
 			*data = 0;
@@ -637,7 +651,9 @@ void sys_file(int *params)
 	else if (params[0] == 5)
 	{
 		s_file *fp = (s_file *) params[1];
+		fp = addr_parse(cr3, fp);
 		char *data = (char *) params[2];
+		data = addr_parse(cr3, data);
 		while (!f_is_eof(fp))
 		{
 			f_read(fp, 1, data);
@@ -654,6 +670,7 @@ void sys_file(int *params)
 	else if (params[0] == 6)
 	{
 		s_file *fp = (s_file *) params[1];
+		fp = addr_parse(cr3, fp);
 		char data = (char) params[2];
 		f_write(fp, 1, &data);
 		return;
@@ -662,7 +679,9 @@ void sys_file(int *params)
 	else if (params[0] == 7)
 	{
 		s_file *fp = (s_file *) params[1];
+		fp = addr_parse(cr3, fp);
 		char *data = (char *) params[2];
+		data = addr_parse(cr3, data);
 		int size = str_len(data);
 
 		f_write(fp, size, data);
@@ -675,7 +694,9 @@ void sys_file(int *params)
 	else if (params[0] == 8)
 	{
 		s_file *fp = (s_file *) params[1];
+		fp = addr_parse(cr3, fp);
 		int *eof = (int *) params[2];
+		eof = addr_parse(cr3, eof);
 		if (f_is_eof(fp))
 		{
 			*eof = 1;
@@ -690,7 +711,9 @@ void sys_file(int *params)
 	else if (params[0] == 9)
 	{
 		char *path_name = (char *) params[1];
+		path_name = addr_parse(cr3, path_name);
 		s_file **fs = (s_file **) params[2];
+		fs = addr_parse(cr3, fs);
 		*fs = f_opendir(path_name);
 		return;
 	}
@@ -698,9 +721,12 @@ void sys_file(int *params)
 	else if (params[0] == 10)
 	{
 		s_file *fp = (s_file *) params[1];
+		fp = addr_parse(cr3, fp);
 		f_closedir(fp);
 	}
-	return;
+
+	set_cr3(cr3);
+	set_ds(0xf);
 }
 
 /*
@@ -711,26 +737,38 @@ void sys_file(int *params)
  */
 void sys_fs(int *params)
 {
+	set_ds(GDT_INDEX_KERNEL_DS);
+	set_cr3(PAGE_DIR);
+	u32 cr3 = pcb_cur->tss.cr3;
+	params = addr_parse(cr3, params);
+
 	//fs_find_path
 	if (params[0] == 0)
 	{
 		char *path = (char *) params[1];
+		path = addr_parse(cr3, path);
 		u32 uid = (u32) params[2];
 		u32 gid = (u32) params[3];
 		s_fs **fs = (s_fs **) params[4];
+		fs = addr_parse(cr3, fs);
 		u32 *dev_id = (u32 *) params[5];
+		dev_id = addr_parse(cr3, dev_id);
 		int *status = (u32 *) params[6];
+		status = addr_parse(cr3, status);
 		*status = fs_find_path_by_user(path, uid, gid, dev_id, fs);
 	}
 	//fs_create_fs
 	else if (params[0] == 3)
 	{
 		char *path = (char *) params[1];
+		path = addr_parse(cr3, path);
 		char *fs_name = (char *) params[2];
+		fs_name = addr_parse(cr3, fs_name);
 		u32 uid = (u32) params[3];
 		u32 gid = (u32) params[4];
 		u32 mode = (u32) params[5];
 		int *status = (int *) params[6];
+		status = addr_parse(cr3, status);
 		u32 s_no = fs_create_fs_path(path, fs_name, uid, gid, mode);
 		*status = -1;
 		if (s_no != 0)
@@ -742,9 +780,14 @@ void sys_fs(int *params)
 	else if (params[0] == 4)
 	{
 		char *path = (char *) params[1];
+		path = addr_parse(cr3, path);
 		u32 uid = (u32) params[2];
 		u32 gid = (u32) params[3];
 		int *status = (int *) params[4];
+		status = addr_parse(cr3, status);
 		*status = fs_del_fs_path(path, uid, gid);
 	}
+
+	set_cr3(cr3);
+	set_ds(0xf);
 }

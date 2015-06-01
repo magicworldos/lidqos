@@ -13,6 +13,7 @@
 #include <kernel/sys_var.h>
 #include <shell/stdlib.h>
 
+extern s_session *session;
 
 /*
  * fopen : 打开文件
@@ -22,16 +23,16 @@
  */
 FILE* fopen(char *file, int mode)
 {
-	s_session *session = malloc(sizeof(s_session));
-	if(session == NULL)
-	{
-		return NULL;
-	}
+//	s_session *session = malloc(sizeof(s_session));
+//	if(session == NULL)
+//	{
+//		return NULL;
+//	}
 
 	int params[6];
-	params[0] = 4;
-	params[1] = (int)&session;
-	__asm__ volatile("int	$0x80" :: "a"(params));
+//	params[0] = 4;
+//	params[1] = (int)&session;
+//	__asm__ volatile("int	$0x80" :: "a"(params));
 
 	u32 uid = session->uid;
 	u32 gid = session->gid;
@@ -43,9 +44,9 @@ FILE* fopen(char *file, int mode)
 	params[3] = (int) uid;
 	params[4] = (int) gid;
 	params[5] = (int) &fp;
-	__asm__ volatile("int	$0x84" :: "a"(params));
+	__asm__ volatile("int	$0x86" :: "a"(params));
 
-	free(session);
+//	free(session);
 
 	return fp;
 }
@@ -60,7 +61,7 @@ void fclose(FILE *fp)
 	int params[2];
 	params[0] = 1;
 	params[1] = (int) fp;
-	__asm__ volatile("int	$0x84" :: "a"(params));
+	__asm__ volatile("int	$0x86" :: "a"(params));
 }
 
 /*
@@ -77,7 +78,7 @@ void fwrite(FILE *fp, int size, char *data)
 	params[1] = (int) fp;
 	params[2] = size;
 	params[3] = (int) data;
-	__asm__ volatile("int	$0x84" :: "a"(params));
+	__asm__ volatile("int	$0x86" :: "a"(params));
 }
 
 /*
@@ -94,7 +95,7 @@ void fread(FILE *fp, int size, char *data)
 	params[1] = (int) fp;
 	params[2] = size;
 	params[3] = (int) data;
-	__asm__ volatile("int	$0x84" :: "a"(params));
+	__asm__ volatile("int	$0x86" :: "a"(params));
 }
 
 /*
@@ -109,7 +110,7 @@ char fgetch(FILE *fp)
 	params[0] = 4;
 	params[1] = (int) fp;
 	params[2] = (int) &ch;
-	__asm__ volatile("int	$0x84" :: "a"(params));
+	__asm__ volatile("int	$0x86" :: "a"(params));
 	return ch;
 }
 
@@ -125,7 +126,7 @@ void fgetline(FILE *fp, char *data)
 	params[0] = 5;
 	params[1] = (int) fp;
 	params[2] = (int) data;
-	__asm__ volatile("int	$0x84" :: "a"(params));
+	__asm__ volatile("int	$0x86" :: "a"(params));
 }
 
 /*
@@ -140,7 +141,7 @@ void fputch(FILE *fp, char ch)
 	params[0] = 6;
 	params[1] = (int) fp;
 	params[2] = (int) ch;
-	__asm__ volatile("int	$0x84" :: "a"(params));
+	__asm__ volatile("int	$0x86" :: "a"(params));
 }
 
 /*
@@ -155,7 +156,7 @@ void fputline(FILE *fp, char *data)
 	params[0] = 7;
 	params[1] = (int) fp;
 	params[2] = (int) data;
-	__asm__ volatile("int	$0x84" :: "a"(params));
+	__asm__ volatile("int	$0x86" :: "a"(params));
 }
 
 /*
@@ -170,7 +171,7 @@ int feof(FILE *fp)
 	params[0] = 8;
 	params[1] = (int) fp;
 	params[2] = (int) &end_of_file;
-	__asm__ volatile("int	$0x84" :: "a"(params));
+	__asm__ volatile("int	$0x86" :: "a"(params));
 	return end_of_file;
 }
 
@@ -186,7 +187,7 @@ FILE* fopendir(char *path_name)
 	params[0] = 9;
 	params[1] = (int) path_name;
 	params[2] = (int) &fs;
-	__asm__ volatile("int	$0x84" :: "a"(params));
+	__asm__ volatile("int	$0x86" :: "a"(params));
 	return fs;
 }
 
@@ -200,7 +201,7 @@ void fclosedir(FILE* fp)
 	int params[2];
 	params[0] = 10;
 	params[1] = (int) fp;
-	__asm__ volatile("int	$0x84" :: "a"(params));
+	__asm__ volatile("int	$0x86" :: "a"(params));
 }
 ////////////////////////
 int fs_find_path_by_user(char *path, u32 uid, u32 gid, u32 *dev_id, s_fs *fs)
@@ -214,7 +215,7 @@ int fs_find_path_by_user(char *path, u32 uid, u32 gid, u32 *dev_id, s_fs *fs)
 	params[4] = (int) &fs;
 	params[5] = (int) dev_id;
 	params[6] = (int) &status;
-	__asm__ volatile("int	$0x85" :: "a"(params));
+	__asm__ volatile("int	$0x87" :: "a"(params));
 	return status;
 }
 
@@ -229,7 +230,7 @@ int fs_create_folder(char *path, char *folder_name, u32 uid, u32 gid, u32 mode)
 	params[4] = (int) gid;
 	params[5] = (int) mode;
 	params[6] = (int) &status;
-	__asm__ volatile("int	$0x85" :: "a"(params));
+	__asm__ volatile("int	$0x87" :: "a"(params));
 	return status;
 }
 
