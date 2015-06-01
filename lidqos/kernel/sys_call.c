@@ -593,10 +593,12 @@ void sys_file(int *params)
 		int fs_mode = params[2];
 		u32 uid = params[3];
 		u32 gid = params[4];
-		s_file **fp = (s_file **) params[5];
+		s_file *fp = (s_file *) params[5];
 		file = addr_parse(cr3, file);
 		fp = addr_parse(cr3, fp);
-		*fp = f_open(file, fs_mode, uid, gid);
+		s_file *ker_fp = f_open(file, fs_mode, uid, gid);
+		mmcopy(ker_fp, fp, sizeof(s_file));
+		free_mm(ker_fp, sizeof(s_file));
 		return;
 	}
 	//fclose关闭文件
@@ -604,7 +606,9 @@ void sys_file(int *params)
 	{
 		s_file *fp = (s_file *) params[1];
 		fp = addr_parse(cr3, fp);
-		f_close(fp);
+		s_file *ker_fp = alloc_mm(sizeof(s_file));
+		mmcopy(fp, ker_fp, sizeof(s_file));
+		f_close(ker_fp);
 		return;
 	}
 	//fwrite写文件
@@ -623,10 +627,15 @@ void sys_file(int *params)
 	{
 		s_file *fp = (s_file *) params[1];
 		fp = addr_parse(cr3, fp);
+		printf("size %d\n", fp->fs.size);
 		int size = params[2];
 		char *data = (char *) params[3];
 		data = addr_parse(cr3, data);
 		f_read(fp, size, data);
+//		for (int i = 0; i < 6; i++)
+//		{
+//			printf("%x ", data[i]);
+//		}
 		return;
 	}
 

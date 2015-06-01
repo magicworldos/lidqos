@@ -127,7 +127,7 @@ int check_passwd(char *username, char *passwd)
 //	session->status = SESSION_STATUS_LOGIN;
 //	return 1;
 
-	//临时校验root/123456
+//临时校验root/123456
 	if (str_compare(username, "root") == 0 && str_compare(passwd, "root") == 0)
 	{
 		str_copy(username, session->username);
@@ -328,9 +328,49 @@ void execute_cmd(char *cmd)
 		fclose(fp);
 		return;
 	}
-	fclose(fp);
-	install_program(full_path, cmd);
+	Elf32_Ehdr *ehdr = malloc(fp->fs.size);
+	fread(fp, sizeof(Elf32_Ehdr), (char *) ehdr);
+	int check_passed = 1;
+	if (ehdr->e_ident[0] != 0x7f)
+	{
+		check_passed = 0;
+	}
+	if (ehdr->e_ident[1] != 0x45)
+	{
+		check_passed = 0;
+	}
+	if (ehdr->e_ident[2] != 0x4c)
+	{
+		check_passed = 0;
+	}
+	if (ehdr->e_ident[3] != 0x46)
+	{
+		check_passed = 0;
+	}
+	if (ehdr->e_ident[4] != 0x01)
+	{
+		check_passed = 0;
+	}
+	if (ehdr->e_ident[5] != 0x01)
+	{
+		check_passed = 0;
+	}
+	if (ehdr->e_type != 0x01)
+	{
+		check_passed = 0;
+	}
 
+	free(ehdr);
+	fclose(fp);
+
+	if (check_passed)
+	{
+		install_program(full_path, cmd);
+	}
+	else
+	{
+		printf("-bash: \"%s\": is not an executing program.\n", cmd_file);
+	}
 	free(cmd_param);
 	free(full_path);
 	free(cmd_file);

@@ -16,6 +16,7 @@
 #include <shell/fs.h>
 #include <shell/shell.h>
 #include <shell/stack.h>
+#include <kernel/elf.h>
 
 //计算机名，以后是要从配置文件里读的
 #define COMPUTER_NAME				"lidq-os"
