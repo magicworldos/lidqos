@@ -296,16 +296,25 @@ void sys_process(int *params)
 	{
 		char *path = (char *) params[1];
 		char *par_s = (char *) params[2];
-		u32 *sem_addr = (u32 *) params[3];
+		s_session *session = (s_session *) params[3];
+		u32 *sem_addr = (u32 *) params[4];
 
 		path = addr_parse(cr3, path);
 		par_s = addr_parse(cr3, par_s);
+		session = addr_parse(cr3, session);
 		sem_addr = addr_parse(cr3, sem_addr);
 		*sem_addr = 0;
 		s_pcb *pcb = load_process(path, par_s);
 		if (pcb != NULL)
 		{
 			*sem_addr = (u32) pcb->sem_shell;
+			if (session != NULL)
+			{
+				//只为了copy uid gid其它的指针属性不需要
+				mmcopy(session, &pcb->session, sizeof(s_session));
+				//copy到shell程序的pcb中
+				mmcopy(session, &pcb_cur->session, sizeof(s_session));
+			}
 		}
 	}
 	//停止进程
@@ -331,6 +340,13 @@ void sys_process(int *params)
 		args = addr_parse(cr3, args);
 
 		create_pthread(pcb_cur, p, function, args);
+	}
+	//创建线程
+	else if (params[0] == 4)
+	{
+		s_session **session = (s_session **) params[1];
+		session = addr_parse(cr3, session);
+		mmcopy(&pcb_cur->session, *session, sizeof(s_session));
 	}
 
 	set_cr3(cr3);
@@ -547,4 +563,188 @@ void sys_pts(int *params)
 
 	set_cr3(cr3);
 	set_ds(0xf);
+}
+
+/*
+ * sys_file : 文件操作
+ *  - int params[0] :
+ *  	0 fopen打开文件
+ *  	1 fclose关闭文件
+ *  	2 fwrite写文件
+ *  	3 fread读文件
+ *  	4 fgetch读一个字符
+ *  	5 fgetline读一行
+ *  	6 fputch写一个字符
+ *  	7 fputline写一行
+ *  	8 is_eof判断已是文件尾
+ * return : void
+ */
+void sys_file(int *params)
+{
+	//fopen打开文件
+	if (params[0] == 0)
+	{
+		char *file = (char *) params[1];
+		int fs_mode = params[2];
+		u32 uid = params[3];
+		u32 gid = params[4];
+		s_file **fp = (s_file **) params[5];
+		*fp = f_open(file, fs_mode, uid, gid);
+		return;
+	}
+	//fclose关闭文件
+	else if (params[0] == 1)
+	{
+		s_file *fp = (s_file *) params[1];
+		f_close(fp);
+		return;
+	}
+	//fwrite写文件
+	else if (params[0] == 2)
+	{
+		s_file *fp = (s_file *) params[1];
+		int size = params[2];
+		char *data = (char *) params[3];
+		f_write(fp, size, data);
+		return;
+	}
+	//fread读文件
+	else if (params[0] == 3)
+	{
+		s_file *fp = (s_file *) params[1];
+		int size = params[2];
+		char *data = (char *) params[3];
+		f_read(fp, size, data);
+		return;
+	}
+
+	//fgetch取得一个字符
+	else if (params[0] == 4)
+	{
+		s_file *fp = (s_file *) params[1];
+		char *data = (char *) params[2];
+		if (f_is_eof(fp))
+		{
+			*data = 0;
+		}
+		else
+		{
+			f_read(fp, 1, data);
+		}
+		return;
+	}
+	//fgetline取得一行字符
+	else if (params[0] == 5)
+	{
+		s_file *fp = (s_file *) params[1];
+		char *data = (char *) params[2];
+		while (!f_is_eof(fp))
+		{
+			f_read(fp, 1, data);
+			if (*data == '\n')
+			{
+				break;
+			}
+			data++;
+		}
+		*data = '\0';
+		return;
+	}
+	//fputch写一个字符
+	else if (params[0] == 6)
+	{
+		s_file *fp = (s_file *) params[1];
+		char data = (char) params[2];
+		f_write(fp, 1, &data);
+		return;
+	}
+	//fputline写一行字符
+	else if (params[0] == 7)
+	{
+		s_file *fp = (s_file *) params[1];
+		char *data = (char *) params[2];
+		int size = str_len(data);
+
+		f_write(fp, size, data);
+		char newline = '\n';
+		f_write(fp, 1, &newline);
+
+		return;
+	}
+	//is_eof判断已经是文件尾
+	else if (params[0] == 8)
+	{
+		s_file *fp = (s_file *) params[1];
+		int *eof = (int *) params[2];
+		if (f_is_eof(fp))
+		{
+			*eof = 1;
+		}
+		else
+		{
+			*eof = 0;
+		}
+		return;
+	}
+	//fopendir
+	else if (params[0] == 9)
+	{
+		char *path_name = (char *) params[1];
+		s_file **fs = (s_file **) params[2];
+		*fs = f_opendir(path_name);
+		return;
+	}
+	//fclosedir
+	else if (params[0] == 10)
+	{
+		s_file *fp = (s_file *) params[1];
+		f_closedir(fp);
+	}
+	return;
+}
+
+/*
+ * sys_fs : 文件块数据操作
+ *  - int params[0] :
+ *  	0 查找指定路径的文件块数据
+ * return : void
+ */
+void sys_fs(int *params)
+{
+	//fs_find_path
+	if (params[0] == 0)
+	{
+		char *path = (char *) params[1];
+		u32 uid = (u32) params[2];
+		u32 gid = (u32) params[3];
+		s_fs **fs = (s_fs **) params[4];
+		u32 *dev_id = (u32 *) params[5];
+		int *status = (u32 *) params[6];
+		*status = fs_find_path_by_user(path, uid, gid, dev_id, fs);
+	}
+	//fs_create_fs
+	else if (params[0] == 3)
+	{
+		char *path = (char *) params[1];
+		char *fs_name = (char *) params[2];
+		u32 uid = (u32) params[3];
+		u32 gid = (u32) params[4];
+		u32 mode = (u32) params[5];
+		int *status = (int *) params[6];
+		u32 s_no = fs_create_fs_path(path, fs_name, uid, gid, mode);
+		*status = -1;
+		if (s_no != 0)
+		{
+			*status = 0;
+		}
+	}
+	//fs_del_fs
+	else if (params[0] == 4)
+	{
+		char *path = (char *) params[1];
+		u32 uid = (u32) params[2];
+		u32 gid = (u32) params[3];
+		int *status = (int *) params[4];
+		*status = fs_del_fs_path(path, uid, gid);
+	}
 }

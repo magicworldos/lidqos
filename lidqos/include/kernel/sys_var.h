@@ -55,6 +55,28 @@
 //fpu需要内存存储字节数
 #define FPU_SIZE 				(0x200)
 
+//环境变量最大长度
+#define SHELL_PATH_LEN				(0x1000)
+
+//命令最大长度
+#define SHELL_CMD_LEN				(0x200)
+//退出命令
+#define SHELL_CMD_EXIT				("exit")
+
+//用户信息，用户名长度
+#define USER_U_LEN					(0x20)
+//用户信息，密码长度
+#define USER_P_LEN					(0x200)
+//用户信息，主目录长度
+#define USER_H_LEN					(0x200)
+//用户信息，shell长度
+#define USER_S_LEN					(0x200)
+
+//登录状态，未登录
+#define SESSION_STATUS_NOLOGIN		(0)
+//登录状态，已登录
+#define SESSION_STATUS_LOGIN		(1)
+
 //tss数据结构
 typedef struct tss_s
 {
@@ -72,6 +94,35 @@ typedef struct tss_s
 	u32 ldt;
 	u32 trace_bitmap;
 } s_tss;
+
+typedef struct shell_path_s
+{
+	char *path;
+	struct shell_path_s *next;
+} s_path;
+
+//session数据结构
+typedef struct session_s
+{
+	//用户ID
+	int uid;
+	//用户组ID
+	int gid;
+	//用户名
+	char *username;
+	//主目录
+	char *home;
+	//工作目录
+	char *current_path;
+	//当前目录
+	char *current_folder_name;
+
+	//环境变量
+	s_path *PATH;
+	//状态
+	int status;
+
+} s_session;
 
 typedef struct alloc_list_s
 {
@@ -116,6 +167,8 @@ typedef struct process_control_block
 	int is_need_fpu;
 	//浮点寄存器数据保存区
 	u8 *fpu_data;
+	//用户登录信息
+	s_session session;
 	//内存申请表
 	void *alloc_list;
 	//shell运行pcb的同步信号量

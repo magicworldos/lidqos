@@ -540,22 +540,37 @@ _int_0x85:
 	iret
 
 _int_0x86:
+	pushal
+	pushfl
 	cli
-	push    %ebp
-	mov 	%esp, %ebp
+	push   %ebp
+	mov    %esp,%ebp
+
+	sub		$0x4, %esp
+    movl	%eax, (%esp)
+	call    sys_file
 
 	leave
 	sti
+	popfl
+	popal
 	iret
 
 _int_0x87:
-
+	pushal
+	pushfl
 	cli
-	push    %ebp
-	mov 	%esp, %ebp
+	push   %ebp
+	mov    %esp,%ebp
+
+	sub		$0x4, %esp
+    movl	%eax, (%esp)
+	call    sys_fs
 
 	leave
 	sti
+	popfl
+	popal
 	iret
 
 _int_0x88:

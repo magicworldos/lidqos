@@ -36,4 +36,12 @@ void sys_stdio(int *params);
 
 void sys_stdlib(int *params);
 
+void sys_hd_rw(int *params);
+
+void sys_pts(int *params);
+
+void sys_file(int *params);
+
+void sys_fs(int *params);
+
 #endif
