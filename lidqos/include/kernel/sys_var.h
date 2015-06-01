@@ -139,6 +139,8 @@ typedef struct process_control_block
 {
 	//进程号
 	u32 process_id;
+	//0 进程，1 线程
+	int pcb_type;
 	//任务描述段
 	s_tss tss;
 	//代码段和数据段的局部描述符

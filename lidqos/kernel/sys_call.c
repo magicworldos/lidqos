@@ -22,6 +22,8 @@ char *ch_for_get = NULL;
 u8 fpu_d[FPU_SIZE] =
 { 0xf, };
 
+int timer = 0;
+
 /*
  * 除零错
  */
@@ -216,8 +218,13 @@ void int_timer()
 	set_ds(GDT_INDEX_KERNEL_DS);
 	set_cr3(PAGE_DIR);
 
-	//释放已停止进程
-	pcb_release();
+	//生成随机数种子
+	srand(timer++);
+	if (timer % 10 == 0)
+	{
+		//释放已停止进程
+		pcb_release();
+	}
 	//处理等待链表
 	list_sleep_change();
 	//任务调度算法

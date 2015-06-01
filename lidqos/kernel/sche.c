@@ -31,16 +31,11 @@ s_list *list_pcb_wait_key = NULL;
 //浮点寄存器数据存储缓冲区
 extern u8 fpu_d[FPU_SIZE];
 
-int timer = 0;
-
 /*
  * 进程调度，目前只使用平均时间片轮转的算法
  */
 void schedule()
 {
-	//生成随机数种子
-	srand(timer);
-
 	//取得链表头
 	s_list *list_header = list_pcb;
 	if (list_header == NULL)
@@ -230,8 +225,6 @@ void pcb_stop(s_pcb *pcb)
 	//加入到停止链表
 	list_pcb_stop = list_insert_node(list_pcb_stop, list_node);
 
-	pcb_sem_V(pcb, &pcb->sem_shell[0]);
-
 	//执行一次调度，跳过当前进程
 	schedule();
 }
@@ -248,28 +241,40 @@ void pcb_release()
 		p = p->next;
 
 		s_pcb *pcb = (s_pcb *) pf->node;
-		if (pcb->children == NULL && pcb->sem_shell[1].value == 1)
+		if (pcb->children == NULL)
 		{
-			s_list *list_node = NULL;
-			list_pcb_stop = list_remove_node(list_pcb_stop, pcb, &list_node);
-			if (pcb->parent != NULL)
+			if (pcb->pcb_type == 0 && pcb->sem_shell[0].value == 0)
 			{
-				s_pcb *parent = pcb->parent;
-				s_list *list_n = NULL;
-				//把当前pcb从其父进程的children中移出
-				parent->children = list_remove_node(parent->children, pcb, &list_n);
+				pcb_sem_V(pcb, &pcb->sem_shell[0]);
+//				printf("V2: %d %d\n", pcb->sem_shell[0].value, pcb->sem_shell[1].value);
+
 			}
-			u32 pid = pcb->process_id;
-			s_alloc_list *p = pcb->alloc_list;
-			while (p != NULL)
+			if ((pcb->pcb_type == 0 && pcb->sem_shell[1].value == 1) || pcb->pcb_type == 1)
 			{
-				s_alloc_list *fp = p;
-				p = p->next;
-				free_mm(fp, sizeof(s_alloc_list));
+//				if(pcb->pcb_type == 0)
+//				{
+//					printf("V3: %d %d\n", pcb->sem_shell[0].value, pcb->sem_shell[1].value);
+//				}
+				s_list *list_node = NULL;
+				list_pcb_stop = list_remove_node(list_pcb_stop, pcb, &list_node);
+				if (pcb->parent != NULL)
+				{
+					s_pcb *parent = pcb->parent;
+					s_list *list_n = NULL;
+					//把当前pcb从其父进程的children中移出
+					parent->children = list_remove_node(parent->children, pcb, &list_n);
+				}
+				u32 pid = pcb->process_id;
+				s_alloc_list *p_alloc = pcb->alloc_list;
+				while (p_alloc != NULL)
+				{
+					s_alloc_list *fp = p_alloc;
+					p_alloc = p_alloc->next;
+					free_mm(fp, sizeof(s_alloc_list));
+				}
+				free_page_by_pid(pid);
+				free_mm(pf, sizeof(s_list));
 			}
-			//printf("free %d\n", pid);
-			free_page_by_pid(pid);
-			free_mm(pf, sizeof(s_list));
 		}
 	}
 }

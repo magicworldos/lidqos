@@ -10,6 +10,7 @@
 #include <shell/unistd.h>
 #include <shell/pthread.h>
 
+#define NUM 		(10)
 #define PNUM 		(10)
 
 //全局售票信号量
@@ -28,7 +29,7 @@ void myfunc(void *args)
 		//信号量P操作
 		sem_wait(&sem);
 		//剩余票数为0时停止售票
-		if ((*num) <= 0)
+		if ((*num) <= 0 || (*num) > NUM)
 		{
 			break;
 		}
@@ -50,7 +51,7 @@ int main(int argc, char **args)
 	//初始化信号量
 	sem_init(&sem, 1);
 	//剩余票数
-	int num = 20;
+	int num = NUM;
 	s_pthread p[PNUM];
 	//创建多个线程
 	for (int i = 0; i < PNUM; i++)

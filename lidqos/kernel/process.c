@@ -220,6 +220,8 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	}
 	//进程号
 	pcb->process_id = pid;
+	//类型
+	pcb->pcb_type = 0;
 	//程序地址
 	pcb->run = run;
 	//程序start_main偏移
@@ -611,6 +613,8 @@ void init_pthread(s_pcb *pcb, u32 pid)
 
 	//进程号
 	pcb->process_id = pid;
+	//类型
+	pcb->pcb_type = 1;
 	//父进程/线程
 	pcb->parent = NULL;
 	//子进程

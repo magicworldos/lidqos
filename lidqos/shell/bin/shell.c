@@ -34,8 +34,8 @@ int main(int argc, char **args)
 			{
 				break;
 			}
-			execute_cmd(cmd);
-//			execute_cmd("/usr/bin/example_fpu");
+//			execute_cmd(cmd);
+			execute_cmd("/usr/bin/example_fpu");
 		}
 		free(cmd);
 
@@ -120,14 +120,14 @@ void logout()
 
 int check_passwd(char *username, char *passwd)
 {
-//	str_copy("lidq", session->username);
-//	str_copy("/home/lidq/", session->home);
-//	session->uid = 1;
-//	session->gid = 1;
-//	session->status = SESSION_STATUS_LOGIN;
-//	return 1;
+	str_copy("lidq", session->username);
+	str_copy("/home/lidq/", session->home);
+	session->uid = 1;
+	session->gid = 1;
+	session->status = SESSION_STATUS_LOGIN;
+	return 1;
 
-//临时校验root/123456
+	//临时校验root
 	if (str_compare(username, "root") == 0 && str_compare(passwd, "root") == 0)
 	{
 		str_copy(username, session->username);
@@ -290,7 +290,9 @@ void execute_cmd(char *cmd)
 		return;
 	}
 	char *cmd_file = malloc(SHELL_CMD_LEN);
+	//printf("1\n");
 	char *cmd_param = malloc(SHELL_CMD_LEN);
+	printf("%x\n", cmd_param);
 	char *p = cmd;
 	int ty = 0;
 	int j = 0, k = 0;
@@ -315,9 +317,11 @@ void execute_cmd(char *cmd)
 	}
 	cmd_file[k] = '\0';
 	cmd_param[j] = '\0';
+	//printf("1\n");
 	char *full_path = malloc(SHELL_CMD_LEN);
 	full_path[0] = '\0';
 	find_cmd_in_path(cmd_file, full_path);
+	//printf("1\n");
 	FILE *fp = fopen(full_path, FS_MODE_READ);
 	if (fp == NULL)
 	{
@@ -328,19 +332,22 @@ void execute_cmd(char *cmd)
 		fclose(fp);
 		return;
 	}
-
-	Elf32_Ehdr *ehdr = malloc(fp->fs.size);
-	fread(fp, sizeof(Elf32_Ehdr), (char *) ehdr);
-	free(ehdr);
-	fclose(fp);
-	if (check_elf_file(ehdr))
-	{
+//	printf("1\n");
+//	Elf32_Ehdr *ehdr = malloc(fp->fs.size);
+//	printf("%x %x\n", ehdr, fp->fs.size);
+//	fread(fp, sizeof(Elf32_Ehdr), (char *) ehdr);
+//	printf("%x\n", ehdr[0]);
+//	fclose(fp);
+//	if (check_elf_file(ehdr))
+//	{
+//		printf("1\n");
 		install_program(full_path, cmd);
-	}
-	else
-	{
-		printf("-bash: \"%s\": is not an executing program.\n", cmd_file);
-	}
+//	}
+//	else
+//	{
+//		printf("-bash: \"%s\": is not an executing program.\n", cmd_file);
+//	}
+//	free(ehdr);
 	free(cmd_param);
 	free(full_path);
 	free(cmd_file);
@@ -383,7 +390,7 @@ int check_elf_file(Elf32_Ehdr *ehdr)
 void install_program(char *path, char *args)
 {
 	u32 sem_addr = 0;
-	int params[0x10];
+	int params[0x5];
 	params[0] = 0;
 	params[1] = (int) path;
 	params[2] = (int) args;

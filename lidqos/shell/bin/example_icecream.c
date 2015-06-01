@@ -12,8 +12,8 @@
 #include <shell/pthread.h>
 
 #define MIN_ICECREAM_NUM	(1)
-#define MAX_ICECREAM_NUM	(4)
-#define CUSTOM_NUM			(10)
+#define MAX_ICECREAM_NUM	(1)
+#define CUSTOM_NUM			(1)
 
 int total = CUSTOM_NUM * MAX_ICECREAM_NUM;
 int passed = 0;
@@ -49,7 +49,7 @@ void manager()
 	{
 		sem_wait(&requested);
 		passed = random(0, 1);
-		if (passed == 1)
+		if (passed > 0)
 		{
 			checked_num++;
 		}
@@ -61,7 +61,7 @@ void manager()
 void clerk(s_sem *ice_done)
 {
 	int psd = 0;
-	while (psd != 1)
+	while (psd == 0)
 	{
 		sem_wait(&locked);
 		sem_post(&requested);
