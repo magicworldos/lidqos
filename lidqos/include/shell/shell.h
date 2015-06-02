@@ -18,6 +18,11 @@
 #include <shell/stack.h>
 #include <kernel/elf.h>
 
+typedef struct
+{
+	char folder_name[SHELL_CMD_LEN];
+} s_folder_name;
+
 //计算机名，以后是要从配置文件里读的
 #define COMPUTER_NAME				"lidq-os"
 
