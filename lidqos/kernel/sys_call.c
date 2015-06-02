@@ -264,16 +264,12 @@ void int_keyboard()
 			char ch = keys[key_ind - 1][kb_key_shift];
 			//为请求程序设置按键
 			*ch_for_get = ch;
-			//清空数据区
-			ch_for_get = NULL;
-
-			//pcb_wakeup_key();
-
+			//printf("pcb process id %x %d\n", ch_for_get, pcb_cur->process_id);
 		}
 	}
 
-	//pcb_wakeup_key();
-
+	//清空数据区
+	ch_for_get = NULL;
 	//清除键盘状态可以接受新按键
 	outb_p(scan_code & 0x7f, 0x61);
 	//通知PIC1可以接受新中断

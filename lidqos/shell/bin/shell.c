@@ -35,9 +35,9 @@ int main(int argc, char **args)
 			{
 				break;
 			}
-			execute_cmd(cmd);
+//			execute_cmd(cmd);
 //			execute_cmd("/usr/bin/example_fpu");
-//			execute_cmd("/home/lidq/welcome");
+			execute_cmd("/usr/bin/example_icecream");
 		}
 		free(cmd);
 
