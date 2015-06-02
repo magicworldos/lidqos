@@ -8,8 +8,6 @@
 #include <shell/shell.h>
 
 s_session *session = NULL;
-char *cmd_file = NULL;
-char *cmd_param = NULL;
 char *full_path = NULL;
 
 int main(int argc, char **args)
@@ -32,14 +30,13 @@ int main(int argc, char **args)
 		{
 			get_current_folder_name(session->current_folder_name);
 			printf("[%s@%s %s]: ", session->username, computer_name, session->current_folder_name);
-//			gets(cmd);
+			gets(cmd);
 			if (str_compare(SHELL_CMD_EXIT, cmd) == 0)
 			{
 				break;
 			}
-//			execute_cmd(cmd);
-			printf("%d\n", random(0, 100));
-			execute_cmd("/usr/bin/example_fpu");
+			execute_cmd(cmd);
+//			execute_cmd("/usr/bin/example_fpu");
 //			execute_cmd("/home/lidq/welcome");
 		}
 		free(cmd);
@@ -66,8 +63,6 @@ void init_shell()
 	session->PATH[0] = '\0';
 	session->status = SESSION_STATUS_NOLOGIN;
 
-	cmd_file = malloc(SHELL_CMD_LEN);
-	cmd_param = malloc(SHELL_CMD_LEN);
 	full_path = malloc(SHELL_CMD_LEN);
 }
 
@@ -166,35 +161,37 @@ void execute_cmd(char *cmd)
 		str_append(session->PATH, cmd, full_path);
 	}
 
-//	FILE *fp = fopen(full_path, FS_MODE_READ);
-//	if (fp == NULL)
-//	{
-//		printf("-bash: \"%s\": command not found.\n", cmd);
-//		fclose(fp);
-//		return;
-//	}
-//	fclose(fp);
 	install_program(full_path, cmd);
 }
 
 void install_program(char *path, char *args)
 {
+	int status = 0;
 	u32 sem_addr = 0;
-	int params[0x5];
+	int params[0x6];
 	params[0] = 0;
 	params[1] = (int) path;
 	params[2] = (int) args;
 	params[3] = (int) session;
 	params[4] = (int) &sem_addr;
+	params[5] = (int) &status;
 	__asm__ volatile("int $0x80" :: "a"(params));
-	if (sem_addr != 0)
+	if (status == 0)
 	{
 		sem_wait_shell(sem_addr);
 		sem_post_shell(sem_addr + sizeof(s_sem));
 	}
+	else if (status == 1)
+	{
+		printf("-bash: \"%s\": command not found.\n", path);
+	}
+	else if (status == 2)
+	{
+		printf("-bash: \"%s\": is not an executing program.\n", path);
+	}
 	else
 	{
-		printf("-bash: \"%s\": error.\n", cmd_file);
+		printf("-bash: \"%s\": alloc memory error.\n", path);
 	}
 }
 

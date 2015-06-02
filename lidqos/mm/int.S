@@ -275,10 +275,11 @@ _int_0x0e:
 	 * 程序运行时使用%eax作为变量赋值的临时存放区，这时如果采用popl %eax的方式来处理
 	 * 当此中断执行完毕iret执行之后%eax的值并没有被还原为原来的值，所以程序不正确
 	 */
+	cli
 	popl	%edx
 	pushal
 	pushfl
-	cli
+
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
@@ -287,9 +288,9 @@ _int_0x0e:
 	//调用C函数来处理这个异常
 	call	int_page_error
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //保留
@@ -298,18 +299,18 @@ _int_0x0f:
 
 //浮点运算器错误
 _int_0x10:
+	cli
 	pushal
 	pushfl
-	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
 	call	int_fpu_error
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //保留
@@ -373,26 +374,26 @@ _int_0x1f:
 
 //时钟中断
 _int_0x20:
+	cli
 	pushal
 	pushfl
-	cli
 	//调用时钟中断处理函数
 	call int_timer
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //键盘中断
 _int_0x21:
+	cli
 	pushal
 	pushfl
-	cli
 	//调用键盘中断处理函数
 	call int_keyboard
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 _int_0x22:

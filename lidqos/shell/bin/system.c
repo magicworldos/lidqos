@@ -221,12 +221,14 @@ void install_pts_to_kernel()
 
 void install_program(char *path, char *args)
 {
+	int status = 0;
 	void *ret = NULL;
-	int params[5];
+	int params[6];
 	params[0] = 0;
 	params[1] = (int) path;
 	params[2] = (int) args;
 	params[3] = (int) NULL;
 	params[4] = (int) &ret;
+	params[5] = (int) &status;
 	__asm__ volatile("int $0x80" :: "a"(params));
 }

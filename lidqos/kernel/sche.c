@@ -179,6 +179,7 @@ int pcb_sem_P(s_pcb *pcb, s_sem *sem)
 		return 1;
 	}
 	//阻塞进程
+	pcb->stack = 0;
 	//链表节点
 	s_list *list_node = NULL;
 	//从运行链表中移出此进程
@@ -281,6 +282,7 @@ void pcb_release()
 
 void pcb_wait_key(s_pcb *pcb)
 {
+	//printf("wait\n");
 	s_list *list_node = NULL;
 	list_pcb = list_remove_node(list_pcb, pcb, &list_node);
 	list_pcb_wait_key = list_insert_node(list_pcb_wait_key, list_node);
@@ -288,6 +290,7 @@ void pcb_wait_key(s_pcb *pcb)
 
 void pcb_wakeup_key()
 {
+	//printf("wakeup\n");
 	s_pcb *pcb = NULL;
 	if (list_pcb_wait_key != NULL)
 	{

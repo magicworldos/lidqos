@@ -37,7 +37,7 @@ void install_system();
 /*
  * 载入文件系统中的可执行程序
  */
-s_pcb* load_process(char *file_name, char *params);
+s_pcb* load_process(char *file_name, char *params, int *status);
 
 /*
  * 创建tts任务

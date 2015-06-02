@@ -12,8 +12,8 @@
 #include <shell/pthread.h>
 
 #define MIN_ICECREAM_NUM	(1)
-#define MAX_ICECREAM_NUM	(1)
-#define CUSTOM_NUM			(1)
+#define MAX_ICECREAM_NUM	(4)
+#define CUSTOM_NUM			(10)
 
 int total = CUSTOM_NUM * MAX_ICECREAM_NUM;
 int passed = 0;

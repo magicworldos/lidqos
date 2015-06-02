@@ -241,6 +241,7 @@ void int_keyboard()
 
 	//取得扫描码
 	u8 scan_code = inb_p(0x60);
+
 	//取得按下、抬起状态
 	u8 status = scan_code >> 7;
 	//扫描码的索引
@@ -265,9 +266,14 @@ void int_keyboard()
 			*ch_for_get = ch;
 			//清空数据区
 			ch_for_get = NULL;
+
 			//pcb_wakeup_key();
+
 		}
 	}
+
+	//pcb_wakeup_key();
+
 	//清除键盘状态可以接受新按键
 	outb_p(scan_code & 0x7f, 0x61);
 	//通知PIC1可以接受新中断
@@ -305,13 +311,16 @@ void sys_process(int *params)
 		char *par_s = (char *) params[2];
 		s_session *session = (s_session *) params[3];
 		u32 *sem_addr = (u32 *) params[4];
+		int *status = (int *) params[5];
 
 		path = addr_parse(cr3, path);
 		par_s = addr_parse(cr3, par_s);
 		session = addr_parse(cr3, session);
 		sem_addr = addr_parse(cr3, sem_addr);
+		status = addr_parse(cr3, status);
+
 		*sem_addr = 0;
-		s_pcb *pcb = load_process(path, par_s);
+		s_pcb *pcb = load_process(path, par_s, status);
 		if (pcb != NULL)
 		{
 			*sem_addr = (u32) pcb->sem_shell;

@@ -66,20 +66,21 @@ void install_process()
  */
 void install_system()
 {
+	int status = 0;
 	//载入并运行system程序
-	load_process("/usr/bin/system", "");
+	load_process("/usr/bin/system", "", &status);
 }
 
 /*
  * 载入文件系统中的可执行程序
  */
-s_pcb* load_process(char *file_name, char *params)
+s_pcb* load_process(char *file_name, char *params, int *status)
 {
 	//从文件系统读入程序
 	s_file *fp = f_open(file_name, FS_MODE_READ, 0, 0);
 	if (fp == NULL)
 	{
-		printf("error 1\n");
+		*status = 1;
 		return NULL;
 	}
 	//计算程序占用的页面数量
@@ -93,7 +94,7 @@ s_pcb* load_process(char *file_name, char *params)
 	void *run = alloc_page(process_id, run_pages, 0, 0);
 	if (run == NULL)
 	{
-		printf("error 2\n");
+		*status = 3;
 		f_close(fp);
 		return NULL;
 	}
@@ -106,10 +107,10 @@ s_pcb* load_process(char *file_name, char *params)
 	f_close(fp);
 	//对elf可重定位文件进行重定位，并取得程序入口偏移地址
 	u32 entry_point = 0;
-	int status = relocation_elf(run, &entry_point);
-	if (status == 0)
+	int elf_status = relocation_elf(run, &entry_point);
+	if (elf_status == 0)
 	{
-		printf("error 3\n");
+		*status = 2;
 		free_mm(run, run_pages);
 		return NULL;
 	}
@@ -118,7 +119,7 @@ s_pcb* load_process(char *file_name, char *params)
 	s_pcb *pcb = alloc_page(process_id, pages_of_pcb(), 0, 0);
 	if (pcb == NULL)
 	{
-		printf("error 3\n");
+		*status = 3;
 		free_mm(run, run_pages);
 		return NULL;
 	}
@@ -126,7 +127,7 @@ s_pcb* load_process(char *file_name, char *params)
 	pcb->page_dir = alloc_page(process_id, P_PAGE_DIR_NUM, 0, 0);
 	if (pcb->page_dir == NULL)
 	{
-		printf("error4\n");
+		*status = 3;
 		free_mm(pcb, pages_of_pcb());
 		free_mm(run, run_pages);
 		return NULL;
@@ -135,7 +136,7 @@ s_pcb* load_process(char *file_name, char *params)
 	pcb->page_tbl = alloc_page(process_id, P_PAGE_TBL_NUM, 0, 0);
 	if (pcb->page_tbl == NULL)
 	{
-		printf("error 5\n");
+		*status = 3;
 		free_mm(pcb->page_dir, P_PAGE_DIR_NUM);
 		free_mm(pcb, pages_of_pcb());
 		free_mm(run, run_pages);
@@ -145,7 +146,7 @@ s_pcb* load_process(char *file_name, char *params)
 	pcb->stack0 = alloc_page(process_id, P_STACK0_P_NUM, 0, 0);
 	if (pcb->stack0 == NULL)
 	{
-		printf("error 6\n");
+		*status = 3;
 		free_mm(pcb->page_tbl, P_PAGE_TBL_NUM);
 		free_mm(pcb->page_dir, P_PAGE_DIR_NUM);
 		free_mm(pcb, pages_of_pcb());
@@ -157,7 +158,7 @@ s_pcb* load_process(char *file_name, char *params)
 	pcb->fpu_data = alloc_page(process_id, 1, 0, 0);
 	if (pcb->fpu_data == NULL)
 	{
-		printf("error 7\n");
+		*status = 3;
 		free_mm(pcb->stack0, P_STACK0_P_NUM);
 		free_mm(pcb->page_tbl, P_PAGE_TBL_NUM);
 		free_mm(pcb->page_dir, P_PAGE_DIR_NUM);
@@ -173,6 +174,8 @@ s_pcb* load_process(char *file_name, char *params)
 	pcb_insert(pcb);
 	//进程号加一
 	process_id++;
+	//状态：成功
+	*status = 0;
 	//返回创建的新进程
 	return pcb;
 }
