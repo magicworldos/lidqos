@@ -63,6 +63,11 @@
 //退出命令
 #define SHELL_CMD_EXIT				("exit")
 
+//参数大小
+#define CMD_ARGS_PAGE				(0x1)
+#define CMD_ARGS_SIZE				(0x1000)
+#define CMD_ARGS_EVERY_SIZE			(0x200)
+
 //用户信息，用户名长度
 #define USER_U_LEN					(0x200)
 //用户信息，密码长度
@@ -145,6 +150,8 @@ typedef struct process_control_block
 	u32 run_offset;
 	//程序大小
 	u32 run_size;
+	//运行参数
+	void *pars;
 	//页目录
 	void *page_dir;
 	//页表

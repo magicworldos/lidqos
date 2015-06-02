@@ -250,6 +250,7 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(PSHELL)/example_sleep.o			\
 		$(BUILD_PATH)/$(PSHELL)/string.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
+		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
 		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
 		$(BUILD_PATH)/$(PSHELL)/semaphore.o
 		
@@ -259,6 +260,7 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(PSHELL)/string.o				\
 		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
+		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
 		$(BUILD_PATH)/$(PSHELL)/pthread.o				\
 		$(BUILD_PATH)/$(PSHELL)/semaphore.o
 		
@@ -266,6 +268,7 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_stdio -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
 		$(BUILD_PATH)/$(PSHELL)/example_stdio.o			\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
+		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
 		$(BUILD_PATH)/$(PSHELL)/string.o				\
 		$(BUILD_PATH)/$(PSHELL)/semaphore.o
 		
@@ -277,16 +280,18 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(PSHELL)/string.o				\
 		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
 		$(BUILD_PATH)/$(PSHELL)/semaphore.o				\
+		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o
 		
-	#example_fpu
-	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_fpu2 -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
-		$(BUILD_PATH)/$(PSHELL)/example_fpu2.o			\
+	#example_args
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_args -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
+		$(BUILD_PATH)/$(PSHELL)/example_args.o			\
 		$(BUILD_PATH)/$(KERNEL)/math.o					\
 		$(BUILD_PATH)/$(PSHELL)/string.o				\
 		$(BUILD_PATH)/$(KERNEL)/math_S.o				\
 		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
 		$(BUILD_PATH)/$(PSHELL)/semaphore.o				\
+		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o
 	
 	#example_icecream
@@ -317,7 +322,7 @@ $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_sem.c		-o $(BUILD_PATH)/$(PSHELL)/example_sem.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_stdio.c		-o $(BUILD_PATH)/$(PSHELL)/example_stdio.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_fpu.c		-o $(BUILD_PATH)/$(PSHELL)/example_fpu.o
-	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_fpu2.c		-o $(BUILD_PATH)/$(PSHELL)/example_fpu2.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_args.c		-o $(BUILD_PATH)/$(PSHELL)/example_args.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_icecream.c	-o $(BUILD_PATH)/$(PSHELL)/example_icecream.o
 
 ##################################################################################################################

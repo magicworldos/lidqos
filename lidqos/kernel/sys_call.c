@@ -360,6 +360,13 @@ void sys_process(int *params)
 		session = addr_parse(cr3, session);
 		mmcopy(&pcb_cur->session, *session, sizeof(s_session));
 	}
+	//取得pcb运行参数
+	else if (params[0] == 5)
+	{
+		char *pars = (char *) params[1];
+		pars = addr_parse(cr3, pars);
+		str_copy(pcb_cur->pars, pars);
+	}
 
 	set_cr3(cr3);
 	set_ds(0xf);

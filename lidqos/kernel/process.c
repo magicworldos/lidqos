@@ -123,11 +123,25 @@ s_pcb* load_process(char *file_name, char *params, int *status)
 		free_mm(run, run_pages);
 		return NULL;
 	}
+
+	//运行参数
+	pcb->pars = alloc_page(process_id, CMD_ARGS_PAGE, 0, 0);
+	if (pcb->pars == NULL)
+	{
+		*status = 3;
+		free_mm(pcb, pages_of_pcb());
+		free_mm(run, run_pages);
+		return NULL;
+	}
+	//复制运行参数
+	str_copy(params, pcb->pars);
+
 	//申请页目录
 	pcb->page_dir = alloc_page(process_id, P_PAGE_DIR_NUM, 0, 0);
 	if (pcb->page_dir == NULL)
 	{
 		*status = 3;
+		free_mm(pcb->pars, CMD_ARGS_PAGE);
 		free_mm(pcb, pages_of_pcb());
 		free_mm(run, run_pages);
 		return NULL;
@@ -137,6 +151,7 @@ s_pcb* load_process(char *file_name, char *params, int *status)
 	if (pcb->page_tbl == NULL)
 	{
 		*status = 3;
+		free_mm(pcb->pars, CMD_ARGS_PAGE);
 		free_mm(pcb->page_dir, P_PAGE_DIR_NUM);
 		free_mm(pcb, pages_of_pcb());
 		free_mm(run, run_pages);
@@ -147,6 +162,7 @@ s_pcb* load_process(char *file_name, char *params, int *status)
 	if (pcb->stack0 == NULL)
 	{
 		*status = 3;
+		free_mm(pcb->pars, CMD_ARGS_PAGE);
 		free_mm(pcb->page_tbl, P_PAGE_TBL_NUM);
 		free_mm(pcb->page_dir, P_PAGE_DIR_NUM);
 		free_mm(pcb, pages_of_pcb());
@@ -159,6 +175,7 @@ s_pcb* load_process(char *file_name, char *params, int *status)
 	if (pcb->fpu_data == NULL)
 	{
 		*status = 3;
+		free_mm(pcb->pars, CMD_ARGS_PAGE);
 		free_mm(pcb->stack0, P_STACK0_P_NUM);
 		free_mm(pcb->page_tbl, P_PAGE_TBL_NUM);
 		free_mm(pcb->page_dir, P_PAGE_DIR_NUM);
@@ -347,7 +364,7 @@ int relocation_elf(void *addr, u32 *entry_point)
 	Elf32_Ehdr ehdr;
 	mmcopy_with((char *) addr, (char *) &ehdr, 0, sizeof(Elf32_Ehdr));
 
-	if(check_elf_file(&ehdr) == 0)
+	if (check_elf_file(&ehdr) == 0)
 	{
 		return 0;
 	}

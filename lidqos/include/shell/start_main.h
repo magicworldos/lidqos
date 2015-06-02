@@ -9,6 +9,9 @@
 #define _START_MAIN_H_
 
 #include <kernel/typedef.h>
+#include <kernel/sys_var.h>
+#include <kernel/string.h>
+#include <shell/stdlib.h>
 #include <shell/semaphore.h>
 
 /*
