@@ -289,6 +289,16 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(PSHELL)/stack.o					\
 		$(BUILD_PATH)/$(PSHELL)/fs.o					\
 		$(BUILD_PATH)/$(PSHELL)/string.o
+		
+	#cat
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/cat -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
+		$(BUILD_PATH)/$(PSHELL)/cat.o					\
+		$(BUILD_PATH)/$(PSHELL)/path.o					\
+		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
+		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
+		$(BUILD_PATH)/$(PSHELL)/stack.o					\
+		$(BUILD_PATH)/$(PSHELL)/fs.o					\
+		$(BUILD_PATH)/$(PSHELL)/string.o
 				
 	#start_pthread
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/start_pthread -e start_pthread -r $(BUILD_PATH)/$(PSHELL)/start_pthread.o
@@ -363,6 +373,7 @@ $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/ls.c					-o $(BUILD_PATH)/$(PSHELL)/ls.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/mkdir.c				-o $(BUILD_PATH)/$(PSHELL)/mkdir.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/rm.c					-o $(BUILD_PATH)/$(PSHELL)/rm.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/cat.c				-o $(BUILD_PATH)/$(PSHELL)/cat.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/unistd.c				-o $(BUILD_PATH)/$(PSHELL)/unistd.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/semaphore.c			-o $(BUILD_PATH)/$(PSHELL)/semaphore.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/pthread.c			-o $(BUILD_PATH)/$(PSHELL)/pthread.o

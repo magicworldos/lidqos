@@ -61,11 +61,11 @@ int is_exist(char *folder_name)
 
 int main(int argc, char **args)
 {
+	session = malloc(sizeof(s_session));
+	session->current_path = malloc(SHELL_CMD_LEN);
+
 	for (int i = 1; i < argc; ++i)
 	{
-		session = malloc(sizeof(s_session));
-		session->current_path = malloc(SHELL_CMD_LEN);
-
 		int params[2];
 		params[0] = 7;
 		params[1] = (int) session;
@@ -95,9 +95,11 @@ int main(int argc, char **args)
 				printf("-bash : create folder \"%s\" sucessfully.\n", args[i]);
 			}
 		}
-		free(session->current_path);
-		free(session);
 	}
+
+	free(session->current_path);
+	free(session);
+
 	return 0;
 }
 
