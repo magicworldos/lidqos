@@ -646,7 +646,7 @@ void sys_file(int *params)
 	u32 cr3 = pcb_cur->tss.cr3;
 	params = addr_parse(cr3, params);
 
-//fopen打开文件
+	//fopen打开文件
 	if (params[0] == 0)
 	{
 		char *file = (char *) params[1];
@@ -669,7 +669,7 @@ void sys_file(int *params)
 		free_mm(ker_fp, sizeof(s_file));
 		return;
 	}
-//fclose关闭文件
+	//fclose关闭文件
 	else if (params[0] == 1)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -679,7 +679,7 @@ void sys_file(int *params)
 		f_close(ker_fp);
 		return;
 	}
-//fwrite写文件
+	//fwrite写文件
 	else if (params[0] == 2)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -690,7 +690,7 @@ void sys_file(int *params)
 		f_write(fp, size, data);
 		return;
 	}
-//fread读文件
+	//fread读文件
 	else if (params[0] == 3)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -702,7 +702,7 @@ void sys_file(int *params)
 		return;
 	}
 
-//fgetch取得一个字符
+	//fgetch取得一个字符
 	else if (params[0] == 4)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -719,7 +719,7 @@ void sys_file(int *params)
 		}
 		return;
 	}
-//fgetline取得一行字符
+	//fgetline取得一行字符
 	else if (params[0] == 5)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -738,7 +738,7 @@ void sys_file(int *params)
 		*data = '\0';
 		return;
 	}
-//fputch写一个字符
+	//fputch写一个字符
 	else if (params[0] == 6)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -747,7 +747,7 @@ void sys_file(int *params)
 		f_write(fp, 1, &data);
 		return;
 	}
-//fputline写一行字符
+	//fputline写一行字符
 	else if (params[0] == 7)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -762,7 +762,7 @@ void sys_file(int *params)
 
 		return;
 	}
-//is_eof判断已经是文件尾
+	//is_eof判断已经是文件尾
 	else if (params[0] == 8)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -779,22 +779,45 @@ void sys_file(int *params)
 		}
 		return;
 	}
-//fopendir
+	//fopendir
 	else if (params[0] == 9)
 	{
 		char *path_name = (char *) params[1];
 		path_name = addr_parse(cr3, path_name);
-		s_file **fs = (s_file **) params[2];
+		s_file *fs = (s_file *) params[2];
 		fs = addr_parse(cr3, fs);
-		*fs = f_opendir(path_name);
+		s_file *fp = f_opendir(path_name);
+		if (fp != NULL)
+		{
+			mmcopy(fp, fs, sizeof(s_file));
+		}
+		else
+		{
+			fp->fs.dot = 0;
+		}
 		return;
 	}
-//fclosedir
+	//fclosedir
 	else if (params[0] == 10)
 	{
 		s_file *fp = (s_file *) params[1];
 		fp = addr_parse(cr3, fp);
 		f_closedir(fp);
+	}
+	//fdirnext
+	else if (params[0] == 11)
+	{
+		s_file *fp = (s_file *) params[1];
+		fp = addr_parse(cr3, fp);
+		s_file *fnext = fp->next;
+		if (fnext != NULL)
+		{
+			mmcopy(fnext, fp, sizeof(s_file));
+		}
+		else
+		{
+			fp->fs.dot = 0;
+		}
 	}
 
 	set_cr3(cr3);

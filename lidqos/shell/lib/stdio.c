@@ -389,7 +389,14 @@ int printf(char *fmt, ...)
 				count += puts(str);
 				fmt += 2;
 			}
-			//显示整数
+			//显示8进制整数
+			else if ('o' == *(fmt + 1))
+			{
+				number_to_str(buff, va_arg(args, int), 8);
+				count += puts(buff);
+				fmt += 2;
+			}
+			//显示10进制整数
 			else if ('d' == *(fmt + 1))
 			{
 				number_to_str(buff, va_arg(args, int), 10);

@@ -40,7 +40,9 @@ int feof(FILE *fp);
  *  - char *path_name : 完整路径的文件夹名称
  * return : s_file*子文件（夹）链表头
  */
-FILE* fopendir(char *path_name);
+void fopendir(char *path_name, s_file* fs);
+
+void fdirnext(FILE *fp);
 
 /*
  * f_closedir : 关闭文件链表

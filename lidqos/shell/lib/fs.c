@@ -183,15 +183,21 @@ int feof(FILE *fp)
  *  - char *path_name : 完整路径的文件夹名称
  * return : s_file*子文件（夹）链表头
  */
-FILE* fopendir(char *path_name)
+void fopendir(char *path_name, FILE* fs)
 {
-	FILE* fs = NULL;
 	int params[3];
 	params[0] = 9;
 	params[1] = (int) path_name;
-	params[2] = (int) &fs;
+	params[2] = (int) fs;
 	__asm__ volatile("int	$0x86" :: "a"(params));
-	return fs;
+}
+
+void fdirnext(FILE *fp)
+{
+	int params[2];
+	params[0] = 11;
+	params[1] = (int) fp;
+	__asm__ volatile("int	$0x86" :: "a"(params));
 }
 
 /*
