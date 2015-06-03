@@ -221,6 +221,6 @@ typedef struct
 
 void install_sys_var();
 
-void install_pts(void *pts);
+void install_pts(int pt_count, void *pts);
 
 #endif /* SYS_VAR_H_ */

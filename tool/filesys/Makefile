@@ -11,6 +11,7 @@ all:
 	cp ../../lidqos/build/shell/pwd ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/cd ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/ls ../../lidqos/build/fs/usr/bin/
+	cp ../../lidqos/build/shell/mkdir ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/start_pthread ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/example_sleep ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/example_sem ../../lidqos/build/fs/usr/bin/

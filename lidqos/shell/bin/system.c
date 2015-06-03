@@ -213,9 +213,10 @@ void mount_hda(s_pt *pts, char *mount_point)
 
 void install_pts_to_kernel()
 {
-	int params[2];
+	int params[3];
 	params[0] = 2;
 	params[1] = (int) sys_var->pts;
+	params[2] = sys_var->pt_count;
 	__asm__ volatile("int $0x85" :: "a"(params));
 }
 

@@ -611,14 +611,15 @@ void sys_pts(int *params)
 		s_pt *pts = (s_pt *) params[1];
 		pts = addr_parse(cr3, pts);
 		char *mount_point = (char *) params[2];
-		mount_point = addr_parse(cr3, pts);
+		mount_point = addr_parse(cr3, mount_point);
 		mount_hda(pts, mount_point);
 	}
 	else if (params[0] == 2)
 	{
 		void *pts = (void *) params[1];
 		pts = addr_parse(cr3, pts);
-		install_pts(pts);
+		int pt_count = params[2];
+		install_pts(pt_count, pts);
 	}
 
 	set_cr3(cr3);

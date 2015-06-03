@@ -20,7 +20,7 @@ int main(int argc, char **args)
 {
 	if (argc >= 2)
 	{
-		s_session *session = malloc(sizeof(s_session));
+		session = malloc(sizeof(s_session));
 		session->current_path = malloc(SHELL_CMD_LEN);
 
 		int params[2];
