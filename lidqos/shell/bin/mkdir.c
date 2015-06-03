@@ -8,9 +8,9 @@
 #ifndef _MKDIR_C_
 #define _MKDIR_C_
 
-#include <shell/shell.h>
 #include <shell/stdio.h>
 #include <shell/fs.h>
+#include <shell/path.h>
 #include <shell/stdlib.h>
 #include <kernel/string.h>
 
