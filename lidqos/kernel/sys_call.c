@@ -372,12 +372,41 @@ void sys_process(int *params)
 		pars = addr_parse(cr3, pars);
 		str_copy(pcb_cur->pars, pars);
 	}
+	//取得shell当前目录
 	else if (params[0] == 6)
 	{
 		char *current_path = (char *) params[1];
 		current_path = addr_parse(cr3, current_path);
 		s_pcb* pcb = pcb_by_id(pcb_cur->shell_pid);
 		str_copy(pcb->session.current_path, current_path);
+	}
+	//取得session
+	else if (params[0] == 7)
+	{
+		s_session *session = (s_session *) params[1];
+		session = addr_parse(cr3, session);
+		s_pcb* pcb = pcb_by_id(pcb_cur->shell_pid);
+		char *p = session->current_path;
+		char *pb = p;
+		p = addr_parse(cr3, p);
+		mmcopy(&pcb->session, session, sizeof(s_session));
+		str_copy(pcb->session.current_path, p);
+		session->current_path = pb;
+	}
+	//重新设定shell的current_path
+	else if (params[0] == 8)
+	{
+		char *current_path = (char *) params[1];
+		current_path = addr_parse(cr3, current_path);
+		s_pcb* pcb = pcb_by_id(pcb_cur->shell_pid);
+		str_copy(current_path, pcb->session.current_path);
+	}
+	//shell自己取得shell当前目录
+	else if (params[0] == 9)
+	{
+		char *current_path = (char *) params[1];
+		current_path = addr_parse(cr3, current_path);
+		str_copy(pcb_cur->session.current_path, current_path);
 	}
 
 	set_cr3(cr3);
@@ -391,7 +420,7 @@ void sys_semaphore(int *params)
 	u32 cr3 = pcb_cur->tss.cr3;
 	params = addr_parse(cr3, params);
 
-//P
+	//P
 	if (params[0] == 0)
 	{
 		s_sem *sem = (s_sem *) (params[1]);
@@ -402,7 +431,7 @@ void sys_semaphore(int *params)
 
 		*ret = pcb_sem_P(pcb_cur, sem);
 	}
-//V
+	//V
 	else if (params[0] == 1)
 	{
 		s_sem *sem = (s_sem *) (params[1]);
@@ -413,7 +442,7 @@ void sys_semaphore(int *params)
 
 		*ret = pcb_sem_V(pcb_cur, sem);
 	}
-//获取全局信号量
+	//获取全局信号量
 	else if (params[0] == 2)
 	{
 		int type = (int) params[1];
@@ -430,7 +459,7 @@ void sys_semaphore(int *params)
 
 		}
 	}
-//shell pcb P
+	//shell pcb P
 	else if (params[0] == 0x10)
 	{
 		s_sem *sem = (s_sem *) (params[1]);
@@ -438,7 +467,7 @@ void sys_semaphore(int *params)
 		ret = addr_parse(cr3, ret);
 		*ret = pcb_sem_P(pcb_cur, sem);
 	}
-//shell pcb V
+	//shell pcb V
 	else if (params[0] == 0x11)
 	{
 		s_sem *sem = (s_sem *) (params[1]);
@@ -446,7 +475,7 @@ void sys_semaphore(int *params)
 		ret = addr_parse(cr3, ret);
 		*ret = pcb_sem_V(pcb_cur, sem);
 	}
-//取得shell 运行的pcb的信号量
+	//取得shell 运行的pcb的信号量
 	else if (params[0] == 0x12)
 	{
 		u32 *sem_addr = (u32 *) (params[1]);
@@ -465,12 +494,12 @@ void sys_stdio(int *params)
 	u32 cr3 = pcb_cur->tss.cr3;
 	params = addr_parse(cr3, params);
 
-//显示字符
+	//显示字符
 	if (params[0] == 0)
 	{
 		putchar((char) params[1]);
 	}
-//显示字符串
+	//显示字符串
 	else if (params[0] == 1)
 	{
 		int *count = (int *) params[2];
@@ -479,7 +508,7 @@ void sys_stdio(int *params)
 		str = addr_parse(cr3, str);
 		*count = puts(str);
 	}
-//getchar
+	//getchar
 	else if (params[0] == 0x10)
 	{
 		char *ch = (char *) params[1];
@@ -487,7 +516,7 @@ void sys_stdio(int *params)
 		ch_for_get = ch;
 		//pcb_wait_key(pcb_cur);
 	}
-//backspace
+	//backspace
 	else if (params[0] == 0x11)
 	{
 		backspace();
@@ -785,7 +814,7 @@ void sys_fs(int *params)
 	u32 cr3 = pcb_cur->tss.cr3;
 	params = addr_parse(cr3, params);
 
-//fs_find_path
+	//fs_find_path
 	if (params[0] == 0)
 	{
 		char *path = (char *) params[1];
@@ -800,7 +829,7 @@ void sys_fs(int *params)
 		status = addr_parse(cr3, status);
 		*status = fs_find_path_by_user(path, uid, gid, dev_id, fs);
 	}
-//fs_create_fs
+	//fs_create_fs
 	else if (params[0] == 3)
 	{
 		char *path = (char *) params[1];
@@ -819,7 +848,7 @@ void sys_fs(int *params)
 			*status = 0;
 		}
 	}
-//fs_del_fs
+	//fs_del_fs
 	else if (params[0] == 4)
 	{
 		char *path = (char *) params[1];

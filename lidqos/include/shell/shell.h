@@ -15,18 +15,11 @@
 #include <shell/stdio.h>
 #include <shell/fs.h>
 #include <shell/shell.h>
-#include <shell/stack.h>
+#include <shell/path.h>
 #include <kernel/elf.h>
-
-typedef struct
-{
-	char folder_name[SHELL_CMD_LEN];
-} s_folder_name;
 
 //计算机名，以后是要从配置文件里读的
 #define COMPUTER_NAME				"lidq-os"
-
-#define FOLDE_RNAME_STACK_SIZE	(0x200)
 
 int main(int argc, char **args);
 

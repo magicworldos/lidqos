@@ -233,6 +233,7 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 	#shell
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/shell -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
 		$(BUILD_PATH)/$(PSHELL)/shell.o					\
+		$(BUILD_PATH)/$(PSHELL)/path.o					\
 		$(BUILD_PATH)/$(PSHELL)/string.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
 		$(BUILD_PATH)/$(PSHELL)/pthread.o				\
@@ -247,6 +248,16 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(PSHELL)/pwd.o					\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
 		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
+		$(BUILD_PATH)/$(PSHELL)/string.o
+		
+	#cd
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/cd -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
+		$(BUILD_PATH)/$(PSHELL)/cd.o					\
+		$(BUILD_PATH)/$(PSHELL)/path.o					\
+		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
+		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
+		$(BUILD_PATH)/$(PSHELL)/stack.o					\
+		$(BUILD_PATH)/$(PSHELL)/fs.o					\
 		$(BUILD_PATH)/$(PSHELL)/string.o
 		
 	#start_pthread
@@ -318,12 +329,14 @@ $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/system.c				-o $(BUILD_PATH)/$(PSHELL)/system.o	
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/shell.c				-o $(BUILD_PATH)/$(PSHELL)/shell.o	
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/pwd.c				-o $(BUILD_PATH)/$(PSHELL)/pwd.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/cd.c					-o $(BUILD_PATH)/$(PSHELL)/cd.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/unistd.c				-o $(BUILD_PATH)/$(PSHELL)/unistd.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/semaphore.c			-o $(BUILD_PATH)/$(PSHELL)/semaphore.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/pthread.c			-o $(BUILD_PATH)/$(PSHELL)/pthread.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/stdio.c				-o $(BUILD_PATH)/$(PSHELL)/stdio.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/stdlib.c				-o $(BUILD_PATH)/$(PSHELL)/stdlib.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/fs.c					-o $(BUILD_PATH)/$(PSHELL)/fs.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/path.c				-o $(BUILD_PATH)/$(PSHELL)/path.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/stack.c				-o $(BUILD_PATH)/$(PSHELL)/stack.o
 	$(CC) $(GC_S_PARAMS) mm/string.c						-o $(BUILD_PATH)/$(PSHELL)/string.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_sleep.c		-o $(BUILD_PATH)/$(PSHELL)/example_sleep.o
