@@ -33,6 +33,11 @@ int main(int argc, char **args)
 		//如果尚已登录成功
 		while (session->status == SESSION_STATUS_LOGIN)
 		{
+			int params[2];
+			params[0] = 4;
+			params[1] = (int) session;
+			__asm__ volatile("int $0x80" :: "a"(params));
+
 			//取得当前工作目录
 			get_current_folder_name(session->current_folder_name);
 			//显示命令提示
@@ -83,6 +88,11 @@ void init_shell()
 	session->PATH[0] = '\0';
 	//设定用户登录状态为未登录
 	session->status = SESSION_STATUS_NOLOGIN;
+
+//	int params[2];
+//	params[0] = 4;
+//	params[1] = (int) session;
+//	__asm__ volatile("int $0x80" :: "a"(params));
 }
 
 /*
@@ -414,7 +424,7 @@ void install_program(char *path, char *args)
 	params[0] = 0;
 	params[1] = (int) path;
 	params[2] = (int) args;
-	params[3] = (int) session;
+	params[3] = (int) 1;
 	params[4] = (int) &sem_addr;
 	params[5] = (int) &status;
 	__asm__ volatile("int $0x80" :: "a"(params));

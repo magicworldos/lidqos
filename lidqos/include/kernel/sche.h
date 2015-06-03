@@ -48,4 +48,6 @@ void pcb_wait_key(s_pcb *pcb);
 
 void pcb_wakeup_key();
 
+s_pcb* pcb_by_id(u32 process_id);
+
 #endif /* SCHE_H_ */

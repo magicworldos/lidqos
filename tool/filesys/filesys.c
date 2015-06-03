@@ -90,15 +90,15 @@ int main(int argc, char **args)
 	install_fs("../../lidqos/build/fs/", "/", 0, 0, 01755);
 	save_map();
 #else
-	install_file("../../lidqos/build/fs/usr/bin/system", "/usr/bin/system", 0, 0, 01755);
-	install_file("../../lidqos/build/fs/usr/bin/shell", "/usr/bin/shell", 0, 0, 01755);
-	install_file("../../lidqos/build/fs/usr/bin/start_pthread", "/usr/bin/start_pthread", 0, 0, 01755);
-	install_file("../../lidqos/build/fs/usr/bin/example_sleep", "/usr/bin/example_sleep", 0, 0, 01755);
-	install_file("../../lidqos/build/fs/usr/bin/example_sem", "/usr/bin/example_sem", 0, 0, 01755);
-	install_file("../../lidqos/build/fs/usr/bin/example_stdio", "/usr/bin/example_stdio", 0, 0, 01755);
-	install_file("../../lidqos/build/fs/usr/bin/example_fpu", "/usr/bin/example_fpu", 0, 0, 01755);
-	install_file("../../lidqos/build/fs/usr/bin/example_args", "/usr/bin/example_fpu2", 0, 0, 01755);
-	install_file("../../lidqos/build/fs/usr/bin/example_icecream", "/usr/bin/example_icecream", 0, 0, 01755);
+//	install_file("../../lidqos/build/fs/usr/bin/system", "/usr/bin/system", 0, 0, 01755);
+//	install_file("../../lidqos/build/fs/usr/bin/shell", "/usr/bin/shell", 0, 0, 01755);
+//	install_file("../../lidqos/build/fs/usr/bin/start_pthread", "/usr/bin/start_pthread", 0, 0, 01755);
+//	install_file("../../lidqos/build/fs/usr/bin/example_sleep", "/usr/bin/example_sleep", 0, 0, 01755);
+//	install_file("../../lidqos/build/fs/usr/bin/example_sem", "/usr/bin/example_sem", 0, 0, 01755);
+//	install_file("../../lidqos/build/fs/usr/bin/example_stdio", "/usr/bin/example_stdio", 0, 0, 01755);
+//	install_file("../../lidqos/build/fs/usr/bin/example_fpu", "/usr/bin/example_fpu", 0, 0, 01755);
+//	install_file("../../lidqos/build/fs/usr/bin/example_args", "/usr/bin/example_fpu2", 0, 0, 01755);
+//	install_file("../../lidqos/build/fs/usr/bin/example_icecream", "/usr/bin/example_icecream", 0, 0, 01755);
 #endif
 
 //	test_read_file();

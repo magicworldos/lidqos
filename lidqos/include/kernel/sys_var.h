@@ -172,6 +172,8 @@ typedef struct process_control_block
 	u8 *fpu_data;
 	//用户登录信息
 	s_session session;
+	//程序的shell id
+	u32 shell_pid;
 	//内存申请表
 	void *alloc_list;
 	//shell运行pcb的同步信号量

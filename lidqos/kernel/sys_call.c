@@ -305,13 +305,12 @@ void sys_process(int *params)
 	{
 		char *path = (char *) params[1];
 		char *par_s = (char *) params[2];
-		s_session *session = (s_session *) params[3];
+		int type = params[3];
 		u32 *sem_addr = (u32 *) params[4];
 		int *status = (int *) params[5];
 
 		path = addr_parse(cr3, path);
 		par_s = addr_parse(cr3, par_s);
-		session = addr_parse(cr3, session);
 		sem_addr = addr_parse(cr3, sem_addr);
 		status = addr_parse(cr3, status);
 
@@ -320,12 +319,11 @@ void sys_process(int *params)
 		if (pcb != NULL)
 		{
 			*sem_addr = (u32) pcb->sem_shell;
-			if (session != NULL)
+			//type为1时，说明是shell执行普通程序
+			if (type == 1)
 			{
-				//只为了copy uid gid其它的指针属性不需要
-				mmcopy(session, &pcb->session, sizeof(s_session));
-				//copy到shell程序的pcb中
-				mmcopy(session, &pcb_cur->session, sizeof(s_session));
+				//设定普通程序的shell_pid
+				pcb->shell_pid = pcb_cur->process_id;
 			}
 		}
 	}
@@ -353,12 +351,19 @@ void sys_process(int *params)
 
 		create_pthread(pcb_cur, p, function, args);
 	}
-	//创建线程
+	//初始化shell的session
 	else if (params[0] == 4)
 	{
-		s_session **session = (s_session **) params[1];
+		s_session *session = (s_session *) params[1];
 		session = addr_parse(cr3, session);
-		mmcopy(&pcb_cur->session, *session, sizeof(s_session));
+
+		char *cur_path = pcb_cur->session.current_path;
+		mmcopy(session, &pcb_cur->session, sizeof(s_session));
+		pcb_cur->session.current_path = cur_path;
+
+		char *p = session->current_path;
+		p = addr_parse(cr3, p);
+		str_copy(p, pcb_cur->session.current_path);
 	}
 	//取得pcb运行参数
 	else if (params[0] == 5)
@@ -366,6 +371,13 @@ void sys_process(int *params)
 		char *pars = (char *) params[1];
 		pars = addr_parse(cr3, pars);
 		str_copy(pcb_cur->pars, pars);
+	}
+	else if (params[0] == 6)
+	{
+		char *current_path = (char *) params[1];
+		current_path = addr_parse(cr3, current_path);
+		s_pcb* pcb = pcb_by_id(pcb_cur->shell_pid);
+		str_copy(pcb->session.current_path, current_path);
 	}
 
 	set_cr3(cr3);
@@ -379,7 +391,7 @@ void sys_semaphore(int *params)
 	u32 cr3 = pcb_cur->tss.cr3;
 	params = addr_parse(cr3, params);
 
-	//P
+//P
 	if (params[0] == 0)
 	{
 		s_sem *sem = (s_sem *) (params[1]);
@@ -390,7 +402,7 @@ void sys_semaphore(int *params)
 
 		*ret = pcb_sem_P(pcb_cur, sem);
 	}
-	//V
+//V
 	else if (params[0] == 1)
 	{
 		s_sem *sem = (s_sem *) (params[1]);
@@ -401,7 +413,7 @@ void sys_semaphore(int *params)
 
 		*ret = pcb_sem_V(pcb_cur, sem);
 	}
-	//获取全局信号量
+//获取全局信号量
 	else if (params[0] == 2)
 	{
 		int type = (int) params[1];
@@ -418,7 +430,7 @@ void sys_semaphore(int *params)
 
 		}
 	}
-	//shell pcb P
+//shell pcb P
 	else if (params[0] == 0x10)
 	{
 		s_sem *sem = (s_sem *) (params[1]);
@@ -426,7 +438,7 @@ void sys_semaphore(int *params)
 		ret = addr_parse(cr3, ret);
 		*ret = pcb_sem_P(pcb_cur, sem);
 	}
-	//shell pcb V
+//shell pcb V
 	else if (params[0] == 0x11)
 	{
 		s_sem *sem = (s_sem *) (params[1]);
@@ -434,7 +446,7 @@ void sys_semaphore(int *params)
 		ret = addr_parse(cr3, ret);
 		*ret = pcb_sem_V(pcb_cur, sem);
 	}
-	//取得shell 运行的pcb的信号量
+//取得shell 运行的pcb的信号量
 	else if (params[0] == 0x12)
 	{
 		u32 *sem_addr = (u32 *) (params[1]);
@@ -453,12 +465,12 @@ void sys_stdio(int *params)
 	u32 cr3 = pcb_cur->tss.cr3;
 	params = addr_parse(cr3, params);
 
-	//显示字符
+//显示字符
 	if (params[0] == 0)
 	{
 		putchar((char) params[1]);
 	}
-	//显示字符串
+//显示字符串
 	else if (params[0] == 1)
 	{
 		int *count = (int *) params[2];
@@ -467,7 +479,7 @@ void sys_stdio(int *params)
 		str = addr_parse(cr3, str);
 		*count = puts(str);
 	}
-	//getchar
+//getchar
 	else if (params[0] == 0x10)
 	{
 		char *ch = (char *) params[1];
@@ -475,7 +487,7 @@ void sys_stdio(int *params)
 		ch_for_get = ch;
 		//pcb_wait_key(pcb_cur);
 	}
-	//backspace
+//backspace
 	else if (params[0] == 0x11)
 	{
 		backspace();
@@ -605,7 +617,7 @@ void sys_file(int *params)
 	u32 cr3 = pcb_cur->tss.cr3;
 	params = addr_parse(cr3, params);
 
-	//fopen打开文件
+//fopen打开文件
 	if (params[0] == 0)
 	{
 		char *file = (char *) params[1];
@@ -628,7 +640,7 @@ void sys_file(int *params)
 		free_mm(ker_fp, sizeof(s_file));
 		return;
 	}
-	//fclose关闭文件
+//fclose关闭文件
 	else if (params[0] == 1)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -638,7 +650,7 @@ void sys_file(int *params)
 		f_close(ker_fp);
 		return;
 	}
-	//fwrite写文件
+//fwrite写文件
 	else if (params[0] == 2)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -649,7 +661,7 @@ void sys_file(int *params)
 		f_write(fp, size, data);
 		return;
 	}
-	//fread读文件
+//fread读文件
 	else if (params[0] == 3)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -661,7 +673,7 @@ void sys_file(int *params)
 		return;
 	}
 
-	//fgetch取得一个字符
+//fgetch取得一个字符
 	else if (params[0] == 4)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -678,7 +690,7 @@ void sys_file(int *params)
 		}
 		return;
 	}
-	//fgetline取得一行字符
+//fgetline取得一行字符
 	else if (params[0] == 5)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -697,7 +709,7 @@ void sys_file(int *params)
 		*data = '\0';
 		return;
 	}
-	//fputch写一个字符
+//fputch写一个字符
 	else if (params[0] == 6)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -706,7 +718,7 @@ void sys_file(int *params)
 		f_write(fp, 1, &data);
 		return;
 	}
-	//fputline写一行字符
+//fputline写一行字符
 	else if (params[0] == 7)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -721,7 +733,7 @@ void sys_file(int *params)
 
 		return;
 	}
-	//is_eof判断已经是文件尾
+//is_eof判断已经是文件尾
 	else if (params[0] == 8)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -738,7 +750,7 @@ void sys_file(int *params)
 		}
 		return;
 	}
-	//fopendir
+//fopendir
 	else if (params[0] == 9)
 	{
 		char *path_name = (char *) params[1];
@@ -748,7 +760,7 @@ void sys_file(int *params)
 		*fs = f_opendir(path_name);
 		return;
 	}
-	//fclosedir
+//fclosedir
 	else if (params[0] == 10)
 	{
 		s_file *fp = (s_file *) params[1];
@@ -773,7 +785,7 @@ void sys_fs(int *params)
 	u32 cr3 = pcb_cur->tss.cr3;
 	params = addr_parse(cr3, params);
 
-	//fs_find_path
+//fs_find_path
 	if (params[0] == 0)
 	{
 		char *path = (char *) params[1];
@@ -788,7 +800,7 @@ void sys_fs(int *params)
 		status = addr_parse(cr3, status);
 		*status = fs_find_path_by_user(path, uid, gid, dev_id, fs);
 	}
-	//fs_create_fs
+//fs_create_fs
 	else if (params[0] == 3)
 	{
 		char *path = (char *) params[1];
@@ -807,7 +819,7 @@ void sys_fs(int *params)
 			*status = 0;
 		}
 	}
-	//fs_del_fs
+//fs_del_fs
 	else if (params[0] == 4)
 	{
 		char *path = (char *) params[1];

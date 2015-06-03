@@ -184,6 +184,8 @@ s_pcb* load_process(char *file_name, char *params, int *status)
 		return NULL;
 	}
 
+	pcb->session.current_path = alloc_page(process_id, 1, 0, 0);
+
 	//初始化pcb
 	init_process(pcb, process_id, run, entry_point, run_size);
 
@@ -271,6 +273,8 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	pcb->is_need_fpu = 0;
 	//内存申请表为空
 	pcb->alloc_list = NULL;
+	//shell id默认为0
+	pcb->shell_pid = 0;
 	//main函数运行结束信号量
 	pcb->sem_shell[0].value = 0;
 	pcb->sem_shell[0].list_block = NULL;
@@ -659,6 +663,8 @@ void create_pthread(s_pcb *parent_pcb, s_pthread *pthread, void *run, void *args
 
 	//设置父进程线程
 	pcb->parent = parent_pcb;
+
+	pcb->shell_pid = parent_pcb->shell_pid;
 
 	s_list *p_list = alloc_mm(sizeof(s_list));
 	p_list->node = pcb;

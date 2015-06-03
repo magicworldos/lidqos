@@ -227,7 +227,7 @@ void install_program(char *path, char *args)
 	params[0] = 0;
 	params[1] = (int) path;
 	params[2] = (int) args;
-	params[3] = (int) NULL;
+	params[3] = (int) 0;
 	params[4] = (int) &ret;
 	params[5] = (int) &status;
 	__asm__ volatile("int $0x80" :: "a"(params));

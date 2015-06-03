@@ -242,6 +242,13 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(PSHELL)/stack.o					\
 		$(BUILD_PATH)/$(PSHELL)/fs.o
 		
+	#pwd
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/pwd -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
+		$(BUILD_PATH)/$(PSHELL)/pwd.o					\
+		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
+		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
+		$(BUILD_PATH)/$(PSHELL)/string.o
+		
 	#start_pthread
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/start_pthread -e start_pthread -r $(BUILD_PATH)/$(PSHELL)/start_pthread.o
 	
@@ -310,6 +317,7 @@ $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/start_pthread.c 		-o $(BUILD_PATH)/$(PSHELL)/start_pthread.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/system.c				-o $(BUILD_PATH)/$(PSHELL)/system.o	
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/shell.c				-o $(BUILD_PATH)/$(PSHELL)/shell.o	
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/pwd.c				-o $(BUILD_PATH)/$(PSHELL)/pwd.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/unistd.c				-o $(BUILD_PATH)/$(PSHELL)/unistd.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/semaphore.c			-o $(BUILD_PATH)/$(PSHELL)/semaphore.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/pthread.c			-o $(BUILD_PATH)/$(PSHELL)/pthread.o

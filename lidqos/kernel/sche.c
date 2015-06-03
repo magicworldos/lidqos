@@ -14,6 +14,7 @@
 extern s_gdt gdts[GDT_MAX_SIZE];
 
 //进程链表
+s_list *list_all_pcb = NULL;
 s_list *list_pcb = NULL;
 //等待链表sleep
 s_list *list_pcb_sleep = NULL;
@@ -122,6 +123,10 @@ void pcb_insert(s_pcb *pcb)
 	s_list *p_list = alloc_mm(sizeof(s_list));
 	p_list->node = pcb;
 	list_pcb = list_insert_node(list_pcb, p_list);
+
+	s_list *p_all_list = alloc_mm(sizeof(s_list));
+	p_all_list->node = pcb;
+	list_all_pcb = list_insert_node(list_all_pcb, p_all_list);
 }
 
 void show_pcb_list()
@@ -226,6 +231,10 @@ void pcb_stop(s_pcb *pcb)
 	//加入到停止链表
 	list_pcb_stop = list_insert_node(list_pcb_stop, list_node);
 
+	//从所有pcb链表中移出此进程
+	list_all_pcb = list_remove_node(list_all_pcb, pcb, &list_node);
+	free_mm(list_node, sizeof(s_list));
+
 	//执行一次调度，跳过当前进程
 	schedule();
 }
@@ -299,4 +308,19 @@ void pcb_wakeup_key()
 	s_list *list_node = NULL;
 	list_pcb_wait_key = list_remove_node(list_pcb_wait_key, pcb, &list_node);
 	list_pcb = list_insert_node(list_pcb, list_node);
+}
+
+s_pcb* pcb_by_id(u32 process_id)
+{
+	s_list *p = list_all_pcb;
+	while (p != NULL)
+	{
+		s_pcb *pcb = (s_pcb *) p->node;
+		if (pcb->process_id == process_id)
+		{
+			return pcb;
+		}
+		p = p->next;
+	}
+	return NULL;
 }
