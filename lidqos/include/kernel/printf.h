@@ -16,6 +16,10 @@
 #include <kernel/arg.h>
 #include <kernel/sys_var.h>
 
+void draw_cursor(int tty_id, int x, int y);
+
+void clear_cursor(int tty_id, int x, int y);
+
 void set_cursor(int tty_id, u32 x, u32 y);
 
 u32 get_cursor(int tty_id);

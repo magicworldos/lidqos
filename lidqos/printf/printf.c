@@ -10,6 +10,19 @@
 
 extern s_tty *tty_cur;
 extern s_sys_var *sys_var;
+
+void draw_cursor(int tty_id, int x, int y)
+{
+	//绘制光标字符到光标位置
+	putascii(tty_id, x, y, CURSOR_CHAR);
+}
+
+void clear_cursor(int tty_id, int x, int y)
+{
+	//绘制空白字符到光标位置
+	putascii(tty_id, x, y, ' ');
+}
+
 /***
  * 设置光标位置
  * u16 x: 光标的横坐标
@@ -35,21 +48,9 @@ void set_cursor(int tty_id, u32 x, u32 y)
 	//计算光标的线性位置
 	u32 cursor_pos = y * 80 + x;
 
-	if (tty_id == tty_cur->tty_id)
-	{
-		//告诉地址寄存器要接下来要使用14号寄存器
-		outb_p(14, 0x03d4);
-		//向光标位置高位寄存器写入值
-		outb_p((cursor_pos >> 8) & 0xff, 0x03d5);
-		//告诉地址寄存器要接下来要使用15号寄存器
-		outb_p(15, 0x03d4);
-		//向光标位置高位寄存器写入值
-		outb_p(cursor_pos & 0xff, 0x03d5);
-	}
-	else
-	{
-		sys_var->ttys[tty_id].cursor_pos = cursor_pos;
-	}
+	sys_var->ttys[tty_id].cursor_pos = cursor_pos;
+
+	draw_cursor(tty_id, x, y);
 }
 
 /***
@@ -58,23 +59,7 @@ void set_cursor(int tty_id, u32 x, u32 y)
  */
 u32 get_cursor(int tty_id)
 {
-	if (tty_id == tty_cur->tty_id)
-	{
-		//告诉地址寄存器要接下来要使用14号寄存器
-		outb_p(14, 0x03d4);
-		//从光标位置高位寄存器读取值
-		u32 cursor_pos_h = inb_p(0x03d5);
-		//告诉地址寄存器要接下来要使用15号寄存器
-		outb_p(15, 0x03d4);
-		//从光标位置高位寄存器读取值
-		u32 cursor_pos_l = inb_p(0x03d5);
-		//返回光标位置
-		return (cursor_pos_h << 8) | cursor_pos_l;
-	}
-	else
-	{
-		return sys_var->ttys[tty_id].cursor_pos;
-	}
+	return sys_var->ttys[tty_id].cursor_pos;
 }
 
 /*
@@ -145,6 +130,8 @@ void putchar(int tty_id, char ch)
 	u32 x = cursor_pos % 80;
 	u32 y = cursor_pos / 80;
 
+	clear_cursor(tty_id, x, y);
+
 	//如果是换行符\n
 	if (ch == 0xa)
 	{
@@ -180,12 +167,12 @@ void backspace(int tty_id)
 {
 	//取得当前光标线性位置
 	u32 cursor_pos = get_cursor(tty_id);
-	cursor_pos--;
 	u32 x = cursor_pos % 80;
 	u32 y = cursor_pos / 80;
+	clear_cursor(tty_id, x, y);
+	cursor_pos--;
 	if (cursor_pos > 0)
 	{
-		putascii(tty_id, x, y, ' ');
 		x = cursor_pos % 80;
 		y = cursor_pos / 80;
 		set_cursor(tty_id, x, y);

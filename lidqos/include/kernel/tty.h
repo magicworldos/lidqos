@@ -11,6 +11,7 @@
 #include <kernel/typedef.h>
 #include <kernel/sys_var.h>
 #include <kernel/alloc.h>
+#include <kernel/printf.h>
 
 void install_tty();
 

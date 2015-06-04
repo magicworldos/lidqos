@@ -10,29 +10,23 @@
 
 #include <kernel/typedef.h>
 
-//任务状态：运行
-#define T_S_RUNNING		(0)
-//任务状态：就绪
-#define T_S_READY		(1)
-//任务状态：阻塞
-#define T_S_WAIT		(2)
-//任务状态：停止
-#define T_S_STOP		(3)
+//光标的ascii码
+#define CURSOR_CHAR				('_')	//(219)、(22)
 
 //进程栈页面数
-#define P_STACK_P_NUM	(0x2)
+#define P_STACK_P_NUM			(0x2)
 //进程栈大小
-#define P_STACK_SIZE	(0x2000)
+#define P_STACK_SIZE			(0x2000)
 //进程0级栈页面数
-#define P_STACK0_P_NUM	(0x2)
+#define P_STACK0_P_NUM			(0x2)
 //进程0级栈大小
-#define P_STACK0_SIZE	(0x2000)
+#define P_STACK0_SIZE			(0x2000)
 //进程页目录数
-#define P_PAGE_DIR_NUM	(0x1)
+#define P_PAGE_DIR_NUM			(0x1)
 //进程页表数
-#define P_PAGE_TBL_NUM	(0x400)
+#define P_PAGE_TBL_NUM			(0x400)
 //时钟周期10ms
-#define CLOCK_TIMER		(10)
+#define CLOCK_TIMER				(10)
 
 //制表符使用4个空格
 #define VIDEO_TAB_SIZE			(4)
@@ -87,7 +81,7 @@
 //tty最大数
 #define TTY_COUNT					(10)
 //显存大小
-#define TTY_MEM_SIZE				(80 * 25 * 2)
+#define TTY_MEM_SIZE				(80 * 25 * 4)
 
 //tss数据结构
 typedef struct tss_s

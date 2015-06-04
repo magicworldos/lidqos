@@ -15,7 +15,7 @@ int main(int argc, char **args)
 {
 	tty_id = get_tty_id();
 
-	printf("LidqOS kernel version 1.0 (tty%d)\n", tty_id + 1);
+	printf("System Kernel Version 1.0.168 (tty%d)\n", tty_id + 1);
 
 	//设置计算机名（以后要从/etc/hostname里读入）
 	char *computer_name = COMPUTER_NAME;
