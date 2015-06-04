@@ -38,233 +38,226 @@ _int_default:
 
 //除零错
 _int_0x00:
+	cli
 	pushal
 	pushfl
-	//关中断
-	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
 	call	int_div_error
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //调试异常
 _int_0x01:
+	cli
 	pushal
 	pushfl
-	//关中断
-	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
 	call	int_debug_error
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //不可屏蔽中断
 _int_0x02:
+	cli
 	pushal
 	pushfl
-	//关中断
-	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
 	call	int_nmi
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //断电
 _int_0x03:
+	cli
 	pushal
 	pushfl
-	//关中断
-	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
 	call	int_power_down
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //上溢出
 _int_0x04:
+	cli
 	pushal
 	pushfl
-	//关中断
-	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
 	call	int_bound_out
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //边界检查
 _int_0x05:
+	cli
 	pushal
 	pushfl
-	//关中断
-	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
 	call	int_bound_check
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //无效操作码
 _int_0x06:
+	cli
 	pushal
 	pushfl
-	//关中断
-	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
 	call	int_invalid_opcode
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //没有浮点运算器
 _int_0x07:
+	cli
 	pushal
 	pushfl
-	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
 	call 	int_no_fpu
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //双重错误
 _int_0x08:
+	cli
 	pushal
 	pushfl
-	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
 	call 	int_double_error
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //浮点运算器段超限
 _int_0x09:
+	cli
 	pushal
 	pushfl
-	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
 	call	int_fpu_out
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //无效TSS
 _int_0x0a:
+	cli
 	pushal
 	pushfl
-	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
 	call	int_tss_error
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //无效段
 _int_0x0b:
+	cli
 	pushal
 	pushfl
-	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
 	call	int_section_error
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //无效栈
 _int_0x0c:
+	cli
 	pushal
 	pushfl
-	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
 	call	int_stack_error
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //一般保护错误
 _int_0x0d:
+	cli
 	pushal
 	pushfl
-	cli
 	//C函数中参数和变量所用的栈
 	push	%ebp
 	mov		%esp, %ebp
 	//调用C函数来处理这个异常
 	call	int_protection_error
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 //页错误
@@ -439,20 +432,18 @@ _int_0x2f:
 	iret
 
 _int_0x80:
+	cli
 	pushal
 	pushfl
-	cli
 	push	%ebp
 	mov 	%esp, %ebp
-
 	sub		$0x4, %esp
     movl	%eax, (%esp)
 	call	sys_process
-
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 _int_0x81:
@@ -461,11 +452,9 @@ _int_0x81:
 	pushfl
 	push	%ebp
 	mov 	%esp, %ebp
-
 	sub		$0x4, %esp
     movl	%eax, (%esp)
 	call	sys_semaphore
-
 	leave
 	sti
 	popfl
@@ -473,71 +462,63 @@ _int_0x81:
 	iret
 
 _int_0x82:
+	cli
 	pushal
 	pushfl
-	cli
 	push	%ebp
 	mov 	%esp, %ebp
-
 	sub		$0x4, %esp
     movl	%eax, (%esp)
 	call	sys_stdio
-
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 _int_0x83:
+	cli
 	pushal
 	pushfl
-	cli
 	push	%ebp
 	mov 	%esp, %ebp
-
 	sub		$0x4, %esp
     movl	%eax, (%esp)
 	call	sys_stdlib
-
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 _int_0x84:
+	cli
 	pushal
 	pushfl
-	cli
 	push	%ebp
 	mov 	%esp, %ebp
-
 	sub		$0x4, %esp
     movl	%eax, (%esp)
 	call	sys_hd_rw
-
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 _int_0x85:
+	cli
 	pushal
 	pushfl
-	cli
 	push	%ebp
 	mov 	%esp, %ebp
-
 	sub		$0x4, %esp
     movl	%eax, (%esp)
 	call	sys_pts
-
 	leave
-	sti
 	popfl
 	popal
+	sti
 	iret
 
 _int_0x86:
@@ -561,7 +542,6 @@ _int_0x87:
 	pushfl
 	push   %ebp
 	mov    %esp,%ebp
-
 	sub		$0x4, %esp
     movl	%eax, (%esp)
 	call    sys_fs
@@ -572,12 +552,10 @@ _int_0x87:
 	iret
 
 _int_0x88:
-	cli
 	push	%ebp
 	mov 	%esp, %ebp
 
 	leave
-	sti
 	iret
 
 _int_0x89:
