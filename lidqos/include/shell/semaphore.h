@@ -16,6 +16,10 @@ void sem_wait(s_sem *sem);
 
 void sem_post(s_sem *sem);
 
+void sem_wait_g(s_sem *sem);
+
+void sem_post_g(s_sem *sem);
+
 s_sem* get_global_sem(int type);
 
 void sem_wait_shell(u32 sem_addr);

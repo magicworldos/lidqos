@@ -27,7 +27,7 @@ s_pcb *pcb_cur = NULL;
 s_pcb *pcb_last_run = NULL;
 
 //等待按键
-s_list *list_pcb_wait_key = NULL;
+//s_list *list_pcb_wait_key = NULL;
 
 //浮点寄存器数据存储缓冲区
 extern u8 fpu_d[FPU_SIZE];
@@ -185,6 +185,16 @@ int pcb_sem_P(s_pcb *pcb, s_sem *sem)
 	}
 	//阻塞进程
 	pcb->stack = 0;
+	s_list *p = sem->list_block;
+	while (p != NULL)
+	{
+		s_pcb *pcb_node = (s_pcb *) p->node;
+		if (pcb_node->process_id == pcb->process_id)
+		{
+			return 0;
+		}
+		p = p->next;
+	}
 	//链表节点
 	s_list *list_node = NULL;
 	//从运行链表中移出此进程
@@ -195,13 +205,8 @@ int pcb_sem_P(s_pcb *pcb, s_sem *sem)
 }
 
 //信号量的V操作，释放资源
-int pcb_sem_V(s_pcb *pcb, s_sem *sem)
+int pcb_sem_V(s_sem *sem)
 {
-	if (pcb == NULL)
-	{
-		return 0;
-	}
-
 	//信号量加1
 	sem->value++;
 	//唤醒进程
@@ -210,13 +215,12 @@ int pcb_sem_V(s_pcb *pcb, s_sem *sem)
 	{
 		s_list *p = (s_list *) sem->list_block;
 		s_pcb *pcb_wakeup = (s_pcb *) p->node;
+		//printf(1, "%d\n", pcb_wakeup->process_id);
 		//从运行链表中移出此进程
 		sem->list_block = list_remove_node(sem->list_block, pcb_wakeup, &list_node);
 		//加入到执行链表
 		list_pcb = list_insert_node(list_pcb, list_node);
 	}
-
-	//show_pcb_list();
 	return 1;
 }
 
@@ -255,7 +259,7 @@ void pcb_release()
 		{
 			if (pcb->pcb_type == 0 && pcb->sem_shell[0].value == 0)
 			{
-				pcb_sem_V(pcb, &pcb->sem_shell[0]);
+				pcb_sem_V(&pcb->sem_shell[0]);
 //				printf("V2: %d %d\n", pcb->sem_shell[0].value, pcb->sem_shell[1].value);
 
 			}
@@ -289,29 +293,29 @@ void pcb_release()
 	}
 }
 
-void pcb_wait_key(int tty_id, s_pcb *pcb)
-{
-	s_list *list_node = NULL;
-	list_pcb = list_remove_node(list_pcb, pcb, &list_node);
-	list_pcb_wait_key = list_insert_node(list_pcb_wait_key, list_node);
-}
-
-void pcb_wakeup_key(int tty_id)
-{
-	s_pcb *pcb = NULL;
-	s_list *p = list_pcb_wait_key;
-	while (p != NULL)
-	{
-		pcb = (s_pcb *) p->node;
-		if (pcb->tty_id == tty_id)
-		{
-			s_list *list_node = NULL;
-			list_pcb_wait_key = list_remove_node(list_pcb_wait_key, pcb, &list_node);
-			list_pcb = list_insert_node(list_pcb, list_node);
-		}
-		p = p->next;
-	}
-}
+//void pcb_wait_key(int tty_id, s_pcb *pcb)
+//{
+//	s_list *list_node = NULL;
+//	list_pcb = list_remove_node(list_pcb, pcb, &list_node);
+//	list_pcb_wait_key = list_insert_node(list_pcb_wait_key, list_node);
+//}
+//
+//void pcb_wakeup_key(int tty_id)
+//{
+//	s_pcb *pcb = NULL;
+//	s_list *p = list_pcb_wait_key;
+//	while (p != NULL)
+//	{
+//		pcb = (s_pcb *) p->node;
+//		if (pcb->tty_id == tty_id)
+//		{
+//			s_list *list_node = NULL;
+//			list_pcb_wait_key = list_remove_node(list_pcb_wait_key, pcb, &list_node);
+//			list_pcb = list_insert_node(list_pcb, list_node);
+//		}
+//		p = p->next;
+//	}
+//}
 
 s_pcb* pcb_by_id(u32 process_id)
 {

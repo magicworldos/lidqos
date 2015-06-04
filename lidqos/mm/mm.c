@@ -19,8 +19,7 @@ s_gdtp gdtp;
 s_idt idts[IDT_MAX_SIZE];
 //IDT全局描述符
 s_idtp idtp;
-//全局按键信号量
-s_sem sem_key;
+
 /*
  * install_gdt : 安装GDT全局描述符
  * return : void
@@ -284,10 +283,6 @@ void install_timer()
  */
 void install_kb()
 {
-	//初始化全局按键信号量
-	sem_key.value = 1;
-	sem_key.list_block = NULL;
-
 	//打开IRQ1的键盘中断
 	outb_p(inb_p(0x21) & 0xfd, 0x21);
 	//清除键盘状态可以接受新按键

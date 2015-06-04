@@ -80,6 +80,8 @@
 #define PT_COUNT					(0x20)
 //tty最大数
 #define TTY_COUNT					(10)
+//tty按键缓冲区大小
+#define TTY_KEY_BUFF_SIZE			(0x20)
 //显存大小
 #define TTY_MEM_SIZE				(80 * 25 * 4)
 
@@ -224,8 +226,16 @@ typedef struct
 	void *mm_addr;
 	//光标位置
 	u32 cursor_pos;
-	//接收按键
-	char *ch;
+	//写按键索引
+	u32 ch_index_w;
+	//读按键索引
+	u32 ch_index_r;
+	//按键缓冲区
+	char ch[TTY_KEY_BUFF_SIZE];
+	//写按键缓冲区信号量
+	s_sem sem_keybuff_w;
+	//读按键缓冲区信号量
+	s_sem sem_keybuff_r;
 } s_tty;
 
 typedef struct

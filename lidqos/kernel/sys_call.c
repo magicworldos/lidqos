@@ -12,9 +12,7 @@
 extern s_pcb *pcb_cur;
 //可显字符
 extern u8 keys[0x53][2];
-//全局按键信号量
-extern s_sem sem_key;
-//tty
+//
 extern s_sys_var *sys_var;
 //当前tty
 extern s_tty *tty_cur;
@@ -289,17 +287,23 @@ void int_keyboard()
 	}
 	else if (status == 0)
 	{
-		if (tty_cur->ch != NULL)
+		char ch = keys[key_ind - 1][kb_key_shift];
+		if ((ch >= 0x20 && ch <= 0x7e) || ch == 0x08 || ch == '\n' || ch == '\t')
 		{
-			//得到按键
-			char ch = keys[key_ind - 1][kb_key_shift];
-			//为请求程序设置按键
-			*(tty_cur->ch) = ch;
+			if (tty_cur->sem_keybuff_w.value > 0)
+			{
+				tty_cur->sem_keybuff_w.value--;
+				//得到按键
+
+				//为请求程序设置按键
+				tty_cur->ch[tty_cur->ch_index_w % TTY_KEY_BUFF_SIZE] = ch;
+				tty_cur->ch_index_w++;
+
+				pcb_sem_V(&tty_cur->sem_keybuff_r);
+			}
 		}
 	}
-	pcb_wakeup_key(tty_cur->tty_id);
-	//清空数据区
-	tty_cur->ch = NULL;
+
 	//清除键盘状态可以接受新按键
 	outb_p(scan_code & 0x7f, 0x61);
 	//通知PIC1可以接受新中断
@@ -480,24 +484,44 @@ void sys_semaphore(int *params)
 		sem = addr_parse(cr3, sem);
 		ret = addr_parse(cr3, ret);
 
-		*ret = pcb_sem_V(pcb_cur, sem);
+		*ret = pcb_sem_V(sem);
 	}
 	//获取全局信号量
 	else if (params[0] == 2)
 	{
 		int type = (int) params[1];
-		//按键信号量
+		//按键写信号量
 		if (type == 0)
 		{
-			s_sem **sem = (s_sem **) params[2];
-			sem = addr_parse(cr3, sem);
-			*sem = &sem_key;
+			s_sem **sem_w = (s_sem **) params[2];
+			sem_w = addr_parse(cr3, sem_w);
+			*sem_w = &sys_var->ttys[pcb_cur->tty_id].sem_keybuff_w;
 		}
-		//IDE设备信号量
+		//按键读信号量
 		else if (type == 1)
 		{
-
+			s_sem **sem_r = (s_sem **) params[2];
+			sem_r = addr_parse(cr3, sem_r);
+			*sem_r = &sys_var->ttys[pcb_cur->tty_id].sem_keybuff_r;
 		}
+	}
+	//P
+	if (params[0] == 5)
+	{
+		s_sem *sem = (s_sem *) (params[1]);
+		int *ret = (int *) (params[2]);
+		ret = addr_parse(cr3, ret);
+
+		*ret = pcb_sem_P(pcb_cur, sem);
+	}
+	//V
+	else if (params[0] == 6)
+	{
+		s_sem *sem = (s_sem *) (params[1]);
+		int *ret = (int *) (params[2]);
+		ret = addr_parse(cr3, ret);
+
+		*ret = pcb_sem_V(sem);
 	}
 	//shell pcb P
 	else if (params[0] == 0x10)
@@ -513,7 +537,7 @@ void sys_semaphore(int *params)
 		s_sem *sem = (s_sem *) (params[1]);
 		int *ret = (int *) (params[2]);
 		ret = addr_parse(cr3, ret);
-		*ret = pcb_sem_V(pcb_cur, sem);
+		*ret = pcb_sem_V(sem);
 	}
 	//取得shell 运行的pcb的信号量
 	else if (params[0] == 0x12)
@@ -554,8 +578,13 @@ void sys_stdio(int *params)
 	{
 		char *ch = (char *) params[1];
 		ch = addr_parse(cr3, ch);
-		sys_var->ttys[tty_id].ch = ch;
-		pcb_wait_key(tty_id, pcb_cur);
+		//do
+		//{
+			*ch = tty_cur->ch[tty_cur->ch_index_r % TTY_KEY_BUFF_SIZE];
+			tty_cur->ch_index_r++;
+		//}
+		//while (*ch == 0 && tty_cur->ch_index_r < TTY_KEY_BUFF_SIZE);
+
 	}
 	//backspace
 	else if (params[0] == 0x11)
