@@ -8,6 +8,7 @@
 #ifndef _MM_SWAP_H_
 #define _MM_SWAP_H_
 
+#include <kernel/typedef.h>
 #include <kernel/sys_var.h>
 #include <kernel/hd.h>
 

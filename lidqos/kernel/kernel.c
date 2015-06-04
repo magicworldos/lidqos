@@ -10,7 +10,7 @@
 //内核启动程序入口
 int start_kernel(int argc, char **args)
 {
-	printf("Welcome to LidqOS.\n");
+	printf(0, "Welcome to LidqOS.\n");
 
 	//安装内核程序
 	install_kernel();
@@ -47,6 +47,9 @@ int start_kernel(int argc, char **args)
 
 	//安装系统全局变量
 	install_sys_var();
+
+	//安装tty
+	install_tty();
 
 	//安装多任务
 	install_process();

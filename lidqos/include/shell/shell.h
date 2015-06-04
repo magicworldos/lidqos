@@ -35,6 +35,8 @@ int check_passwd(char *username, char *passwd);
 
 void execute_cmd(char *cmd);
 
+int get_tty_id();
+
 void install_program(char *path, char *args);
 
 void get_current_folder_name(char *folder_name);

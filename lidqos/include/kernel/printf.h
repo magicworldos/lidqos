@@ -15,21 +15,23 @@
 #include <kernel/string.h>
 #include <kernel/arg.h>
 
-void set_cursor(u32 x, u32 y);
+void set_cursor(int tty_id, u32 x, u32 y);
 
-u32 get_cursor();
+u32 get_cursor(int tty_id);
 
-void scroll_up(int row);
+void scroll_up(int tty_id, int row);
 
-void putascii(u32 x, u32 y, char ch);
+void putascii(int tty_id, u32 x, u32 y, char ch);
 
-void putchar(char ch);
+void putchar(int tty_id, char ch);
 
-void backspace();
+void backspace(int tty_id);
 
-int puts(char *str);
+void number_to_str(char *buff, int number, int hex);
 
-int printf(char *fmt, ...);
+int puts(int tty_id, char *str);
+
+int printf(int tty_id, char *fmt, ...);
 
 #endif
 

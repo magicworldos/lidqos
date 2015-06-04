@@ -45,7 +45,10 @@ int main(int argc, char **args)
 
 	//启动shell程序
 	printf("[ OK ] Start shell program.\n");
-	install_program("/usr/bin/shell", "");
+	for (int i = 0; i < TTY_COUNT; i++)
+	{
+		install_program("/usr/bin/shell", "", i);
+	}
 
 	for (;;)
 	{
@@ -220,16 +223,17 @@ void install_pts_to_kernel()
 	__asm__ volatile("int $0x85" :: "a"(params));
 }
 
-void install_program(char *path, char *args)
+void install_program(char *path, char *args, int tty_id)
 {
 	int status = 0;
 	void *ret = NULL;
-	int params[6];
+	int params[7];
 	params[0] = 0;
 	params[1] = (int) path;
 	params[2] = (int) args;
 	params[3] = (int) 0;
 	params[4] = (int) &ret;
 	params[5] = (int) &status;
+	params[6] = (int) tty_id;
 	__asm__ volatile("int $0x80" :: "a"(params));
 }

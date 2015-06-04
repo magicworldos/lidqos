@@ -41,7 +41,7 @@ u32 swap_alloc_sec()
 {
 	if (swap_pts == NULL)
 	{
-		printf("swap error\n");
+		printf(0, "swap error\n");
 		return 0xffffffff;
 	}
 

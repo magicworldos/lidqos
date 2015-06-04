@@ -292,23 +292,35 @@ void execute_cmd(char *cmd)
 	free(cmd_file);
 }
 
+int get_tty_id()
+{
+	int tty_id = 0;
+	int params[2];
+	params[0] = 10;
+	params[1] = (int) &tty_id;
+	__asm__ volatile("int $0x80" :: "a"(params));
+	return tty_id;
+}
+
 /*
  * 安装程序
  */
 void install_program(char *path, char *args)
 {
+	int tty_id = get_tty_id();
 	//返回状态
 	int status = 0;
 	//程序运行信号量
 	u32 sem_addr = 0;
 
-	int params[6];
+	int params[7];
 	params[0] = 0;
 	params[1] = (int) path;
 	params[2] = (int) args;
 	params[3] = (int) 1;
 	params[4] = (int) &sem_addr;
 	params[5] = (int) &status;
+	params[6] = (int) tty_id;
 	__asm__ volatile("int $0x80" :: "a"(params));
 
 	//如果状态为0,说明安装程序成功

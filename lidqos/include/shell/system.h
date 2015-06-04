@@ -33,6 +33,6 @@ void mount_hda(s_pt *pts, char *mount_point);
 
 void install_pts_to_kernel();
 
-void install_program(char *path, char *args);
+void install_program(char *path, char *args, int tty_id);
 
 #endif /* SYSTEM_H_ */

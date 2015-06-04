@@ -41,7 +41,7 @@ void schedule()
 	s_list *list_header = list_pcb;
 	if (list_header == NULL)
 	{
-		printf("empty\n");
+		printf(0, "empty\n");
 		return;
 	}
 
@@ -135,10 +135,10 @@ void show_pcb_list()
 	while (p != NULL)
 	{
 		s_pcb *pcb = (s_pcb *) p->node;
-		printf("%d ", pcb->process_id);
+		printf(0, "%d ", pcb->process_id);
 		p = p->next;
 	}
-	printf("\n");
+	printf(0, "\n");
 }
 
 /*

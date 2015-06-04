@@ -13,7 +13,7 @@
  * u16 x: 光标的横坐标
  * u16 y: 光标的纵坐标
  */
-void set_cursor(u32 x, u32 y)
+void set_cursor(int tty_id, u32 x, u32 y)
 {
 	//横坐标超出80换行
 	if (x > 80)
@@ -27,7 +27,7 @@ void set_cursor(u32 x, u32 y)
 	{
 		x = 0;
 		y = 25 - 1;
-		scroll_up(1);
+		scroll_up(tty_id, 1);
 	}
 
 	//计算光标的线性位置
@@ -46,7 +46,7 @@ void set_cursor(u32 x, u32 y)
  * 取得光标位置
  * return: 光标的线性位置
  */
-u32 get_cursor()
+u32 get_cursor(int tty_id)
 {
 	//告诉地址寄存器要接下来要使用14号寄存器
 	outb_p(14, 0x03d4);
@@ -65,7 +65,7 @@ u32 get_cursor()
  *  - int int row : 行数
  * return : void
  */
-void scroll_up(int row)
+void scroll_up(int tty_id, int row)
 {
 	u16 *p = (u16 *) 0xb8000;
 	for (int i = 0; i < 80; ++i)
@@ -83,7 +83,7 @@ void scroll_up(int row)
  * u16 y: 纵坐标
  * char ch: 要显示的字符
  */
-void putascii(u32 x, u32 y, char ch)
+void putascii(int tty_id, u32 x, u32 y, char ch)
 {
 	//定义显存地址
 	char *video_addr = (char *) 0xb8000;
@@ -102,10 +102,10 @@ void putascii(u32 x, u32 y, char ch)
  * 显示一个字符到当前光标位置
  * char ch: 要显示的字符
  */
-void putchar(char ch)
+void putchar(int tty_id, char ch)
 {
 	//取得当前光标线性位置
-	u32 cursor_pos = get_cursor();
+	u32 cursor_pos = get_cursor(tty_id);
 	//计算横纵坐标
 	u32 x = cursor_pos % 80;
 	u32 y = cursor_pos / 80;
@@ -116,7 +116,7 @@ void putchar(char ch)
 		//换行
 		x = 0;
 		y++;
-		set_cursor(x, y);
+		set_cursor(tty_id, x, y);
 	}
 	//如果是制表符\t
 	else if (ch == 0x9)
@@ -126,33 +126,33 @@ void putchar(char ch)
 		//显示8个空格
 		for (int i = 0; i < 4; i++)
 		{
-			putascii(x, y, ch);
+			putascii(tty_id, x, y, ch);
 			x++;
-			set_cursor(x, y);
+			set_cursor(tty_id, x, y);
 		}
 	}
 	//显示普通字符
 	else
 	{
-		putascii(x, y, ch);
+		putascii(tty_id, x, y, ch);
 		x++;
-		set_cursor(x, y);
+		set_cursor(tty_id, x, y);
 	}
 }
 
-void backspace()
+void backspace(int tty_id)
 {
 	//取得当前光标线性位置
-	u32 cursor_pos = get_cursor();
+	u32 cursor_pos = get_cursor(tty_id);
 	cursor_pos--;
 	u32 x = cursor_pos % 80;
 	u32 y = cursor_pos / 80;
 	if (cursor_pos > 0)
 	{
-		putascii(x, y, ' ');
+		putascii(tty_id, x, y, ' ');
 		x = cursor_pos % 80;
 		y = cursor_pos / 80;
-		set_cursor(x, y);
+		set_cursor(tty_id, x, y);
 	}
 }
 
@@ -213,12 +213,12 @@ void number_to_str(char *buff, int number, int hex)
  *  - char *str : 字符串
  * return : void
  */
-int puts(char *str)
+int puts(int tty_id, char *str)
 {
 	int count = 0;
 	while (*str != '\0')
 	{
-		putchar(*str++);
+		putchar(tty_id, *str++);
 		count++;
 	}
 	return count;
@@ -230,7 +230,7 @@ int puts(char *str)
  * 动态参数
  * return: 显示字符个数
  */
-int printf(char *fmt, ...)
+int printf(int tty_id, char *fmt, ...)
 {
 	//显示数字缓冲区
 	char buff[0x800];
@@ -256,7 +256,7 @@ int printf(char *fmt, ...)
 			if ('c' == *(fmt + 1))
 			{
 				ch = va_arg(args, char);
-				putchar(ch);
+				putchar(tty_id, ch);
 				count++;
 				fmt += 2;
 			}
@@ -264,14 +264,14 @@ int printf(char *fmt, ...)
 			else if ('s' == *(fmt + 1))
 			{
 				str = va_arg(args, char*);
-				count += puts(str);
+				count += puts(tty_id, str);
 				fmt += 2;
 			}
 			//显示整数
 			else if ('d' == *(fmt + 1))
 			{
 				number_to_str(buff, va_arg(args, int), 10);
-				count += puts(buff);
+				count += puts(tty_id, buff);
 				fmt += 2;
 			}
 			//显示无符号16进制整数
@@ -280,24 +280,24 @@ int printf(char *fmt, ...)
 				u32 num = va_arg(args, u32);
 				u32 nl = num & 0xffff;
 				u32 nh = (num >> 16) & 0xffff;
-				count += puts("0x");
+				count += puts(tty_id, "0x");
 				if (nh == 0)
 				{
 					number_to_str(buff, nl, 16);
-					count += puts(buff);
+					count += puts(tty_id, buff);
 				}
 				else
 				{
 					number_to_str(buff, nh, 16);
-					count += puts(buff);
+					count += puts(tty_id, buff);
 
 					number_to_str(buff, nl, 16);
 					int zero = 4 - str_len(buff);
 					for (int i = 0; i < zero; i++)
 					{
-						putchar('0');
+						putchar(tty_id, '0');
 					}
-					count += puts(buff);
+					count += puts(tty_id, buff);
 				}
 				fmt += 2;
 			}
@@ -305,7 +305,7 @@ int printf(char *fmt, ...)
 		//显示普通字符
 		else
 		{
-			putchar(*fmt++);
+			putchar(tty_id, *fmt++);
 			count++;
 		}
 	}

@@ -1,0 +1,17 @@
+/*
+ * tty.h
+ *
+ *  Created on: Jun 4, 2015
+ *      Author: lidq
+ */
+
+#ifndef _INCLUDE_KERNEL_TTY_H_
+#define _INCLUDE_KERNEL_TTY_H_
+
+#include <kernel/typedef.h>
+#include <kernel/sys_var.h>
+#include <kernel/alloc.h>
+
+void install_tty();
+
+#endif /* INCLUDE_KERNEL_TTY_H_ */

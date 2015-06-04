@@ -30,7 +30,7 @@ int timer = 0;
 void int_div_error()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	printf("int_div_error.\n");
+	printf(0, "int_div_error.\n");
 	hlt();
 }
 
@@ -40,7 +40,7 @@ void int_div_error()
 void int_debug_error()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	printf("int_debug_error.\n");
+	printf(0, "int_debug_error.\n");
 	hlt();
 }
 
@@ -50,7 +50,7 @@ void int_debug_error()
 void int_nmi()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	printf("int_nmi.\n");
+	printf(0, "int_nmi.\n");
 	hlt();
 }
 
@@ -60,7 +60,7 @@ void int_nmi()
 void int_power_down()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	printf("int_power_down.\n");
+	printf(0, "int_power_down.\n");
 	hlt();
 }
 
@@ -70,7 +70,7 @@ void int_power_down()
 void int_bound_out()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	printf("int_bound_out.\n");
+	printf(0, "int_bound_out.\n");
 	hlt();
 }
 
@@ -80,7 +80,7 @@ void int_bound_out()
 void int_bound_check()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	printf("int_bound_check.\n");
+	printf(0, "int_bound_check.\n");
 	hlt();
 }
 
@@ -90,7 +90,7 @@ void int_bound_check()
 void int_invalid_opcode()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	printf("int_invalid_opcode.\n");
+	printf(0, "int_invalid_opcode.\n");
 	hlt();
 }
 
@@ -129,7 +129,7 @@ void int_no_fpu()
 void int_double_error()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	printf("int_double_error.\n");
+	printf(0, "int_double_error.\n");
 	hlt();
 }
 
@@ -139,7 +139,7 @@ void int_double_error()
 void int_fpu_out()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	printf("int_fpu_out.\n");
+	printf(0, "int_fpu_out.\n");
 	hlt();
 }
 
@@ -149,7 +149,7 @@ void int_fpu_out()
 void int_tss_error()
 {
 	//set_ds(GDT_INDEX_KERNEL_DS);
-	printf("int_tss_error.\n");
+	printf(0, "int_tss_error.\n");
 	hlt();
 }
 
@@ -159,7 +159,7 @@ void int_tss_error()
 void int_section_error()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	printf("int_section_error.\n");
+	printf(0, "int_section_error.\n");
 	hlt();
 }
 
@@ -169,7 +169,7 @@ void int_section_error()
 void int_stack_error()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	printf("int_stack_error.\n");
+	printf(0, "int_stack_error.\n");
 	hlt();
 }
 
@@ -179,7 +179,7 @@ void int_stack_error()
 void int_protection_error()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	printf("int_protection_error.\n");
+	printf(0, "int_protection_error.\n");
 	hlt();
 }
 
@@ -205,7 +205,7 @@ void int_page_error(u32 error_code)
 void int_fpu_error()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	printf("int_fpu_error.\n");
+	printf(0, "int_fpu_error.\n");
 	hlt();
 }
 
@@ -308,6 +308,7 @@ void sys_process(int *params)
 		int type = params[3];
 		u32 *sem_addr = (u32 *) params[4];
 		int *status = (int *) params[5];
+		int tty_id = params[6];
 
 		path = addr_parse(cr3, path);
 		par_s = addr_parse(cr3, par_s);
@@ -318,6 +319,8 @@ void sys_process(int *params)
 		s_pcb *pcb = load_process(path, par_s, status);
 		if (pcb != NULL)
 		{
+			//设置tty_id
+			pcb->tty_id = tty_id;
 			*sem_addr = (u32) pcb->sem_shell;
 			//type为1时，说明是shell执行普通程序
 			if (type == 1)
@@ -408,6 +411,13 @@ void sys_process(int *params)
 		current_path = addr_parse(cr3, current_path);
 		str_copy(pcb_cur->session.current_path, current_path);
 	}
+	//取得当前tty_id
+	else if (params[0] == 10)
+	{
+		int *tty_id = (int *) params[1];
+		tty_id = addr_parse(cr3, tty_id);
+		*tty_id = pcb_cur->tty_id;
+	}
 
 	set_cr3(cr3);
 	set_ds(0xf);
@@ -494,10 +504,11 @@ void sys_stdio(int *params)
 	u32 cr3 = pcb_cur->tss.cr3;
 	params = addr_parse(cr3, params);
 
+	int tty_id = pcb_cur->tty_id;
 	//显示字符
 	if (params[0] == 0)
 	{
-		putchar((char) params[1]);
+		putchar(tty_id, (char) params[1]);
 	}
 	//显示字符串
 	else if (params[0] == 1)
@@ -506,7 +517,7 @@ void sys_stdio(int *params)
 		count = addr_parse(cr3, count);
 		char *str = (char *) params[1];
 		str = addr_parse(cr3, str);
-		*count = puts(str);
+		*count = puts(tty_id, str);
 	}
 	//getchar
 	else if (params[0] == 0x10)
@@ -519,7 +530,7 @@ void sys_stdio(int *params)
 	//backspace
 	else if (params[0] == 0x11)
 	{
-		backspace();
+		backspace(tty_id);
 	}
 
 	set_cr3(cr3);

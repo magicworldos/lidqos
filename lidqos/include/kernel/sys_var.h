@@ -82,6 +82,13 @@
 //登录状态，已登录
 #define SESSION_STATUS_LOGIN		(1)
 
+//分区表最大数
+#define PT_COUNT					(0x20)
+//tty最大数
+#define TTY_COUNT					(10)
+//显存大小
+#define TTY_MEM_SIZE				(80 * 25 * 2)
+
 //tss数据结构
 typedef struct tss_s
 {
@@ -136,6 +143,8 @@ typedef struct alloc_list_s
  */
 typedef struct process_control_block
 {
+	//tty编号
+	int tty_id;
 	//进程号
 	u32 process_id;
 	//0 进程，1 线程
@@ -212,10 +221,25 @@ typedef struct s_partition_table
 	u32 size;
 } s_pt;
 
+//tty数据结构
 typedef struct
 {
-	s_pt pts[0x20];
+	//tty编号
+	int tty_id;
+	//显存地址
+	void *mm_addr;
+	//光标位置
+	int cursor_pos;
+} s_tty;
+
+typedef struct
+{
+	//分区表
+	s_pt pts[PT_COUNT];
 	int pt_count;
+
+	//tty
+	s_tty ttys[TTY_COUNT];
 
 } s_sys_var;
 
