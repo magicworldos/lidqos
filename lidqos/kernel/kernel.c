@@ -10,8 +10,6 @@
 //内核启动程序入口
 int start_kernel(int argc, char **args)
 {
-	printf(0, "Welcome to LidqOS.\n");
-
 	//安装内核程序
 	install_kernel();
 

@@ -14,6 +14,7 @@
 #include <kernel/io.h>
 #include <kernel/string.h>
 #include <kernel/arg.h>
+#include <kernel/sys_var.h>
 
 void set_cursor(int tty_id, u32 x, u32 y);
 

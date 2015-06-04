@@ -247,6 +247,8 @@ void init_process(s_pcb *pcb, u32 pid, void *run, u32 run_offset, u32 run_size)
 	{
 		return;
 	}
+	//tty
+	pcb->tty_id = 0;
 	//进程号
 	pcb->process_id = pid;
 	//类型
@@ -685,6 +687,8 @@ void init_pthread(s_pcb *pcb, u32 pid)
 {
 	init_pcb(pcb);
 
+	//tty
+	pcb->tty_id = 0;
 	//进程号
 	pcb->process_id = pid;
 	//类型

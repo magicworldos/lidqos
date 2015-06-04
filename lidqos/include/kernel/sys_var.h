@@ -229,7 +229,7 @@ typedef struct
 	//显存地址
 	void *mm_addr;
 	//光标位置
-	int cursor_pos;
+	u32 cursor_pos;
 } s_tty;
 
 typedef struct

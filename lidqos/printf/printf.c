@@ -8,6 +8,8 @@
 
 #include <kernel/printf.h>
 
+extern s_tty *tty_cur;
+extern s_sys_var *sys_var;
 /***
  * 设置光标位置
  * u16 x: 光标的横坐标
@@ -32,14 +34,23 @@ void set_cursor(int tty_id, u32 x, u32 y)
 
 	//计算光标的线性位置
 	u32 cursor_pos = y * 80 + x;
-	//告诉地址寄存器要接下来要使用14号寄存器
-	outb_p(14, 0x03d4);
-	//向光标位置高位寄存器写入值
-	outb_p((cursor_pos >> 8) & 0xff, 0x03d5);
-	//告诉地址寄存器要接下来要使用15号寄存器
-	outb_p(15, 0x03d4);
-	//向光标位置高位寄存器写入值
-	outb_p(cursor_pos & 0xff, 0x03d5);
+
+	if (tty_id == tty_cur->tty_id)
+	{
+
+		//告诉地址寄存器要接下来要使用14号寄存器
+		outb_p(14, 0x03d4);
+		//向光标位置高位寄存器写入值
+		outb_p((cursor_pos >> 8) & 0xff, 0x03d5);
+		//告诉地址寄存器要接下来要使用15号寄存器
+		outb_p(15, 0x03d4);
+		//向光标位置高位寄存器写入值
+		outb_p(cursor_pos & 0xff, 0x03d5);
+	}
+	else
+	{
+		sys_var->ttys[tty_id].cursor_pos = cursor_pos;
+	}
 }
 
 /***
@@ -48,16 +59,23 @@ void set_cursor(int tty_id, u32 x, u32 y)
  */
 u32 get_cursor(int tty_id)
 {
-	//告诉地址寄存器要接下来要使用14号寄存器
-	outb_p(14, 0x03d4);
-	//从光标位置高位寄存器读取值
-	u32 cursor_pos_h = inb_p(0x03d5);
-	//告诉地址寄存器要接下来要使用15号寄存器
-	outb_p(15, 0x03d4);
-	//从光标位置高位寄存器读取值
-	u32 cursor_pos_l = inb_p(0x03d5);
-	//返回光标位置
-	return (cursor_pos_h << 8) | cursor_pos_l;
+	if (tty_id == tty_cur->tty_id)
+	{
+		//告诉地址寄存器要接下来要使用14号寄存器
+		outb_p(14, 0x03d4);
+		//从光标位置高位寄存器读取值
+		u32 cursor_pos_h = inb_p(0x03d5);
+		//告诉地址寄存器要接下来要使用15号寄存器
+		outb_p(15, 0x03d4);
+		//从光标位置高位寄存器读取值
+		u32 cursor_pos_l = inb_p(0x03d5);
+		//返回光标位置
+		return (cursor_pos_h << 8) | cursor_pos_l;
+	}
+	else
+	{
+		return sys_var->ttys[tty_id].cursor_pos;
+	}
 }
 
 /*
@@ -67,7 +85,16 @@ u32 get_cursor(int tty_id)
  */
 void scroll_up(int tty_id, int row)
 {
-	u16 *p = (u16 *) 0xb8000;
+	u16 *p = NULL;
+	if (tty_id == tty_cur->tty_id)
+	{
+		p = (u16 *) 0xb8000;
+	}
+	else
+	{
+		p = (u16 *) sys_var->ttys[tty_id].mm_addr;
+	}
+
 	for (int i = 0; i < 80; ++i)
 	{
 		for (int j = 0; j < 25; ++j)
@@ -86,7 +113,16 @@ void scroll_up(int tty_id, int row)
 void putascii(int tty_id, u32 x, u32 y, char ch)
 {
 	//定义显存地址
-	char *video_addr = (char *) 0xb8000;
+	char *video_addr = NULL;
+
+	if (tty_id == tty_cur->tty_id)
+	{
+		video_addr = (char *) 0xb8000;
+	}
+	else
+	{
+		video_addr = sys_var->ttys[tty_id].mm_addr;
+	}
 
 	//写入显存
 	u32 where = (y * 80 + x) * 2;

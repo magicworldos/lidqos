@@ -13,6 +13,8 @@ s_sys_var *sys_var = NULL;
 
 int main(int argc, char **args)
 {
+	printf("Welcome to LidqOS.\n");
+
 	printf("Start System Process.\n");
 
 	sys_var = malloc(sizeof(s_sys_var));
