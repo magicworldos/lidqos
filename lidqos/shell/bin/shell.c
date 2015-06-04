@@ -7,11 +7,16 @@
 
 #include <shell/shell.h>
 
+int tty_id = 0;
 //用户登录信息
 s_session *session = NULL;
 
 int main(int argc, char **args)
 {
+	tty_id = get_tty_id();
+
+	printf("LidqOS kernel version 1.0 (tty%d)\n", tty_id + 1);
+
 	//设置计算机名（以后要从/etc/hostname里读入）
 	char *computer_name = COMPUTER_NAME;
 
@@ -307,7 +312,6 @@ int get_tty_id()
  */
 void install_program(char *path, char *args)
 {
-	int tty_id = get_tty_id();
 	//返回状态
 	int status = 0;
 	//程序运行信号量

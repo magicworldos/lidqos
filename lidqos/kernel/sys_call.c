@@ -14,9 +14,15 @@ extern s_pcb *pcb_cur;
 extern u8 keys[0x53][2];
 //全局按键信号量
 extern s_sem sem_key;
-//shift键按下状态
+//tty
+extern s_sys_var *sys_var;
+//当前tty
+extern s_tty *tty_cur;
+
+//键按下状态
 u8 kb_key_shift = 0;
-char *ch_for_get = NULL;
+u8 kb_key_ctrl = 0;
+u8 kb_key_alt = 0;
 
 //浮点寄存器数据存储缓冲区
 u8 fpu_d[FPU_SIZE] =
@@ -256,20 +262,44 @@ void int_keyboard()
 	{
 		kb_key_shift = 0x0;
 	}
+	//ctrl key down
+	else if (key_ind == KEY_CTRL && status == 0)
+	{
+		kb_key_ctrl = 0x1;
+	}
+	//ctrl key up
+	else if (key_ind == KEY_CTRL && status == 1)
+	{
+		kb_key_ctrl = 0x0;
+	}
+	//alt key down
+	else if (key_ind == KEY_ALT && status == 1)
+	{
+		kb_key_alt = 0x1;
+	}
+	//alt key up
+	else if (key_ind == KEY_ALT && status == 1)
+	{
+		kb_key_alt = 0x0;
+	}
+	//切换tty F1 - F10
+	else if (status == 0 && (key_ind - KEY_F1) >= 0 && (key_ind - KEY_F1) < TTY_COUNT && kb_key_ctrl && kb_key_alt && !kb_key_shift)
+	{
+		switch_tty(key_ind - KEY_F1);
+	}
 	else if (status == 0)
 	{
-		if (ch_for_get != NULL)
+		if (tty_cur->ch != NULL)
 		{
 			//得到按键
 			char ch = keys[key_ind - 1][kb_key_shift];
 			//为请求程序设置按键
-			*ch_for_get = ch;
-			//printf("pcb process id %x %d\n", ch_for_get, pcb_cur->process_id);
+			*(tty_cur->ch) = ch;
 		}
 	}
-
+	pcb_wakeup_key(tty_cur->tty_id);
 	//清空数据区
-	ch_for_get = NULL;
+	tty_cur->ch = NULL;
 	//清除键盘状态可以接受新按键
 	outb_p(scan_code & 0x7f, 0x61);
 	//通知PIC1可以接受新中断
@@ -524,8 +554,8 @@ void sys_stdio(int *params)
 	{
 		char *ch = (char *) params[1];
 		ch = addr_parse(cr3, ch);
-		ch_for_get = ch;
-		//pcb_wait_key(pcb_cur);
+		sys_var->ttys[tty_id].ch = ch;
+		pcb_wait_key(tty_id, pcb_cur);
 	}
 	//backspace
 	else if (params[0] == 0x11)

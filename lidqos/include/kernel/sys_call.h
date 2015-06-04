@@ -16,6 +16,7 @@
 #include <kernel/printf.h>
 #include <kernel/sche.h>
 #include <kernel/rand.h>
+#include <kernel/tty.h>
 #include <kernel/malloc.h>
 
 void int_div_error();

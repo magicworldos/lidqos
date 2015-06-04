@@ -230,6 +230,8 @@ typedef struct
 	void *mm_addr;
 	//光标位置
 	u32 cursor_pos;
+	//接收按键
+	char *ch;
 } s_tty;
 
 typedef struct

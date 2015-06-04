@@ -289,25 +289,28 @@ void pcb_release()
 	}
 }
 
-void pcb_wait_key(s_pcb *pcb)
+void pcb_wait_key(int tty_id, s_pcb *pcb)
 {
-	//printf("wait\n");
 	s_list *list_node = NULL;
 	list_pcb = list_remove_node(list_pcb, pcb, &list_node);
 	list_pcb_wait_key = list_insert_node(list_pcb_wait_key, list_node);
 }
 
-void pcb_wakeup_key()
+void pcb_wakeup_key(int tty_id)
 {
-	//printf("wakeup\n");
 	s_pcb *pcb = NULL;
-	if (list_pcb_wait_key != NULL)
+	s_list *p = list_pcb_wait_key;
+	while (p != NULL)
 	{
-		pcb = (s_pcb *) list_pcb_wait_key->node;
+		pcb = (s_pcb *) p->node;
+		if (pcb->tty_id == tty_id)
+		{
+			s_list *list_node = NULL;
+			list_pcb_wait_key = list_remove_node(list_pcb_wait_key, pcb, &list_node);
+			list_pcb = list_insert_node(list_pcb, list_node);
+		}
+		p = p->next;
 	}
-	s_list *list_node = NULL;
-	list_pcb_wait_key = list_remove_node(list_pcb_wait_key, pcb, &list_node);
-	list_pcb = list_insert_node(list_pcb, list_node);
 }
 
 s_pcb* pcb_by_id(u32 process_id)

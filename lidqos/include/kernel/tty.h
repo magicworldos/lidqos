@@ -14,4 +14,6 @@
 
 void install_tty();
 
+void switch_tty(int tty_id);
+
 #endif /* INCLUDE_KERNEL_TTY_H_ */

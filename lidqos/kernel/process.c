@@ -665,7 +665,7 @@ void create_pthread(s_pcb *parent_pcb, s_pthread *pthread, void *run, void *args
 
 	//设置父进程线程
 	pcb->parent = parent_pcb;
-
+	pcb->tty_id = parent_pcb->tty_id;
 	pcb->shell_pid = parent_pcb->shell_pid;
 
 	s_list *p_list = alloc_mm(sizeof(s_list));

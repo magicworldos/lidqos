@@ -37,7 +37,6 @@ void set_cursor(int tty_id, u32 x, u32 y)
 
 	if (tty_id == tty_cur->tty_id)
 	{
-
 		//告诉地址寄存器要接下来要使用14号寄存器
 		outb_p(14, 0x03d4);
 		//向光标位置高位寄存器写入值
@@ -152,7 +151,7 @@ void putchar(int tty_id, char ch)
 		//换行
 		x = 0;
 		y++;
-		set_cursor(tty_id, x, y);
+		//set_cursor(tty_id, x, y);
 	}
 	//如果是制表符\t
 	else if (ch == 0x9)
@@ -164,7 +163,7 @@ void putchar(int tty_id, char ch)
 		{
 			putascii(tty_id, x, y, ch);
 			x++;
-			set_cursor(tty_id, x, y);
+			//set_cursor(tty_id, x, y);
 		}
 	}
 	//显示普通字符
@@ -172,8 +171,9 @@ void putchar(int tty_id, char ch)
 	{
 		putascii(tty_id, x, y, ch);
 		x++;
-		set_cursor(tty_id, x, y);
+		//set_cursor(tty_id, x, y);
 	}
+	set_cursor(tty_id, x, y);
 }
 
 void backspace(int tty_id)

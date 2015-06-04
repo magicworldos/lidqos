@@ -44,9 +44,9 @@ int pcb_sem_P(s_pcb *pcb, s_sem *sem);
 
 int pcb_sem_V(s_pcb *pcb, s_sem *sem);
 
-void pcb_wait_key(s_pcb *pcb);
+void pcb_wait_key(int tty_id, s_pcb *pcb);
 
-void pcb_wakeup_key();
+void pcb_wakeup_key(int tty_id);
 
 s_pcb* pcb_by_id(u32 process_id);
 
