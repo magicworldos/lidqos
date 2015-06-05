@@ -14,13 +14,22 @@
 #include <shell/stdlib.h>
 #include <kernel/string.h>
 
+s_session *session = NULL;
+
 int main(int argc, char **args)
 {
 	if (argc >= 2)
 	{
+		session = malloc(sizeof(s_session));
+		session->current_path = malloc(SHELL_CMD_LEN);
+
+		int params[2];
+		params[0] = 7;
+		params[1] = (int) session;
+		__asm__ volatile("int $0x80" :: "a"(params));
+
 		//当前工作目录
 		char *current_path = malloc(SHELL_CMD_LEN);
-		int params[2];
 		params[0] = 6;
 		params[1] = (int) current_path;
 		__asm__ volatile("int $0x80" :: "a"(params));
@@ -57,6 +66,9 @@ int main(int argc, char **args)
 
 		free(full_path);
 		free(current_path);
+
+		free(session->current_path);
+		free(session);
 	}
 	return 0;
 }

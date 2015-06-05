@@ -22,6 +22,7 @@ all:
 	cp ../../lidqos/build/shell/example_fpu ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/example_args ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/example_icecream ../../lidqos/build/fs/usr/bin/
+	cp ../../lidqos/build/shell/example_file ../../lidqos/build/fs/usr/bin/
 	./build/filesys
 
 clean:
