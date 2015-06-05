@@ -52,6 +52,8 @@ int main(int argc, char **args)
 		install_program("/usr/bin/shell", "", i);
 	}
 
+	install_program("/usr/bin/cursor", "", 0);
+
 	for (;;)
 	{
 	}

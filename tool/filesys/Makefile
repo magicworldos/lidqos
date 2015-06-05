@@ -7,6 +7,7 @@ all:
 	-o build/filesys
 	cp -rvf ../../lidqos/fs/ ../../lidqos/build/	
 	cp ../../lidqos/build/shell/system ../../lidqos/build/fs/usr/bin/
+	cp ../../lidqos/build/shell/cursor ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/shell ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/pwd ../../lidqos/build/fs/usr/bin/
 	cp ../../lidqos/build/shell/cd ../../lidqos/build/fs/usr/bin/

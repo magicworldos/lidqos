@@ -580,8 +580,8 @@ void sys_stdio(int *params)
 		ch = addr_parse(cr3, ch);
 		//do
 		//{
-			*ch = tty_cur->ch[tty_cur->ch_index_r % TTY_KEY_BUFF_SIZE];
-			tty_cur->ch_index_r++;
+		*ch = tty_cur->ch[tty_cur->ch_index_r % TTY_KEY_BUFF_SIZE];
+		tty_cur->ch_index_r++;
 		//}
 		//while (*ch == 0 && tty_cur->ch_index_r < TTY_KEY_BUFF_SIZE);
 
@@ -590,6 +590,11 @@ void sys_stdio(int *params)
 	else if (params[0] == 0x11)
 	{
 		backspace(tty_id);
+	}
+	else if (params[0] == 0x20)
+	{
+		int flag = params[1];
+		twinkle_cursor(flag);
 	}
 
 	set_cr3(cr3);

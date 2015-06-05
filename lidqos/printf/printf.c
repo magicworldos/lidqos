@@ -23,6 +23,22 @@ void clear_cursor(int tty_id, int x, int y)
 	putascii(tty_id, x, y, ' ');
 }
 
+void twinkle_cursor(int flag)
+{
+	u32 pos = get_cursor(tty_cur->tty_id);
+	u8 *p = (u8 *) (0xb8000) + pos;
+	if (flag)
+	{
+		p[pos + 1] &= 0xf8;
+		p[pos + 1] |= 0x70;
+	}
+	else
+	{
+		p[pos + 1] &= 0x8f;
+		p[pos + 1] |= 0x07;
+	}
+}
+
 /***
  * 设置光标位置
  * u16 x: 光标的横坐标
@@ -30,14 +46,14 @@ void clear_cursor(int tty_id, int x, int y)
  */
 void set_cursor(int tty_id, u32 x, u32 y)
 {
-	//横坐标超出80换行
+//横坐标超出80换行
 	if (x > 80)
 	{
 		x = 0;
 		y++;
 	}
 
-	//纵坐标超出25滚屏
+//纵坐标超出25滚屏
 	if (y >= 25)
 	{
 		x = 0;
@@ -45,7 +61,7 @@ void set_cursor(int tty_id, u32 x, u32 y)
 		scroll_up(tty_id, 1);
 	}
 
-	//计算光标的线性位置
+//计算光标的线性位置
 	u32 cursor_pos = y * 80 + x;
 
 	sys_var->ttys[tty_id].cursor_pos = cursor_pos;
@@ -96,7 +112,7 @@ void scroll_up(int tty_id, int row)
  */
 void putascii(int tty_id, u32 x, u32 y, char ch)
 {
-	//定义显存地址
+//定义显存地址
 	char *video_addr = NULL;
 
 	if (tty_id == tty_cur->tty_id)
@@ -108,13 +124,13 @@ void putascii(int tty_id, u32 x, u32 y, char ch)
 		video_addr = sys_var->ttys[tty_id].mm_addr;
 	}
 
-	//写入显存
+//写入显存
 	u32 where = (y * 80 + x) * 2;
-	//显示字符的实际物理地址
+//显示字符的实际物理地址
 	u8 *p = (u8 *) (video_addr) + where;
-	//字符的ascii码
+//字符的ascii码
 	*p = ch;
-	//颜色
+//颜色
 	*(p + 1) = 0x07;
 }
 
@@ -124,15 +140,15 @@ void putascii(int tty_id, u32 x, u32 y, char ch)
  */
 void putchar(int tty_id, char ch)
 {
-	//取得当前光标线性位置
+//取得当前光标线性位置
 	u32 cursor_pos = get_cursor(tty_id);
-	//计算横纵坐标
+//计算横纵坐标
 	u32 x = cursor_pos % 80;
 	u32 y = cursor_pos / 80;
 
 	clear_cursor(tty_id, x, y);
 
-	//如果是换行符\n
+//如果是换行符\n
 	if (ch == 0xa)
 	{
 		//换行
@@ -140,7 +156,7 @@ void putchar(int tty_id, char ch)
 		y++;
 		//set_cursor(tty_id, x, y);
 	}
-	//如果是制表符\t
+//如果是制表符\t
 	else if (ch == 0x9)
 	{
 		//显示空格
@@ -153,7 +169,7 @@ void putchar(int tty_id, char ch)
 			//set_cursor(tty_id, x, y);
 		}
 	}
-	//显示普通字符
+//显示普通字符
 	else
 	{
 		putascii(tty_id, x, y, ch);
@@ -165,7 +181,7 @@ void putchar(int tty_id, char ch)
 
 void backspace(int tty_id)
 {
-	//取得当前光标线性位置
+//取得当前光标线性位置
 	u32 cursor_pos = get_cursor(tty_id);
 	u32 x = cursor_pos % 80;
 	u32 y = cursor_pos / 80;
@@ -197,7 +213,7 @@ void number_to_str(char *buff, int number, int hex)
 	int rem;
 	char sign = '+';
 
-	//反向加入temp
+//反向加入temp
 	temp[i++] = '\0';
 	if (number < 0)
 	{
@@ -209,21 +225,21 @@ void number_to_str(char *buff, int number, int hex)
 		temp[i++] = '0';
 	}
 
-	//将数字转为字符串
+//将数字转为字符串
 	while (number > 0)
 	{
 		rem = number % hex;
 		temp[i++] = num[rem];
 		number = number / hex;
 	}
-	//处理符号
+//处理符号
 	if (sign == '-')
 	{
 		temp[i++] = sign;
 	}
 	length = i;
 
-	//返向拷贝到buff缓冲区
+//返向拷贝到buff缓冲区
 	for (i = length - 1; i >= 0; i--)
 	{
 		*buff++ = temp[i];
@@ -255,21 +271,21 @@ int puts(int tty_id, char *str)
  */
 int printf(int tty_id, char *fmt, ...)
 {
-	//显示数字缓冲区
+//显示数字缓冲区
 	char buff[0x800];
-	//显示字符串指针
+//显示字符串指针
 	char *str;
-	//显示字符变量
+//显示字符变量
 	char ch;
-	//显示字符总数
+//显示字符总数
 	int count = 0;
 
-	//动态参数
+//动态参数
 	va_list args;
-	//初始化动态参数
+//初始化动态参数
 	va_init(args, fmt);
 
-	//读到\0为结束
+//读到\0为结束
 	while (*fmt != '\0')
 	{
 		//格式化标记%

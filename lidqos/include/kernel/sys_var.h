@@ -11,7 +11,7 @@
 #include <kernel/typedef.h>
 
 //光标的ascii码
-#define CURSOR_CHAR				('_')	//(219)、(22)
+#define CURSOR_CHAR				(219)	//('_')、(22)
 
 //进程栈页面数
 #define P_STACK_P_NUM			(0x2)
@@ -81,7 +81,7 @@
 //tty最大数
 #define TTY_COUNT					(10)
 //tty按键缓冲区大小
-#define TTY_KEY_BUFF_SIZE			(0x20)
+#define TTY_KEY_BUFF_SIZE			(0x200)
 //显存大小
 #define TTY_MEM_SIZE				(80 * 25 * 4)
 
