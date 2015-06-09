@@ -72,10 +72,14 @@ int main(int argc, char **args)
 			FILE *fp = fopen(full_path, FS_MODE_READ);
 			if (fp != NULL)
 			{
-				fclose(fp);
-				del_file(full_path);
-				return 0;
+				if (((fp->fs.mode >> 9) & 0x1) == 0)
+				{
+					fclose(fp);
+					del_file(full_path);
+					return 0;
+				}
 			}
+
 			fclose(fp);
 			int len = str_len(full_path);
 			if (full_path[len - 1] != '/')
@@ -85,6 +89,7 @@ int main(int argc, char **args)
 			}
 			s_fs *fs_work = malloc(sizeof(s_fs));
 			u32 dev_id = 0;
+
 			int status = fs_find_path_by_user(full_path, session->uid, session->gid, &dev_id, fs_work);
 
 			if (status == FS_STATUS_NO_FILE_DIR)

@@ -136,11 +136,11 @@ int install_fs(char *path_src, char *os_path, u32 uid, u32 gid, u32 mode)
 			path[len++] = '/';
 			path[len++] = '\0';
 
-			fs_create_path(path, uid, gid, mode);
+			fs_create_path(path, uid, gid, 01755);
 
 			if (strcmp(".", dirinfo->d_name) != 0 && strcmp("..", dirinfo->d_name) != 0)
 			{
-				install_fs(old_path, path, uid, gid, mode);
+				install_fs(old_path, path, uid, gid, 01755);
 			}
 		}
 		else
@@ -148,7 +148,7 @@ int install_fs(char *path_src, char *os_path, u32 uid, u32 gid, u32 mode)
 			char path[0x400];
 			str_append(os_path, dirinfo->d_name, path);
 
-			install_file(old_path, path, uid, gid, mode);
+			install_file(old_path, path, uid, gid, 0755);
 		}
 	}
 	closedir(dir);

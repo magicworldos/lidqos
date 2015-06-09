@@ -229,7 +229,7 @@ u32 fs_create_fs_path(char *path, char *fs_name, u32 uid, u32 gid, u32 mode)
 		{
 			if (((fs_parent->mode >> 1) & 0x1) == 0)
 			{
-				free_mm(fs_parent, sizeof(sizeof(s_fs)));
+				free_mm(fs_parent, sizeof(s_fs));
 				return 0;
 			}
 		}
@@ -237,7 +237,7 @@ u32 fs_create_fs_path(char *path, char *fs_name, u32 uid, u32 gid, u32 mode)
 		{
 			if (((fs_parent->mode >> 4) & 0x1) == 0)
 			{
-				free_mm(fs_parent, sizeof(sizeof(s_fs)));
+				free_mm(fs_parent, sizeof(s_fs));
 				return 0;
 			}
 		}
@@ -245,7 +245,7 @@ u32 fs_create_fs_path(char *path, char *fs_name, u32 uid, u32 gid, u32 mode)
 		{
 			if (((fs_parent->mode >> 7) & 0x1) == 0)
 			{
-				free_mm(fs_parent, sizeof(sizeof(s_fs)));
+				free_mm(fs_parent, sizeof(s_fs));
 				return 0;
 			}
 		}
@@ -410,10 +410,58 @@ void fs_del_fs_no(u32 dev_id, u32 p_no, u32 del_no)
 
 int fs_del_fs_path(char *path, u32 uid, u32 gid)
 {
-	//根据父级编号读入文件块
+	char dev_path[FS_NAME_LENGTH];
+	u32 dev_id = find_dev_id_fullpath(path, dev_path);
+	//文件名称，临时变量
+	char *fs_name = alloc_mm(FS_NAME_LENGTH);
+	u32 parent_no = 0;
+	int child_no = 0;
+	for (int i = 0, j = 0; dev_path[i] != '\0'; ++i)
+	{
+		//取得文件目录名称
+		if (dev_path[i] != '/')
+		{
+			fs_name[j++] = dev_path[i];
+		}
+		else
+		{
+			//根据目录名称查找子目录
+			fs_name[j++] = '/';
+			fs_name[j++] = '\0';
+			j = 0;
+			child_no = fs_find_sub_fs(dev_id, parent_no, fs_name);
+			if (child_no == 0)
+			{
+				free_mm(fs_name, FS_NAME_LENGTH);
+				return 0;
+			}
+			parent_no = child_no;
+		}
+
+		//文件
+		if (dev_path[i] != '/' && dev_path[i + 1] == '\0')
+		{
+			fs_name[j++] = '\0';
+			//查找文件
+			child_no = fs_find_sub_fs(dev_id, parent_no, fs_name);
+
+			//没找到
+			if (child_no == 0)
+			{
+				free_mm(fs_name, FS_NAME_LENGTH);
+				//返回空
+				return 0;
+			}
+		}
+		//文件夹
+		else if (dev_path[i] == '/' && dev_path[i + 1] == '\0')
+		{
+		}
+	}
+	free_mm(fs_name, FS_NAME_LENGTH);
+
 	s_fs *fs = alloc_mm(sizeof(s_fs));
-	u32 dev_id = 0;
-	fs_find_path(path, &dev_id, &fs);
+	read_block(dev_id, child_no, fs);
 
 	if (fs->dot == 0)
 	{
@@ -428,7 +476,7 @@ int fs_del_fs_path(char *path, u32 uid, u32 gid)
 		{
 			if (((fs->mode >> 1) & 0x1) == 0)
 			{
-				free_mm(fs, sizeof(sizeof(s_fs)));
+				free_mm(fs, sizeof(s_fs));
 				return -1;
 			}
 		}
@@ -436,7 +484,7 @@ int fs_del_fs_path(char *path, u32 uid, u32 gid)
 		{
 			if (((fs->mode >> 4) & 0x1) == 0)
 			{
-				free_mm(fs, sizeof(sizeof(s_fs)));
+				free_mm(fs, sizeof(s_fs));
 				return -1;
 			}
 		}
@@ -444,7 +492,7 @@ int fs_del_fs_path(char *path, u32 uid, u32 gid)
 		{
 			if (((fs->mode >> 7) & 0x1) == 0)
 			{
-				free_mm(fs, sizeof(sizeof(s_fs)));
+				free_mm(fs, sizeof(s_fs));
 				return -1;
 			}
 		}
@@ -452,9 +500,10 @@ int fs_del_fs_path(char *path, u32 uid, u32 gid)
 
 	if (fs->address == 0)
 	{
+		fs_del_fs_no(dev_id, fs->dotdot, fs->dot);
+
 		free_sec(dev_id, fs->address);
 		free_sec(dev_id, fs->dot);
-		fs_del_fs_no(dev_id, fs->dotdot, fs->dot);
 		free_mm(fs, sizeof(s_fs));
 		return 0;
 	}
@@ -491,11 +540,10 @@ int fs_del_fs_path(char *path, u32 uid, u32 gid)
 		free_mm(sec_addrs, sizeof(s_fs));
 	}
 	free_mm(fst_addrs, sizeof(s_fs));
-	free_sec(dev_id, fs->address);
-	free_sec(dev_id, fs->dot);
-
 	//处理fs_parent
 	fs_del_fs_no(dev_id, fs->dotdot, fs->dot);
+	free_sec(dev_id, fs->address);
+	free_sec(dev_id, fs->dot);
 	free_mm(fs, sizeof(s_fs));
 
 	return 0;
@@ -1138,8 +1186,42 @@ u32 fs_create_fs(u32 dev_id, u32 parent_no, char *fs_name, u32 uid, u32 gid, u32
 {
 	//根据父级编号读入文件块
 	s_fs *fs_parent = alloc_mm(sizeof(s_fs));
-	s_fs *fs = alloc_mm(sizeof(s_fs));
 	read_block(dev_id, parent_no, fs_parent);
+
+	//root
+	if (uid != 0)
+	{
+		if (fs_parent->owner != uid && fs_parent->group != gid)
+		{
+
+			if (((fs_parent->mode >> 1) & 0x1) == 0)
+			{
+				free_mm(fs_name, FS_NAME_LENGTH);
+				free_mm(fs_parent, sizeof(s_file));
+				return 0;
+			}
+		}
+		else if (fs_parent->owner != uid && fs_parent->group == gid)
+		{
+			if (((fs_parent->mode >> 4) & 0x1) == 0)
+			{
+				free_mm(fs_name, FS_NAME_LENGTH);
+				free_mm(fs_parent, sizeof(s_file));
+				return 0;
+			}
+		}
+		else if (fs_parent->owner == uid)
+		{
+			if (((fs_parent->mode >> 7) & 0x1) == 0)
+			{
+				free_mm(fs_name, FS_NAME_LENGTH);
+				free_mm(fs_parent, sizeof(s_file));
+				return 0;
+			}
+		}
+	}
+
+	s_fs *fs = alloc_mm(sizeof(s_fs));
 	//清空文件块内容
 	fs_empty_data(fs);
 	fs->owner = uid;

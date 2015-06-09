@@ -737,17 +737,24 @@ void sys_file(int *params)
 		s_file *ker_fp = f_open(file, fs_mode, uid, gid);
 		if (ker_fp == NULL)
 		{
-			fs_create_file(file, uid, gid, 01755);
-			ker_fp = f_open(file, fs_mode, uid, gid);
-			if (ker_fp == NULL)
+			if (fs_mode == FS_MODE_WRITE)
 			{
-				*status = 0;
+				fs_create_file(file, uid, gid, 0755);
+				ker_fp = f_open(file, fs_mode, uid, gid);
+				if (ker_fp == NULL)
+				{
+					*status = 0;
+				}
+				else
+				{
+					*status = 1;
+					mmcopy(ker_fp, fp, sizeof(s_file));
+					free_mm(ker_fp, sizeof(s_file));
+				}
 			}
 			else
 			{
-				*status = 1;
-				mmcopy(ker_fp, fp, sizeof(s_file));
-				free_mm(ker_fp, sizeof(s_file));
+				*status = 0;
 			}
 		}
 		else

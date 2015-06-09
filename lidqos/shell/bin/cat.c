@@ -55,7 +55,7 @@ int main(int argc, char **args)
 		{
 			printf("-bash: \"%s\": no such file or permission denied.\n", path);
 		}
-		else
+		else if (fp->fs.size > 0)
 		{
 			char *content = malloc(fp->fs.size);
 			fread(fp, fp->fs.size, content);
