@@ -737,13 +737,25 @@ void sys_file(int *params)
 		s_file *ker_fp = f_open(file, fs_mode, uid, gid);
 		if (ker_fp == NULL)
 		{
-			*status = 0;
-			return;
+			fs_create_file(file, uid, gid, 01755);
+			ker_fp = f_open(file, fs_mode, uid, gid);
+			if (ker_fp == NULL)
+			{
+				*status = 0;
+			}
+			else
+			{
+				*status = 1;
+				mmcopy(ker_fp, fp, sizeof(s_file));
+				free_mm(ker_fp, sizeof(s_file));
+			}
 		}
-		*status = 1;
-		mmcopy(ker_fp, fp, sizeof(s_file));
-		free_mm(ker_fp, sizeof(s_file));
-		return;
+		else
+		{
+			*status = 1;
+			mmcopy(ker_fp, fp, sizeof(s_file));
+			free_mm(ker_fp, sizeof(s_file));
+		}
 	}
 	//fclose关闭文件
 	else if (params[0] == 1)
@@ -753,7 +765,6 @@ void sys_file(int *params)
 		s_file *ker_fp = alloc_mm(sizeof(s_file));
 		mmcopy(fp, ker_fp, sizeof(s_file));
 		f_close(ker_fp);
-		return;
 	}
 	//fwrite写文件
 	else if (params[0] == 2)
@@ -764,7 +775,6 @@ void sys_file(int *params)
 		char *data = (char *) params[3];
 		data = addr_parse(cr3, data);
 		f_write(fp, size, data);
-		return;
 	}
 	//fread读文件
 	else if (params[0] == 3)
@@ -775,7 +785,6 @@ void sys_file(int *params)
 		char *data = (char *) params[3];
 		data = addr_parse(cr3, data);
 		f_read(fp, size, data);
-		return;
 	}
 
 	//fgetch取得一个字符
@@ -793,7 +802,6 @@ void sys_file(int *params)
 		{
 			f_read(fp, 1, data);
 		}
-		return;
 	}
 	//fgetline取得一行字符
 	else if (params[0] == 5)
@@ -812,7 +820,6 @@ void sys_file(int *params)
 			data++;
 		}
 		*data = '\0';
-		return;
 	}
 	//fputch写一个字符
 	else if (params[0] == 6)
@@ -821,7 +828,6 @@ void sys_file(int *params)
 		fp = addr_parse(cr3, fp);
 		char data = (char) params[2];
 		f_write(fp, 1, &data);
-		return;
 	}
 	//fputline写一行字符
 	else if (params[0] == 7)
@@ -835,8 +841,6 @@ void sys_file(int *params)
 		f_write(fp, size, data);
 		char newline = '\n';
 		f_write(fp, 1, &newline);
-
-		return;
 	}
 	//is_eof判断已经是文件尾
 	else if (params[0] == 8)
@@ -853,7 +857,6 @@ void sys_file(int *params)
 		{
 			*eof = 0;
 		}
-		return;
 	}
 	//fopendir
 	else if (params[0] == 9)
@@ -871,7 +874,6 @@ void sys_file(int *params)
 		{
 			fp->fs.dot = 0;
 		}
-		return;
 	}
 	//fclosedir
 	else if (params[0] == 10)

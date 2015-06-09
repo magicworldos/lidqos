@@ -363,6 +363,18 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(PSHELL)/semaphore.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
 		$(BUILD_PATH)/$(PSHELL)/stdio.o
+		
+	#example_file
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_file -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
+		$(BUILD_PATH)/$(PSHELL)/example_file.o			\
+		$(BUILD_PATH)/$(KERNEL)/math.o					\
+		$(BUILD_PATH)/$(PSHELL)/string.o				\
+		$(BUILD_PATH)/$(KERNEL)/math_S.o				\
+		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
+		$(BUILD_PATH)/$(PSHELL)/semaphore.o				\
+		$(BUILD_PATH)/$(PSHELL)/fs.o					\
+		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
+		$(BUILD_PATH)/$(PSHELL)/stdio.o
 	
 	#example_icecream
 	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_icecream -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
@@ -402,6 +414,7 @@ $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_fpu.c		-o $(BUILD_PATH)/$(PSHELL)/example_fpu.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_args.c		-o $(BUILD_PATH)/$(PSHELL)/example_args.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_icecream.c	-o $(BUILD_PATH)/$(PSHELL)/example_icecream.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_file.c	-o $(BUILD_PATH)/$(PSHELL)/example_file.o
 
 ##################################################################################################################
 	

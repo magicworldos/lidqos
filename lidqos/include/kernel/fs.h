@@ -144,4 +144,20 @@ s_file* f_opendir(char *path_name);
  */
 void f_closedir(s_file* fp);
 
+/*
+ * fs_create_fs : 根据父级文件编号创建子文件（夹）
+ *  - u32 parent_no : 低级文件块编号
+ *  - char *fs_name : 待创建的文件（夹）名称
+ *  - u32 fs_mode : FS_FOLDER_MODE为文件夹，FS_FILE_MODE为文件
+ * return : u32 返回新创建的子文件（夹—）编号，0代表创建失败
+ */
+u32 fs_create_fs(u32 dev_id, u32 parent_no, char *fs_name, u32 uid, u32 gid, u32 mode);
+
+/*
+ * fs_create_file : 创建文件
+ *  - char *file_name : 文件名
+ * return : int -1代表失败
+ */
+int fs_create_file(char *file_name, u32 uid, u32 gid, u32 mode);
+
 #endif
