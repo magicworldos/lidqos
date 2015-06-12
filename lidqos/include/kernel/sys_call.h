@@ -45,4 +45,6 @@ void sys_file(int *params);
 
 void sys_fs(int *params);
 
+void sys_curses(int *params);
+
 #endif

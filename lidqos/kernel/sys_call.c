@@ -971,3 +971,84 @@ void sys_fs(int *params)
 	set_cr3(cr3);
 	set_ds(0xf);
 }
+
+void sys_curses(int *params)
+{
+	set_ds(GDT_INDEX_KERNEL_DS);
+	set_cr3(PAGE_DIR);
+	u32 cr3 = pcb_cur->tss.cr3;
+	params = addr_parse(cr3, params);
+
+	//initscr
+	if (params[0] == 0)
+	{
+		void *mem = (void *) params[1];
+		mem = addr_parse(cr3, mem);
+
+		int tty_id = pcb_cur->tty_id;
+		u16 *p = NULL;
+		if (tty_id == tty_cur->tty_id)
+		{
+			p = (u16 *) 0xb8000;
+		}
+		else
+		{
+			p = (u16 *) sys_var->ttys[tty_id].mm_addr;
+		}
+
+		mmcopy(p, mem, TTY_MEM_SIZE);
+	}
+	//endwin
+	else if (params[0] == 1)
+	{
+		void *mem = (void *) params[1];
+		mem = addr_parse(cr3, mem);
+
+		int tty_id = pcb_cur->tty_id;
+		u16 *p = NULL;
+		if (tty_id == tty_cur->tty_id)
+		{
+			p = (u16 *) 0xb8000;
+		}
+		else
+		{
+			p = (u16 *) sys_var->ttys[tty_id].mm_addr;
+		}
+
+		mmcopy(mem, p, TTY_MEM_SIZE);
+	}
+	//move
+	else if (params[0] == 2)
+	{
+		int x = params[1];
+		int y = params[2];
+		set_cursor(pcb_cur->tty_id, x, y);
+	}
+	//getxy
+	else if (params[0] == 3)
+	{
+		int *x = (int *) params[1];
+		int *y = (int *) params[2];
+		x = addr_parse(cr3, x);
+		y = addr_parse(cr3, y);
+		u32 cursor_pos = get_cursor(pcb_cur->tty_id);
+		*x = cursor_pos % 80;
+		*y = cursor_pos / 80;
+	}
+	//addch
+	else if (params[0] == 4)
+	{
+		char ch = params[1];
+		putchar(pcb_cur->tty_id, ch);
+	}
+	//addstr
+	else if (params[0] == 5)
+	{
+		char *str = (char *) params[1];
+		str = addr_parse(cr3, str);
+		puts(pcb_cur->tty_id, str);
+	}
+
+	set_cr3(cr3);
+	set_ds(0xf);
+}

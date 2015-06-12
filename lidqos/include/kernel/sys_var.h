@@ -82,8 +82,10 @@
 #define TTY_COUNT					(10)
 //tty按键缓冲区大小
 #define TTY_KEY_BUFF_SIZE			(0x200)
+//显存字符数
+#define TTY_MEM_CH_SIZE				(80 * 25)
 //显存大小
-#define TTY_MEM_SIZE				(80 * 25 * 4)
+#define TTY_MEM_SIZE				(TTY_MEM_CH_SIZE * 2)
 
 //tss数据结构
 typedef struct tss_s

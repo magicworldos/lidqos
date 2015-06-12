@@ -45,7 +45,7 @@ void putchar(char ch)
 int puts(char *str)
 {
 	int count = 0;
-	int params[2];
+	int params[3];
 	params[0] = 1;
 	params[1] = (int) str;
 	params[2] = (int) &count;

@@ -385,6 +385,16 @@ $(PSHELL)_elf:		$(PSHELL)_objs
 		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
 		$(BUILD_PATH)/$(PSHELL)/pthread.o				\
 		$(BUILD_PATH)/$(PSHELL)/semaphore.o
+		
+	#example_curses
+	$(LD) $(LD_PSHELL_PARAMS) -o $(BUILD_PATH)/$(PSHELL)/example_curses -e start_main -r $(BUILD_PATH)/$(PSHELL)/start_main.o	\
+		$(BUILD_PATH)/$(PSHELL)/example_curses.o		\
+		$(BUILD_PATH)/$(PSHELL)/unistd.o				\
+		$(BUILD_PATH)/$(PSHELL)/stdio.o					\
+		$(BUILD_PATH)/$(PSHELL)/string.o				\
+		$(BUILD_PATH)/$(PSHELL)/stdlib.o				\
+		$(BUILD_PATH)/$(PSHELL)/curses.o				\
+		$(BUILD_PATH)/$(PSHELL)/semaphore.o
 
 #外壳程序的obj文件
 $(PSHELL)_objs:
@@ -407,6 +417,7 @@ $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/fs.c					-o $(BUILD_PATH)/$(PSHELL)/fs.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/path.c				-o $(BUILD_PATH)/$(PSHELL)/path.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/stack.c				-o $(BUILD_PATH)/$(PSHELL)/stack.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/lib/curses.c				-o $(BUILD_PATH)/$(PSHELL)/curses.o
 	$(CC) $(GC_S_PARAMS) mm/string.c						-o $(BUILD_PATH)/$(PSHELL)/string.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_sleep.c		-o $(BUILD_PATH)/$(PSHELL)/example_sleep.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_sem.c		-o $(BUILD_PATH)/$(PSHELL)/example_sem.o
@@ -414,7 +425,8 @@ $(PSHELL)_objs:
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_fpu.c		-o $(BUILD_PATH)/$(PSHELL)/example_fpu.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_args.c		-o $(BUILD_PATH)/$(PSHELL)/example_args.o
 	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_icecream.c	-o $(BUILD_PATH)/$(PSHELL)/example_icecream.o
-	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_file.c	-o $(BUILD_PATH)/$(PSHELL)/example_file.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_file.c		-o $(BUILD_PATH)/$(PSHELL)/example_file.o
+	$(CC) $(GC_S_PARAMS) $(PSHELL)/bin/example_curses.c		-o $(BUILD_PATH)/$(PSHELL)/example_curses.o
 
 ##################################################################################################################
 	

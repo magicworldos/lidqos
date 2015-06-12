@@ -552,10 +552,18 @@ _int_0x87:
 	iret
 
 _int_0x88:
-	push	%ebp
-	mov 	%esp, %ebp
-
+	cli
+	pushal
+	pushfl
+	push   %ebp
+	mov    %esp,%ebp
+	sub		$0x4, %esp
+    movl	%eax, (%esp)
+	call    sys_curses
 	leave
+	popfl
+	popal
+	sti
 	iret
 
 _int_0x89:
