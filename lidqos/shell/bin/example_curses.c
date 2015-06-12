@@ -12,8 +12,6 @@ int main(int argc, char **args)
 {
 	initscr();
 
-	clear();
-
 	getchar();
 
 	endwin();

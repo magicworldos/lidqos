@@ -28,7 +28,7 @@ void initscr()
 	params[1] = (int) curses->mem;
 	__asm__ volatile ("int $0x88" :: "a"(params));
 
-	move(0, 0);
+	clear();
 }
 
 void endwin()
@@ -85,6 +85,8 @@ void clear()
 		buff[i] = ' ';
 	}
 	buff[TTY_MEM_CH_SIZE] = '\0';
+
+	move(0, 0);
 	addstr(buff);
 	move(0, 0);
 }
