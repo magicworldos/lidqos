@@ -33,12 +33,12 @@ void initscr()
 
 void endwin()
 {
+	move(curses->x, curses->y);
+
 	int params[2];
 	params[0] = 1;
 	params[1] = (int) curses->mem;
 	__asm__ volatile ("int $0x88" :: "a"(params));
-
-	move(curses->x, curses->y);
 
 	free(curses);
 }

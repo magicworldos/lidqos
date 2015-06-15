@@ -69,6 +69,30 @@ void set_cursor(int tty_id, u32 x, u32 y)
 	draw_cursor(tty_id, x, y);
 }
 
+void move_cursor(int tty_id, u32 x, u32 y)
+{
+	//定义显存地址
+	char *video_addr = NULL;
+	if (tty_id == tty_cur->tty_id)
+	{
+		video_addr = (char *) 0xb8000;
+	}
+	else
+	{
+		video_addr = sys_var->ttys[tty_id].mm_addr;
+	}
+	u8 *p = (u8 *) (video_addr) + sys_var->ttys[tty_id].cursor_pos * 2;
+//	p[1] &= 0xf8;
+	p[1] = 0x07;
+
+	//计算光标的线性位置
+	u32 cursor_pos = y * 80 + x;
+	sys_var->ttys[tty_id].cursor_pos = cursor_pos;
+
+	p = (u8 *) (video_addr) + sys_var->ttys[tty_id].cursor_pos * 2;
+	p[1] = 0x70;
+}
+
 /***
  * 取得光标位置
  * return: 光标的线性位置
@@ -177,6 +201,45 @@ void putchar(int tty_id, char ch)
 		//set_cursor(tty_id, x, y);
 	}
 	set_cursor(tty_id, x, y);
+}
+
+void addch(int tty_id, char ch)
+{
+	u32 cursor_pos = get_cursor(tty_id);
+	u32 x = cursor_pos % 80;
+	u32 y = cursor_pos / 80;
+	if (ch == 0xa)
+	{
+		x = 0;
+		y++;
+	}
+	else if (ch == 0x9)
+	{
+		ch = 0x20;
+		for (int i = 0; i < 4; i++)
+		{
+			putascii(tty_id, x, y, ch);
+			x++;
+		}
+	}
+	else
+	{
+		putascii(tty_id, x, y, ch);
+		x++;
+	}
+
+	move_cursor(tty_id, x, y);
+}
+
+int addstr(int tty_id, char *str)
+{
+	int count = 0;
+	while (*str != '\0')
+	{
+		addch(tty_id, *str++);
+		count++;
+	}
+	return count;
 }
 
 void backspace(int tty_id)

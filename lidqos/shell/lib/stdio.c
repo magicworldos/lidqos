@@ -482,6 +482,22 @@ char getchar()
 	return ch;
 }
 
+int getkey()
+{
+	int key = 0;
+	//取得全局按键信号量
+	s_sem *sem_w = get_global_sem(2);
+	s_sem *sem_r = get_global_sem(3);
+	sem_post_g(sem_w);
+	sem_wait_g(sem_r);
+	int params[2];
+	params[0] = 0x12;
+	params[1] = (int) &key;
+	__asm__ volatile ("int $0x82" :: "a"(params));
+
+	return key;
+}
+
 void backspace()
 {
 	int params[2];

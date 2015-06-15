@@ -40,6 +40,8 @@ int printf(char *fmt, ...);
 
 char getchar();
 
+int getkey();
+
 int get_int();
 
 void scanf(char *fmt, ...);

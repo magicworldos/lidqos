@@ -22,6 +22,8 @@ void clear_cursor(int tty_id, int x, int y);
 
 void twinkle_cursor(int flag);
 
+void move_cursor(int tty_id, u32 x, u32 y);
+
 void set_cursor(int tty_id, u32 x, u32 y);
 
 u32 get_cursor(int tty_id);
@@ -31,6 +33,10 @@ void scroll_up(int tty_id, int row);
 void putascii(int tty_id, u32 x, u32 y, char ch);
 
 void putchar(int tty_id, char ch);
+
+void addch(int tty_id, char ch);
+
+int addstr(int tty_id, char *str);
 
 void backspace(int tty_id);
 

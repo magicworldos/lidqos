@@ -85,7 +85,7 @@
 //显存字符数
 #define TTY_MEM_CH_SIZE				(80 * 25)
 //显存大小
-#define TTY_MEM_SIZE				(TTY_MEM_CH_SIZE * 2)
+#define TTY_MEM_SIZE				(TTY_MEM_CH_SIZE * 2 * 2)
 
 //tss数据结构
 typedef struct tss_s
@@ -235,9 +235,21 @@ typedef struct
 	//按键缓冲区
 	char ch[TTY_KEY_BUFF_SIZE];
 	//写按键缓冲区信号量
-	s_sem sem_keybuff_w;
+	s_sem sem_ch_buff_w;
 	//读按键缓冲区信号量
-	s_sem sem_keybuff_r;
+	s_sem sem_ch_buff_r;
+
+	//写按键索引
+	u32 key_index_w;
+	//读按键索引
+	u32 key_index_r;
+	//按键缓冲区
+	char key[TTY_KEY_BUFF_SIZE];
+	//写按键缓冲区信号量
+	s_sem sem_key_buff_w;
+	//读按键缓冲区信号量
+	s_sem sem_key_buff_r;
+
 } s_tty;
 
 typedef struct

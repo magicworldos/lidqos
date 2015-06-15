@@ -17,17 +17,30 @@ void install_tty()
 		sys_var->ttys[i].tty_id = i;
 		sys_var->ttys[i].cursor_pos = 0;
 		sys_var->ttys[i].mm_addr = alloc_mm(TTY_MEM_SIZE);
+
 		sys_var->ttys[i].ch_index_w = 0;
 		sys_var->ttys[i].ch_index_r = 0;
-		sys_var->ttys[i].sem_keybuff_w.value = TTY_KEY_BUFF_SIZE;
-		sys_var->ttys[i].sem_keybuff_w.list_block = NULL;
-		sys_var->ttys[i].sem_keybuff_r.value = 0;
-		sys_var->ttys[i].sem_keybuff_r.list_block = NULL;
+		sys_var->ttys[i].sem_ch_buff_w.value = TTY_KEY_BUFF_SIZE;
+		sys_var->ttys[i].sem_ch_buff_w.list_block = NULL;
+		sys_var->ttys[i].sem_ch_buff_r.value = 0;
+		sys_var->ttys[i].sem_ch_buff_r.list_block = NULL;
+
+		sys_var->ttys[i].key_index_w = 0;
+		sys_var->ttys[i].key_index_r = 0;
+		sys_var->ttys[i].sem_key_buff_w.value = 0;
+		sys_var->ttys[i].sem_key_buff_w.list_block = NULL;
+		sys_var->ttys[i].sem_key_buff_r.value = 0;
+		sys_var->ttys[i].sem_key_buff_r.list_block = NULL;
 
 		for (int j = 0; j < TTY_KEY_BUFF_SIZE; j++)
 		{
 			sys_var->ttys[i].ch[j] = 0;
 		}
+		for (int j = 0; j < TTY_KEY_BUFF_SIZE; j++)
+		{
+			sys_var->ttys[i].key[j] = 0;
+		}
+
 		u8 *p = sys_var->ttys[i].mm_addr;
 		for (int j = 0; j < TTY_MEM_SIZE; j++)
 		{
