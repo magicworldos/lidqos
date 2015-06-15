@@ -469,33 +469,36 @@ int printf(char *fmt, ...)
 char getchar()
 {
 	char ch = 0;
+	u8 scan_code = 0;
 	//取得全局按键信号量
 	s_sem *sem_w = get_global_sem(0);
 	s_sem *sem_r = get_global_sem(1);
 	sem_wait_g(sem_r);
-	int params[2];
+	int params[3];
 	params[0] = 0x10;
 	params[1] = (int) &ch;
+	params[2] = (int) &scan_code;
 	__asm__ volatile ("int $0x82" :: "a"(params));
 	sem_post_g(sem_w);
 
 	return ch;
 }
 
-int getkey()
+int getkey(char *ch)
 {
-	int key = 0;
+	u8 scan_code = 0;
 	//取得全局按键信号量
-	s_sem *sem_w = get_global_sem(2);
-	s_sem *sem_r = get_global_sem(3);
-	sem_post_g(sem_w);
+	s_sem *sem_w = get_global_sem(0);
+	s_sem *sem_r = get_global_sem(1);
 	sem_wait_g(sem_r);
-	int params[2];
-	params[0] = 0x12;
-	params[1] = (int) &key;
+	int params[3];
+	params[0] = 0x10;
+	params[1] = (int) ch;
+	params[2] = (int) &scan_code;
 	__asm__ volatile ("int $0x82" :: "a"(params));
+	sem_post_g(sem_w);
 
-	return key;
+	return scan_code;
 }
 
 void backspace()

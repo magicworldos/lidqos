@@ -25,20 +25,10 @@ void install_tty()
 		sys_var->ttys[i].sem_ch_buff_r.value = 0;
 		sys_var->ttys[i].sem_ch_buff_r.list_block = NULL;
 
-		sys_var->ttys[i].key_index_w = 0;
-		sys_var->ttys[i].key_index_r = 0;
-		sys_var->ttys[i].sem_key_buff_w.value = 0;
-		sys_var->ttys[i].sem_key_buff_w.list_block = NULL;
-		sys_var->ttys[i].sem_key_buff_r.value = 0;
-		sys_var->ttys[i].sem_key_buff_r.list_block = NULL;
-
 		for (int j = 0; j < TTY_KEY_BUFF_SIZE; j++)
 		{
 			sys_var->ttys[i].ch[j] = 0;
-		}
-		for (int j = 0; j < TTY_KEY_BUFF_SIZE; j++)
-		{
-			sys_var->ttys[i].key[j] = 0;
+			sys_var->ttys[i].scan_code[j] = 0;
 		}
 
 		u8 *p = sys_var->ttys[i].mm_addr;
@@ -72,6 +62,9 @@ void switch_tty(int tty_id)
 		u32 x = tty_cur->cursor_pos % 80;
 		u32 y = tty_cur->cursor_pos / 80;
 		set_cursor(tty_cur->tty_id, x, y);
+
+		tty_cur->ch_index_w = 0;
+		tty_cur->ch_index_r = 0;
 
 	}
 }

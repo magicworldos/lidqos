@@ -13,6 +13,7 @@
 #include <kernel/math.h>
 #include <kernel/string.h>
 #include <shell/semaphore.h>
+#include <kernel/key.h>
 
 void putch(char ch);
 
@@ -40,7 +41,7 @@ int printf(char *fmt, ...);
 
 char getchar();
 
-int getkey();
+int getkey(char *ch);
 
 int get_int();
 

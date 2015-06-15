@@ -24,6 +24,8 @@
 typedef struct
 {
 	char *line;
+	int length;
+	int mm_length;
 	void *next;
 } s_vdata;
 
@@ -49,6 +51,8 @@ void edit_file(char *path, char *data, int size);
 
 s_vdata* convert_vdata(char *data);
 
+void insert_char(s_vdata *p, char ch);
+
 void mode_normal();
 
 void mode_insert();
@@ -57,6 +61,22 @@ int mode_cmd();
 
 void switch_mode(u8 mode);
 
+void scroll(int key);
+
 void show_status(char *str);
+
+void backspace_char();
+
+void delete_char();
+
+void newline_char();
+
+void empty_buff(char *buff, int length);
+
+s_vdata* current_line();
+
+void addstr_with_buff(char *line);
+
+void all_line();
 
 #endif /* INCLUDE_SHELL_VI_H_ */

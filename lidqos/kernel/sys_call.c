@@ -288,7 +288,7 @@ void int_keyboard()
 	else if (status == 0)
 	{
 		char ch = keys[key_ind - 1][kb_key_shift];
-		if ((ch >= 0x20 && ch <= 0x7e) || ch == 0x08 || ch == '\n' || ch == '\t')
+		if ((ch >= 0x20 && ch <= 0x7e) || key_ind == KEY_ESC || key_ind == KEY_BACKSPACE || key_ind == KEY_DEL || key_ind == KEY_ENTER || key_ind == KEY_TAB || key_ind == KEY_LEFT || key_ind == KEY_RIGHT || key_ind == KEY_UP || key_ind == KEY_DOWN)
 		{
 			if (tty_cur->sem_ch_buff_w.value > 0)
 			{
@@ -297,22 +297,11 @@ void int_keyboard()
 
 				//为请求程序设置按键
 				tty_cur->ch[tty_cur->ch_index_w % TTY_KEY_BUFF_SIZE] = ch;
+				tty_cur->scan_code[tty_cur->ch_index_w % TTY_KEY_BUFF_SIZE] = scan_code;
 				tty_cur->ch_index_w++;
 
 				pcb_sem_V(&tty_cur->sem_ch_buff_r);
 			}
-		}
-
-		if (tty_cur->sem_key_buff_w.value > 0)
-		{
-			tty_cur->sem_key_buff_w.value--;
-			//得到按键
-
-			//为请求程序设置按键
-			tty_cur->key[tty_cur->key_index_w % TTY_KEY_BUFF_SIZE] = key_ind;
-			tty_cur->key_index_w++;
-
-			pcb_sem_V(&tty_cur->sem_key_buff_r);
 		}
 	}
 
@@ -516,20 +505,6 @@ void sys_semaphore(int *params)
 			sem_r = addr_parse(cr3, sem_r);
 			*sem_r = &sys_var->ttys[pcb_cur->tty_id].sem_ch_buff_r;
 		}
-		//按键写信号量
-		else if (type == 2)
-		{
-			s_sem **sem_w = (s_sem **) params[2];
-			sem_w = addr_parse(cr3, sem_w);
-			*sem_w = &sys_var->ttys[pcb_cur->tty_id].sem_key_buff_w;
-		}
-		//按键读信号量
-		else if (type == 3)
-		{
-			s_sem **sem_r = (s_sem **) params[2];
-			sem_r = addr_parse(cr3, sem_r);
-			*sem_r = &sys_var->ttys[pcb_cur->tty_id].sem_key_buff_r;
-		}
 	}
 	//P
 	if (params[0] == 5)
@@ -603,8 +578,11 @@ void sys_stdio(int *params)
 	else if (params[0] == 0x10)
 	{
 		char *ch = (char *) params[1];
+		u8 *scan_code = (u8 *) params[2];
 		ch = addr_parse(cr3, ch);
+		scan_code = addr_parse(cr3, scan_code);
 		*ch = tty_cur->ch[tty_cur->ch_index_r % TTY_KEY_BUFF_SIZE];
+		*scan_code = tty_cur->scan_code[tty_cur->ch_index_r % TTY_KEY_BUFF_SIZE];
 		tty_cur->ch_index_r++;
 
 	}
@@ -612,14 +590,6 @@ void sys_stdio(int *params)
 	else if (params[0] == 0x11)
 	{
 		backspace(tty_id);
-	}
-	//getkey
-	else if (params[0] == 0x12)
-	{
-		int *key = (int *) params[1];
-		key = addr_parse(cr3, key);
-		*key = tty_cur->key[tty_cur->key_index_r % TTY_KEY_BUFF_SIZE];
-		tty_cur->key_index_r++;
 	}
 	else if (params[0] == 0x20)
 	{

@@ -234,21 +234,12 @@ typedef struct
 	u32 ch_index_r;
 	//按键缓冲区
 	char ch[TTY_KEY_BUFF_SIZE];
+	//扫描码
+	u8 scan_code[TTY_KEY_BUFF_SIZE];
 	//写按键缓冲区信号量
 	s_sem sem_ch_buff_w;
 	//读按键缓冲区信号量
 	s_sem sem_ch_buff_r;
-
-	//写按键索引
-	u32 key_index_w;
-	//读按键索引
-	u32 key_index_r;
-	//按键缓冲区
-	char key[TTY_KEY_BUFF_SIZE];
-	//写按键缓冲区信号量
-	s_sem sem_key_buff_w;
-	//读按键缓冲区信号量
-	s_sem sem_key_buff_r;
 
 } s_tty;
 
