@@ -34,8 +34,10 @@ int main(int argc, char **args)
 	vi_data->start_col = 0;
 	vi_data->x = 0;
 	vi_data->y = 0;
+	vi_data->last_col_no = vi_data->x;
 	//
 	vi_data->status = 0;
+	vi_data->line_count = 0;
 
 	empty_line = malloc(vi_data->max_col + 1);
 	for (int i = 0; i < vi_data->max_col; i++)
@@ -267,44 +269,101 @@ void scroll(int key)
 		vi_data->x--;
 		if (vi_data->x < 0)
 		{
-			vi_data->x = 0;
+			if (vi_data->start_col > 0)
+			{
+				vi_data->start_col -= (vi_data->max_col / 2);
+			}
+			vi_data->x = (vi_data->max_col / 2) - 1;
+			all_line();
 		}
 		move(vi_data->x, vi_data->y);
+		vi_data->last_col_no = vi_data->x;
 	}
 	else if (key == KEY_RIGHT)
 	{
 		getxy(&vi_data->x, &vi_data->y);
 		vi_data->x++;
 		s_vdata *p = current_line();
-		if (vi_data->x > p->length)
+		if (vi_data->x >= vi_data->max_col)
 		{
-			vi_data->x = p->length;
+			vi_data->start_col += (vi_data->max_col / 2);
+			vi_data->x = (vi_data->max_col / 2);
+			all_line();
+		}
+		if (vi_data->x + vi_data->start_col >= p->length)
+		{
+			if (p->length - vi_data->start_col >= 0)
+			{
+				vi_data->x = p->length - vi_data->start_col;
+			}
+			else
+			{
+				vi_data->x = p->length % (vi_data->max_col / 2);
+				vi_data->start_col = (p->length / (vi_data->max_col / 2)) * (vi_data->max_col / 2);
+			}
 		}
 		move(vi_data->x, vi_data->y);
+		vi_data->last_col_no = vi_data->x;
 	}
 	else if (key == KEY_UP)
 	{
 		getxy(&vi_data->x, &vi_data->y);
+		vi_data->x = vi_data->last_col_no;
 		vi_data->y--;
 		if (vi_data->y < 0)
 		{
+			if (vi_data->start_row > 0)
+			{
+				vi_data->start_row--;
+			}
 			vi_data->y = 0;
 		}
 		s_vdata *p = current_line();
-		if (vi_data->x > p->length)
+		if (vi_data->x + vi_data->start_col >= p->length)
 		{
-			vi_data->x = p->length;
+			if (p->length - vi_data->start_col >= 0)
+			{
+				vi_data->x = p->length - vi_data->start_col;
+			}
+			else
+			{
+				vi_data->x = p->length % (vi_data->max_col / 2);
+				vi_data->start_col = (p->length / (vi_data->max_col / 2)) * (vi_data->max_col / 2);
+			}
 		}
+		all_line();
 		move(vi_data->x, vi_data->y);
 	}
 	else if (key == KEY_DOWN)
 	{
 		getxy(&vi_data->x, &vi_data->y);
+		vi_data->x = vi_data->last_col_no;
 		vi_data->y++;
-		s_vdata *p = current_line();
-		if (vi_data->x > p->length)
+		if (vi_data->y + vi_data->start_row >= vi_data->line_count)
 		{
-			vi_data->x = p->length;
+			vi_data->y--;
+			return;
+		}
+
+		if (vi_data->y >= vi_data->max_row)
+		{
+			vi_data->y = vi_data->max_row - 1;
+			vi_data->start_row++;
+			all_line();
+		}
+		s_vdata *p = current_line();
+		if (vi_data->x + vi_data->start_col >= p->length)
+		{
+			if (p->length - vi_data->start_col >= 0)
+			{
+				vi_data->x = p->length - vi_data->start_col;
+			}
+			else
+			{
+				vi_data->x = p->length % (vi_data->max_col / 2);
+				vi_data->start_col = (p->length / (vi_data->max_col / 2)) * (vi_data->max_col / 2);
+			}
+			all_line();
 		}
 		move(vi_data->x, vi_data->y);
 	}
@@ -356,6 +415,8 @@ s_vdata* convert_vdata(char *data)
 		}
 
 		start += length;
+
+		vi_data->line_count++;
 	}
 	while (start < total_length);
 
@@ -379,7 +440,14 @@ void insert_char(s_vdata *p, char ch)
 	p->line[p->length + 1] = '\0';
 	p->length++;
 
-	addstr_with_buff(p->line);
+	if (p->length <= vi_data->start_col)
+	{
+		addstr_with_buff("");
+	}
+	else
+	{
+		addstr_with_buff(p->line + vi_data->start_col);
+	}
 	vi_data->x++;
 	move(vi_data->x, vi_data->y);
 }
@@ -432,7 +500,14 @@ void backspace_char()
 	p->line[p->length - 1] = '\n';
 	p->length--;
 
-	addstr_with_buff(p->line);
+	if (p->length <= vi_data->start_col)
+	{
+		addstr_with_buff("");
+	}
+	else
+	{
+		addstr_with_buff(p->line + vi_data->start_col);
+	}
 	vi_data->x--;
 	move(vi_data->x, vi_data->y);
 }
@@ -476,7 +551,14 @@ void delete_char()
 	p->line[p->length - 1] = '\n';
 	p->length--;
 
-	addstr_with_buff(p->line);
+	if (p->length <= vi_data->start_col)
+	{
+		addstr_with_buff("");
+	}
+	else
+	{
+		addstr_with_buff(p->line + vi_data->start_col);
+	}
 	move(vi_data->x, vi_data->y);
 }
 
@@ -529,7 +611,7 @@ void empty_buff(char *buff, int length)
 s_vdata* current_line()
 {
 	s_vdata *p = header;
-	for (int i = 0; i < vi_data->y && p != NULL; i++)
+	for (int i = 0; i < vi_data->y + vi_data->start_row && p != NULL; i++)
 	{
 		p = p->next;
 	}
@@ -563,7 +645,14 @@ void all_line()
 		addstr(buff);
 		if (p != NULL)
 		{
-			memcpy(p->line, buff, vi_data->max_col);
+			if (p->length <= vi_data->start_col)
+			{
+				memcpy("", buff, vi_data->max_col);
+			}
+			else
+			{
+				memcpy(p->line + vi_data->start_col, buff, vi_data->max_col);
+			}
 			buff[vi_data->max_col] = '\0';
 			move(0, i);
 			addstr(buff);

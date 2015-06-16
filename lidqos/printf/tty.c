@@ -61,7 +61,7 @@ void switch_tty(int tty_id)
 		mmcopy(tty_cur->mm_addr, (void *) 0xb8000, TTY_MEM_SIZE);
 		u32 x = tty_cur->cursor_pos % 80;
 		u32 y = tty_cur->cursor_pos / 80;
-		set_cursor(tty_cur->tty_id, x, y);
+		//set_cursor(tty_cur->tty_id, x, y);
 
 		tty_cur->ch_index_w = 0;
 		tty_cur->ch_index_r = 0;

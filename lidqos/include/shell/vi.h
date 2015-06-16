@@ -43,6 +43,10 @@ typedef struct
 	int y;
 	u32 status;
 
+	int line_count;
+
+	int last_col_no;
+
 } s_vi_data;
 
 int main(int argc, char **args);
