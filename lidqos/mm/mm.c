@@ -102,7 +102,7 @@ void addr_to_gdt(u8 gdt_type, u32 addr, s_gdt *gdt, u8 limit_type, u32 limit)
 		gdt->limit = limit & 0xffff;
 		gdt->baseaddr = addr & 0xffff;
 		gdt->baseaddr2 = (addr >> 16) & 0xff;
-		gdt->p_dpl_type_a = 0xfa;
+		gdt->p_dpl_type_a = 0xfe;
 		gdt->uxdg_limit2 = 0x40 | ((limit >> 16) & 0xf);
 		if (limit_type == GDT_G_KB)
 		{
@@ -145,7 +145,7 @@ void addr_to_gdt(u8 gdt_type, u32 addr, s_gdt *gdt, u8 limit_type, u32 limit)
 		gdt->limit = limit & 0xffff;
 		gdt->baseaddr = addr & 0xffff;
 		gdt->baseaddr2 = (addr >> 16) & 0xff;
-		gdt->p_dpl_type_a = 0x82;
+		gdt->p_dpl_type_a = 0xe2;
 		gdt->uxdg_limit2 = ((limit >> 16) & 0xf);
 		if (limit_type == GDT_G_KB)
 		{
