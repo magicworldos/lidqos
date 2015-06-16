@@ -174,6 +174,22 @@ void mode_normal()
 		{
 			scroll(key);
 		}
+		else if (key == KEY_HOME)
+		{
+			scroll(key);
+		}
+		else if (key == KEY_END)
+		{
+			scroll(key);
+		}
+		else if (key == KEY_PAGE_UP)
+		{
+			scroll(key);
+		}
+		else if (key == KEY_PAGE_DOWN)
+		{
+			scroll(key);
+		}
 
 	}
 	while (1);
@@ -207,6 +223,22 @@ void mode_insert()
 			scroll(key);
 		}
 		else if (key == KEY_DOWN)
+		{
+			scroll(key);
+		}
+		else if (key == KEY_HOME)
+		{
+			scroll(key);
+		}
+		else if (key == KEY_END)
+		{
+			scroll(key);
+		}
+		else if (key == KEY_PAGE_UP)
+		{
+			scroll(key);
+		}
+		else if (key == KEY_PAGE_DOWN)
 		{
 			scroll(key);
 		}
@@ -272,8 +304,12 @@ void scroll(int key)
 			if (vi_data->start_col > 0)
 			{
 				vi_data->start_col -= (vi_data->max_col / 2);
+				vi_data->x = (vi_data->max_col / 2) - 1;
 			}
-			vi_data->x = (vi_data->max_col / 2) - 1;
+			else
+			{
+				vi_data->x = 0;
+			}
 			all_line();
 		}
 		move(vi_data->x, vi_data->y);
@@ -367,6 +403,83 @@ void scroll(int key)
 		}
 		move(vi_data->x, vi_data->y);
 	}
+	else if (key == KEY_HOME)
+	{
+		getxy(&vi_data->x, &vi_data->y);
+		vi_data->x = 0;
+		vi_data->start_col = 0;
+		all_line();
+		move(vi_data->x, vi_data->y);
+		vi_data->last_col_no = vi_data->x;
+	}
+	else if (key == KEY_END)
+	{
+		getxy(&vi_data->x, &vi_data->y);
+		s_vdata *p = current_line();
+		vi_data->x = p->length % (vi_data->max_col / 2);
+		vi_data->start_col = (p->length / (vi_data->max_col / 2)) * (vi_data->max_col / 2);
+		all_line();
+		move(vi_data->x, vi_data->y);
+		vi_data->last_col_no = vi_data->x;
+	}
+	else if (key == KEY_PAGE_UP)
+	{
+		getxy(&vi_data->x, &vi_data->y);
+		vi_data->x = vi_data->last_col_no;
+
+		vi_data->start_row -= vi_data->max_row;
+		if (vi_data->start_row < 0)
+		{
+			vi_data->start_row = 0;
+		}
+		if (vi_data->y + vi_data->start_row < vi_data->max_row)
+		{
+			vi_data->y = 0;
+		}
+		s_vdata *p = current_line();
+		if (vi_data->x + vi_data->start_col >= p->length)
+		{
+			if (p->length - vi_data->start_col >= 0)
+			{
+				vi_data->x = p->length - vi_data->start_col;
+			}
+			else
+			{
+				vi_data->x = p->length % (vi_data->max_col / 2);
+				vi_data->start_col = (p->length / (vi_data->max_col / 2)) * (vi_data->max_col / 2);
+			}
+		}
+		all_line();
+		move(vi_data->x, vi_data->y);
+	}
+	else if (key == KEY_PAGE_DOWN)
+	{
+		getxy(&vi_data->x, &vi_data->y);
+		vi_data->x = vi_data->last_col_no;
+
+		vi_data->start_row += vi_data->max_row;
+		if (vi_data->y + vi_data->start_row >= vi_data->line_count)
+		{
+			vi_data->y = vi_data->line_count % vi_data->max_row - 1;
+			vi_data->start_row = vi_data->line_count / vi_data->max_row * vi_data->max_row;
+		}
+		s_vdata *p = current_line();
+		if (vi_data->x + vi_data->start_col >= p->length)
+		{
+			if (p->length - vi_data->start_col >= 0)
+			{
+				vi_data->x = p->length - vi_data->start_col;
+			}
+			else
+			{
+				vi_data->x = p->length % (vi_data->max_col / 2);
+				vi_data->start_col = (p->length / (vi_data->max_col / 2)) * (vi_data->max_col / 2);
+			}
+		}
+		all_line();
+		move(vi_data->x, vi_data->y);
+
+	}
 }
 
 int line_length(char *data, int start)
@@ -432,14 +545,15 @@ void insert_char(s_vdata *p, char ch)
 		p->mm_length *= 2;
 	}
 
-	for (int i = p->length; i > vi_data->x; i--)
+	for (int i = p->length; i > vi_data->x + vi_data->start_col; i--)
 	{
 		p->line[i] = p->line[i - 1];
 	}
-	p->line[vi_data->x] = ch;
+	p->line[vi_data->x + vi_data->start_col] = ch;
 	p->line[p->length + 1] = '\0';
 	p->length++;
 
+	move(0, vi_data->y);
 	if (p->length <= vi_data->start_col)
 	{
 		addstr_with_buff("");
@@ -448,8 +562,8 @@ void insert_char(s_vdata *p, char ch)
 	{
 		addstr_with_buff(p->line + vi_data->start_col);
 	}
-	vi_data->x++;
 	move(vi_data->x, vi_data->y);
+	scroll(KEY_RIGHT);
 }
 
 void backspace_char()
@@ -461,7 +575,7 @@ void backspace_char()
 
 	s_vdata *p = current_line();
 
-	if (vi_data->x == 0)
+	if (vi_data->x == 0 && vi_data->start_col == 0)
 	{
 		s_vdata *pre = header;
 		for (int i = 0; i < vi_data->y - 1 && pre != NULL; i++)
@@ -484,22 +598,28 @@ void backspace_char()
 		free(p->line);
 		free(p);
 
+		vi_data->line_count--;
+
 		all_line();
 
-		vi_data->y--;
-		vi_data->x = pre_length;
 		move(vi_data->x, vi_data->y);
-
+		scroll(KEY_UP);
+		scroll(KEY_HOME);
+		for (int i = 0; i < pre_length; i++)
+		{
+			scroll(KEY_RIGHT);
+		}
 		return;
 	}
 
-	for (int i = vi_data->x; i < p->length; i++)
+	for (int i = vi_data->x + vi_data->start_col; i < p->length; i++)
 	{
 		p->line[i - 1] = p->line[i];
 	}
-	p->line[p->length - 1] = '\n';
+	p->line[p->length - 1] = '\0';
 	p->length--;
 
+	move(0, vi_data->y);
 	if (p->length <= vi_data->start_col)
 	{
 		addstr_with_buff("");
@@ -508,19 +628,19 @@ void backspace_char()
 	{
 		addstr_with_buff(p->line + vi_data->start_col);
 	}
-	vi_data->x--;
 	move(vi_data->x, vi_data->y);
+	scroll(KEY_LEFT);
 }
 
 void delete_char()
 {
 	s_vdata *p = current_line();
-	if (vi_data->x >= p->length && p->next == NULL)
+	if (vi_data->x + vi_data->start_col >= p->length && p->next == NULL)
 	{
 		return;
 	}
 
-	if (vi_data->x >= p->length)
+	if (vi_data->x + vi_data->start_col >= p->length)
 	{
 		s_vdata *pn = p->next;
 		p->mm_length += pn->mm_length;
@@ -538,19 +658,22 @@ void delete_char()
 		free(pn->line);
 		free(pn);
 
+		vi_data->line_count--;
+
 		all_line();
 
 		move(vi_data->x, vi_data->y);
 		return;
 	}
 
-	for (int i = vi_data->x; i < p->length; i++)
+	for (int i = vi_data->x + vi_data->start_col; i < p->length; i++)
 	{
 		p->line[i] = p->line[i + 1];
 	}
-	p->line[p->length - 1] = '\n';
+	p->line[p->length - 1] = '\0';
 	p->length--;
 
+	move(0, vi_data->y);
 	if (p->length <= vi_data->start_col)
 	{
 		addstr_with_buff("");
@@ -567,7 +690,7 @@ void newline_char()
 	s_vdata *p = current_line();
 	s_vdata *newline = malloc(sizeof(s_vdata));
 
-	if (vi_data->x >= p->length)
+	if (vi_data->x + vi_data->start_col >= p->length)
 	{
 		newline->line = malloc(4);
 		newline->length = 0;
@@ -580,24 +703,28 @@ void newline_char()
 		newline->mm_length = p->mm_length;
 
 		int j = 0;
-		for (int i = vi_data->x; p->line[i] != '\0'; i++, j++)
+		for (int i = vi_data->x + vi_data->start_col; p->line[i] != '\0'; i++, j++)
 		{
 			newline->line[j] = p->line[i];
 		}
 		newline->line[j] = '\0';
 		newline->length = j;
 
-		p->line[vi_data->x] = '\0';
-		p->length = vi_data->x;
+		p->line[vi_data->x + vi_data->start_col] = '\0';
+		p->length = vi_data->x + vi_data->start_col;
 	}
 
 	newline->next = p->next;
 	p->next = newline;
 
+	vi_data->line_count++;
+
 	all_line();
-	vi_data->x = 0;
-	vi_data->y++;
+
 	move(vi_data->x, vi_data->y);
+
+	scroll(KEY_DOWN);
+	scroll(KEY_HOME);
 }
 
 void empty_buff(char *buff, int length)

@@ -288,7 +288,7 @@ void int_keyboard()
 	else if (status == 0)
 	{
 		char ch = keys[key_ind - 1][kb_key_shift];
-		if ((ch >= 0x20 && ch <= 0x7e) || key_ind == KEY_ESC || key_ind == KEY_BACKSPACE || key_ind == KEY_DEL || key_ind == KEY_ENTER || key_ind == KEY_TAB || key_ind == KEY_LEFT || key_ind == KEY_RIGHT || key_ind == KEY_UP || key_ind == KEY_DOWN)
+		if ((ch >= 0x20 && ch <= 0x7e) || key_ind == KEY_ESC || key_ind == KEY_BACKSPACE || key_ind == KEY_DEL || key_ind == KEY_ENTER || key_ind == KEY_TAB || key_ind == KEY_LEFT || key_ind == KEY_RIGHT || key_ind == KEY_UP || key_ind == KEY_DOWN || key_ind == KEY_HOME || key_ind == KEY_END || key_ind == KEY_PAGE_UP || key_ind == KEY_PAGE_DOWN)
 		{
 			if (tty_cur->sem_ch_buff_w.value > 0)
 			{
