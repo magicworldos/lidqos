@@ -10,6 +10,8 @@ char *empty_line = NULL;
 
 char *buff = NULL;
 
+char *full_path = NULL;
+
 int main(int argc, char **args)
 {
 	session = malloc(sizeof(s_session));
@@ -47,6 +49,9 @@ int main(int argc, char **args)
 	}
 	empty_line[vi_data->max_col] = '\0';
 
+	full_path = malloc(SHELL_CMD_LEN);
+	full_path[0] = '\0';
+
 	//new file
 	if (argc == 1)
 	{
@@ -57,9 +62,6 @@ int main(int argc, char **args)
 	{
 		char *path = malloc(SHELL_CMD_LEN);
 		str_copy(args[1], path);
-
-		char *full_path = malloc(SHELL_CMD_LEN);
-		full_path[0] = '\0';
 
 		if (path[0] == '/')
 		{
@@ -87,10 +89,12 @@ int main(int argc, char **args)
 		}
 		fclose(fp);
 
-		edit_file(full_path, data, size);
+		edit_file(data, size);
 
 		free(data);
 	}
+
+	free(full_path);
 
 	free(empty_line);
 
@@ -99,7 +103,7 @@ int main(int argc, char **args)
 	return 0;
 }
 
-void edit_file(char *path, char *data, int size)
+void edit_file(char *data, int size)
 {
 	header = convert_vdata(data);
 
@@ -135,8 +139,6 @@ void edit_file(char *path, char *data, int size)
 		}
 	}
 
-	getchar();
-
 	endwin();
 
 	free(buff);
@@ -145,7 +147,7 @@ void edit_file(char *path, char *data, int size)
 
 void mode_normal()
 {
-	show_status("mode: normal");
+	show_status("NORMAL");
 
 	char ch = 0;
 	int key = 0;
@@ -156,6 +158,11 @@ void mode_normal()
 		if (key == KEY_I)
 		{
 			switch_mode(MODE_INSERT);
+			break;
+		}
+		else if (ch == ':')
+		{
+			switch_mode(MODE_CMD);
 			break;
 		}
 		else if (key == KEY_LEFT)
@@ -197,7 +204,7 @@ void mode_normal()
 
 void mode_insert()
 {
-	show_status("mode: insert");
+	show_status("INSERT");
 
 	int key = 0;
 	char ch = 0;
@@ -267,18 +274,113 @@ void mode_insert()
 
 int mode_cmd()
 {
-	show_status("mode: cmd");
-	char ch = 0;
-	int key = 0;
-	do
+	show_status("COMMAND");
+
+	int ret = 0;
+	char *cmd = malloc(0x200);
+	move(0, 24);
+	addstr(empty_line);
+	move(0, 24);
+	addch(':');
+	get_cmd(cmd);
+	for (int i = 0; i < str_len(cmd); i++)
 	{
-		key = getkey(&ch);
+		if (cmd[i] == 'w')
+		{
+			if ((ret = save()) == 1)
+			{
+				set_file_status(0);
+			}
+		}
+		else if (cmd[i] == 'q')
+		{
+			if (file_status() == 0)
+			{
+				ret = -1;
+			}
+			else if (cmd[i + 1] == '!')
+			{
+				ret = -1;
+			}
+			else if (cmd[i + 1] != '!')
+			{
+				ret = 0;
+				show_status_msg("file is changed, please save it first or use the \"q!\" cmd.");
+			}
+			break;
+		}
 	}
-	while (1);
-	return 0;
+	free(cmd);
+	move(vi_data->x, vi_data->y);
+	switch_mode(MODE_NORMAL);
+
+	return ret;
+}
+
+void get_cmd(char *str)
+{
+	char ch, *p = str;
+	while ((ch = getchar()) != '\n')
+	{
+		if (ch == 0x8)
+		{
+			if (p > str)
+			{
+				int back_num = 1;
+				if (*(p - 1) == '\t')
+				{
+					back_num = 4;
+				}
+				for (int i = 0; i < back_num; ++i)
+				{
+					p--;
+					backspace();
+				}
+			}
+		}
+		else
+		{
+			*p = ch;
+			p++;
+			putchar(ch);
+		}
+	}
+	*p = '\0';
+}
+
+int save()
+{
+	s_vdata *p = header;
+
+	FILE *fp = fopen(full_path, FS_MODE_WRITE);
+	if (fp == NULL)
+	{
+		show_status_msg("write file error.");
+		return 0;
+	}
+	while (p != NULL)
+	{
+		p->line[p->length] = '\n';
+		fwrite(fp, p->length, p->line);
+		p->line[p->length] = '\0';
+		fwrite(fp, 1, "\n");
+		p = p->next;
+	}
+	fclose(fp);
+	show_status_msg("file is written.");
+	return 1;
 }
 
 void show_status(char *str)
+{
+	move(70, 24);
+	addstr(empty_line);
+	move(70, 24);
+	addstr(str);
+	move(vi_data->x, vi_data->y);
+}
+
+void show_status_msg(char *str)
 {
 	move(0, 24);
 	addstr(empty_line);
@@ -291,6 +393,23 @@ void switch_mode(u8 mode)
 {
 	vi_data->status &= 0xfffffff8;
 	vi_data->status |= mode;
+}
+
+int file_status()
+{
+	return (vi_data->status >> 3) & 0x1;
+}
+
+void set_file_status(int changed)
+{
+	if (changed)
+	{
+		vi_data->status |= 0x8;
+	}
+	else
+	{
+		vi_data->status &= 0xfffffff7;
+	}
 }
 
 void scroll(int key)
@@ -538,6 +657,8 @@ s_vdata* convert_vdata(char *data)
 
 void insert_char(s_vdata *p, char ch)
 {
+	set_file_status(1);
+
 	char *from = &p->line[vi_data->x];
 	if (p->length >= p->mm_length)
 	{
@@ -568,6 +689,8 @@ void insert_char(s_vdata *p, char ch)
 
 void backspace_char()
 {
+	set_file_status(1);
+
 	if (vi_data->x == 0 && vi_data->y == 0)
 	{
 		return;
@@ -634,6 +757,8 @@ void backspace_char()
 
 void delete_char()
 {
+	set_file_status(1);
+
 	s_vdata *p = current_line();
 	if (vi_data->x + vi_data->start_col >= p->length && p->next == NULL)
 	{
@@ -687,6 +812,8 @@ void delete_char()
 
 void newline_char()
 {
+	set_file_status(1);
+
 	s_vdata *p = current_line();
 	s_vdata *newline = malloc(sizeof(s_vdata));
 

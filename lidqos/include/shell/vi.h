@@ -51,7 +51,7 @@ typedef struct
 
 int main(int argc, char **args);
 
-void edit_file(char *path, char *data, int size);
+void edit_file(char *data, int size);
 
 s_vdata* convert_vdata(char *data);
 
@@ -63,11 +63,21 @@ void mode_insert();
 
 int mode_cmd();
 
+void get_cmd(char *str);
+
+int save();
+
 void switch_mode(u8 mode);
+
+int file_status();
+
+void set_file_status(int changed);
 
 void scroll(int key);
 
 void show_status(char *str);
+
+void show_status_msg(char *str);
 
 void backspace_char();
 
