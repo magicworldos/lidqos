@@ -652,6 +652,19 @@ s_vdata* convert_vdata(char *data)
 	}
 	while (start < total_length);
 
+	if (header == NULL)
+	{
+		s_vdata* pvdata = malloc(sizeof(s_vdata));
+		pvdata->line = malloc(4);
+		memcpy("", pvdata->line, 4);
+		pvdata->line[0] = '\0';
+		pvdata->mm_length = 8;
+		pvdata->length = 0;
+		pvdata->next = NULL;
+
+		header = pvdata;
+	}
+
 	return header;
 }
 
@@ -691,7 +704,7 @@ void backspace_char()
 {
 	set_file_status(1);
 
-	if (vi_data->x == 0 && vi_data->y == 0)
+	if (vi_data->x == 0 && vi_data->y == 0 && vi_data->start_col == 0 && vi_data->start_row == 0)
 	{
 		return;
 	}
