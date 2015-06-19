@@ -325,6 +325,12 @@ void* addr_parse(u32 cr3, void *p)
 	u32 page_table_index = (addr >> 12) & 0x3ff;
 	u32 *page_tbl = (u32 *) (page_dir[page_dir_index] & 0xfffff000);
 	void *p_addr = (void *) ((page_tbl[page_table_index] & 0xfffff000) | (addr & 0xfff));
+
+	if ((page_tbl[page_table_index] & 1) == 0)
+	{
+		page_error(6, addr);
+	}
+
 	return p_addr;
 }
 
