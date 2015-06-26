@@ -102,7 +102,8 @@ typedef struct tss_s
 	u32 esi, edi;
 	u32 es, cs, ss, ds, fs, gs;
 	u32 ldt;
-	u32 trace_bitmap;
+	u16 trace;
+	u16 io_bitmap;
 } s_tss;
 
 //session数据结构

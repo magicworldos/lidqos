@@ -183,8 +183,10 @@ void int_stack_error()
 void int_protection_error()
 {
 	set_ds(GDT_INDEX_KERNEL_DS);
-	printf(0, "int_protection_error.\n");
-	hlt();
+	set_cr3(PAGE_DIR);
+	printf(pcb_cur->tty_id, "int_protection_error.\n");
+	pcb_stop(pcb_cur);
+//	hlt();
 }
 
 /***

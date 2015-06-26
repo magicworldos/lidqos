@@ -209,7 +209,19 @@ void init_pcb(s_pcb *pcb)
 	pcb->tss.esp2 = 0;
 	pcb->tss.ss2 = 0;
 	pcb->tss.cr3 = 0;
+	//IOPL设为3,只有CPL小于等于3时允许IO操作
 	pcb->tss.eflags = 0x3202;
+	/*
+	 * 对于IO端口操作CPU首先检查IOPL，CPL大于IOPL时禁止IO操作
+	 * 当CPL小于等于IOPL时，CPU再检查TSS中的IO bitmap字段
+	 * 当IO bitmap的值大于TSS的大小（104）时，禁止IO操作
+	 * bitmap设置为0x8000显然大于104,禁止普通程序的IO操作
+	 * 也就是说当IOPL设置为0时，
+	 * 只有内核可以IO，普通程序不可以IO
+	 *
+	 * 如果要让普通程序也可以操作IO就把IOPL设置为3,eflags为0x3202
+	 */
+	pcb->tss.eflags = 0x0202;
 	pcb->tss.eax = 0;
 	pcb->tss.ecx = 0;
 	pcb->tss.edx = 0;
@@ -227,7 +239,8 @@ void init_pcb(s_pcb *pcb)
 	pcb->tss.fs = USER_DATA_SEL;
 	pcb->tss.gs = USER_DATA_SEL;
 	pcb->tss.ldt = GDT_INDEX_LDT;
-	pcb->tss.trace_bitmap = 0x0;
+	pcb->tss.io_bitmap = 0x8000;
+	pcb->tss.trace = 0x0;
 
 	//设置多任务的gdt描述符
 	addr_to_gdt(LDT_TYPE_CS, 0, &(pcb->ldt[0]), GDT_G_KB, 0xffffffff);
